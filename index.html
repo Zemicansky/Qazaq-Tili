@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qazaq Tili — Қазақ тілін үйрену</title>
+<style>
+/* MOBILE-FIRST: базовые стили = мобильная версия */
+/* Desktop override: @media(min-width:768px) */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;--card:#161b22;--card2:#1c2128;
+  --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --blue:#3b82f6;--blue2:#2563eb;--blue3:#1d4ed8;--blue-glow:rgba(59,130,246,.15);
+  --green:#3fb950;--green-bg:rgba(63,185,80,.12);
+  --red:#f85149;--red-bg:rgba(248,81,73,.12);
+  --yellow:#d29922;--yellow-bg:rgba(210,153,34,.12);
+  --border:#30363d;--border2:#21262d;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+
+/* === HEADER === */
+header{background:linear-gradient(135deg,#0d1117 0%,#1a1f2e 50%,#1a2744 100%);color:var(--text);padding:.75rem .75rem .6rem;position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border)}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+header h1{font-size:1.1rem;font-weight:700;letter-spacing:.2px;background:linear-gradient(135deg,var(--blue),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+header h1 span{display:block;font-weight:400;font-size:.65rem;margin-top:.1rem;-webkit-text-fill-color:var(--text2)}
+.header-stats{display:flex;gap:0;justify-content:space-around;background:var(--bg2);border-radius:var(--radius);padding:.4rem .25rem;border:1px solid var(--border)}
+.header-stats div{text-align:center;flex:1;padding:.15rem .2rem;border-right:1px solid var(--border)}
+.header-stats div:last-child{border-right:none}
+.header-stats .num{font-size:.9rem;font-weight:700;display:block;line-height:1.2;color:var(--blue)}
+.header-stats .lbl{font-size:.6rem;color:var(--text2);display:block;margin-top:.05rem}
+
+/* === NAV === */
+nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:.4rem .5rem;display:flex;gap:.2rem;overflow-x:auto;position:sticky;top:0;z-index:100;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{padding:.35rem .6rem;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:20px;font-size:.7rem;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;font-weight:500}
+nav button:active{transform:scale(.95)}
+nav button.active{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 2px 8px rgba(59,130,246,.3)}
+
+/* === CONTAINER & CARDS === */
+.container{padding:.5rem;max-width:100%}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem;margin-bottom:.6rem}
+.card h2{font-size:.95rem;color:var(--text);margin-bottom:.5rem}
+
+/* === MODE SWITCH === */
+.mode-switch{display:flex;gap:.3rem;margin-bottom:.6rem}
+.mode-switch button{flex:1;padding:.5rem .25rem;border:1px solid var(--border);background:var(--card2);color:var(--text2);border-radius:var(--radius-sm);font-size:.72rem;cursor:pointer;transition:all .15s;text-align:center;font-weight:500;line-height:1.2}
+.mode-switch button:active{transform:scale(.95)}
+.mode-switch button.active{background:var(--blue);color:white;border-color:var(--blue);font-weight:600;box-shadow:0 2px 8px rgba(59,130,246,.25)}
+
+/* === WORD DISPLAY === */
+.word-display{text-align:center;padding:1.25rem .25rem}
+.word-display .main-word{font-size:1.6rem;font-weight:700;color:white;margin-bottom:.3rem;line-height:1.3;word-break:break-word}
+.word-display .sub{font-size:.78rem;color:var(--text2)}
+.word-display .example{font-size:.8rem;color:var(--text);margin-top:.75rem;padding:.65rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:left;line-height:1.5}
+
+/* === INPUT ROW === */
+.input-row{display:flex;gap:.4rem;margin-top:.75rem;align-items:stretch}
+input[type=text]{flex:1;min-width:0;padding:.65rem .85rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none;transition:all .2s;background:var(--bg);color:var(--text)}
+input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
+input[type=text]::placeholder{color:var(--text3)}
+
+/* === BUTTONS === */
+button.btn{padding:.6rem 1rem;border:none;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+button.btn:active{transform:scale(.95)}
+.btn-primary{background:var(--blue);color:white}
+.btn-primary:active{background:var(--blue2)}
+.btn-secondary{background:var(--card2);color:var(--text2);border:1px solid var(--border);font-size:.78rem;padding:.6rem .7rem}
+.btn-next{background:var(--blue);color:white;width:100%;padding:.8rem;font-size:.9rem;border-radius:var(--radius-sm);margin-top:.6rem;box-shadow:0 2px 12px rgba(59,130,246,.3)}
+.btn-next:active{background:var(--blue2)}
+.btn-skip{background:transparent;color:var(--text3);border:1px solid var(--border);width:100%;padding:.55rem;font-size:.8rem;border-radius:var(--radius-sm);margin-top:.3rem}
+
+/* === AUDIO BUTTON === */
+.audio-btn{background:var(--card2);color:var(--text2);border:1px solid var(--border);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.audio-btn:active{transform:scale(.9);background:var(--blue);color:white;border-color:var(--blue)}
+
+/* === FEEDBACK === */
+.feedback{padding:.7rem;border-radius:var(--radius-sm);margin-top:.6rem;font-weight:600;text-align:center;display:none;font-size:.85rem}
+.feedback.correct{background:var(--green-bg);color:var(--green);display:block;border:1px solid rgba(63,185,80,.2)}
+.feedback.wrong{background:var(--red-bg);color:var(--red);display:block;border:1px solid rgba(248,81,73,.2)}
+
+/* === PROGRESS BAR === */
+.progress-bar{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:.4rem 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),#a78bfa);border-radius:3px;transition:width .4s ease}
+
+/* === TOPICS === */
+.topics-grid{display:grid;grid-template-columns:1fr;gap:.4rem}
+.topic-card{padding:.65rem;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:.6rem;background:var(--card)}
+.topic-card:active{transform:scale(.98);background:var(--card2)}
+.topic-card.active{border-color:var(--blue);background:var(--blue-glow)}
+.topic-card .name{font-weight:600;font-size:.85rem;flex:1;color:var(--text)}
+.topic-card .count{font-size:.7rem;color:var(--text2)}
+
+/* === STATS === */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.4rem}
+.stat-card{padding:.65rem .4rem;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center}
+.stat-card .val{font-size:1.2rem;font-weight:700;color:var(--blue)}
+.stat-card .label{font-size:.65rem;color:var(--text2);margin-top:.15rem}
+
+/* === DIALOGUES === */
+.dialogue-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.7rem;margin-bottom:.5rem;background:var(--card)}
+.dialogue-item h3{font-size:.85rem;color:var(--text);margin-bottom:.3rem}
+.dialogue-line{padding:.2rem 0;font-size:.8rem;color:var(--text)}
+.dialogue-line .speaker{font-weight:700;color:var(--blue)}
+.dialogue-quiz{margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)}
+
+/* === QUIZ OPTIONS === */
+.quiz-option{display:block;width:100%;padding:.6rem .7rem;margin:.25rem 0;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);cursor:pointer;font-size:.82rem;text-align:left;transition:all .15s;font-weight:500;color:var(--text)}
+.quiz-option:active{transform:scale(.98);border-color:var(--blue);background:var(--blue-glow)}
+.quiz-option.correct-opt{background:var(--green-bg);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong-opt{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+
+/* === SEARCH === */
+.search-box{width:100%;padding:.6rem .85rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.85rem;margin-bottom:.6rem;outline:none;background:var(--bg);color:var(--text)}
+.search-box:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
+.search-box::placeholder{color:var(--text3)}
+.search-results{max-height:60vh;overflow-y:auto}
+.search-item{display:flex;justify-content:space-between;align-items:center;padding:.45rem .5rem;border-bottom:1px solid var(--border);font-size:.82rem}
+.search-item .kz{font-weight:600;color:var(--text);flex:1}
+.search-item .ru{color:var(--text2);font-size:.75rem;text-align:right;margin-left:.5rem}
+
+/* === SETTINGS === */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);gap:.5rem}
+.settings-row:last-child{border-bottom:none}
+.settings-row label{font-size:.83rem;flex:1;color:var(--text)}
+select{padding:.35rem .5rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;background:var(--bg);color:var(--text)}
+
+/* === SECTIONS === */
+.section{display:none}
+.section.active{display:block}
+
+/* === WEEK GRID === */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;text-align:center}
+.week-day{padding:.35rem;background:var(--card2);border:1px solid var(--border);border-radius:6px;font-size:.7rem}
+.week-day .day-name{font-weight:600;color:var(--text);font-size:.65rem}
+.week-day .day-val{color:var(--text2);font-size:.6rem}
+.week-day.today{border-color:var(--blue);background:var(--blue-glow)}
+
+/* === FOOTER === */
+footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text2);text-align:center;padding:.75rem;margin-top:1rem;font-size:.75rem}
+
+/* === SPEED CONTROL === */
+.speed-control{display:flex;gap:.25rem;align-items:center;margin-top:.35rem;justify-content:center;flex-wrap:wrap}
+.speed-btn{padding:.25rem .5rem;border:1px solid var(--border);background:transparent;border-radius:5px;font-size:.68rem;cursor:pointer;transition:all .15s;color:var(--text2)}
+.speed-btn.active{background:var(--blue);color:white;border-color:var(--blue)}
+
+/* === BADGE === */
+.hard-words-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:white;font-size:.55rem;padding:1px 4px;border-radius:8px}
+
+/* === GRAMMAR === */
+.grammar-table{width:100%;border-collapse:collapse;font-size:.78rem}
+.grammar-table th{background:var(--blue);color:white;padding:.35rem .3rem;text-align:left;font-size:.75rem}
+.grammar-table td{padding:.3rem .3rem;border-bottom:1px solid var(--border);color:var(--text)}
+.grammar-table tr:nth-child(even){background:var(--card2)}
+#sec-grammar .card{margin-bottom:.6rem}
+#sec-grammar h2{color:var(--text);font-size:.9rem;margin-bottom:.35rem}
+#sec-grammar p{margin-bottom:.35rem;font-size:.82rem;line-height:1.5;color:var(--text)}
+
+/* === SESSION REVIEW === */
+.session-review{background:linear-gradient(135deg,var(--blue3),#7c3aed);color:white;border-radius:var(--radius);padding:1rem;text-align:center;margin-bottom:.6rem}
+
+/* === BOTTOM BAR === */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:.5rem .75rem;display:flex;gap:.4rem;z-index:150}
+.bottom-bar .btn{flex:1}
+
+/* =========================================================
+   DESKTOP: @media(min-width:768px) — позже доработаем
+   ========================================================= */
+</style>
+</head>
+<body>
+
+<header>
+<div class="header-top">
+<h1>Qazaq Tili<span>Қазақ тілі B1-B2</span></h1>
+<div id="streakDisplay" style="display:none;align-items:center;gap:.25rem;background:var(--blue-glow);border:1px solid var(--blue);padding:.2rem .5rem;border-radius:14px;font-size:.75rem;color:var(--blue)"></div>
+</div>
+<div class="header-stats">
+<div><span class="num" id="totalWords">0</span><span class="lbl">всего</span></div>
+<div><span class="num" id="learnedWords">0</span><span class="lbl">выучено</span></div>
+<div><span class="num" id="percentWords">0%</span><span class="lbl">прогресс</span></div>
+</div>
+</header>
+
+<nav id="mainNav">
+<button class="active" onclick="showSection('train')">Тренажёр</button>
+<button onclick="showSection('topics')">Темы</button>
+<button onclick="showSection('grammar')">Грамматика</button>
+<button onclick="showSection('dialogues')">Диалоги</button>
+<button onclick="showSection('dictionary')">Словарь</button>
+<button onclick="showSection('stats')">Статистика</button>
+<button onclick="showSection('settings')">Настройки</button>
+<button onclick="showSection('hard')" style="position:relative">Сложные <span id="hardCount" class="hard-words-badge" style="display:none">0</span></button>
+</nav>
+
+<div class="container">
+
+<!-- TRAIN SECTION -->
+<div id="sec-train" class="section active">
+<div id="sessionReview" style="display:none"></div>
+<div class="card">
+<div class="mode-switch">
+<button class="active" id="modeA" onclick="setMode('A')">Русский → Казахский</button>
+<button id="modeB" onclick="setMode('B')">Казахский → Русский</button>
+<button id="modeC" onclick="setMode('C')">Аудио-вызов</button>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="dailyProgress" style="width:0%"></div></div>
+<div style="text-align:center;font-size:.8rem;color:var(--muted);margin-bottom:.75rem" id="dailyLabel">Дневная цель: 0 / 20 новых слов</div>
+
+<div class="word-display" id="wordDisplay">
+<div class="sub" id="wordTopic"></div>
+<div class="main-word" id="mainWord">Загрузка...</div>
+<div class="example" id="wordExample" style="display:none"></div>
+</div>
+
+<div class="input-row" id="inputRow">
+<input type="text" id="answerInput" placeholder="Введите перевод..." autocomplete="off" style="font-size:.9rem">
+<button class="btn btn-primary" onclick="checkAnswer()">Проверить</button>
+<button class="audio-btn" onclick="playAudio()" title="Прослушать">🔊</button>
+</div>
+
+<div style="display:flex;gap:.3rem;margin-top:.4rem;align-items:center;justify-content:center;flex-wrap:wrap">
+<button class="btn btn-secondary" onclick="showHint()" style="font-size:.75rem;padding:.4rem .6rem">Подсказка</button>
+<div class="speed-control" style="margin:0">
+<button class="speed-btn" onclick="setSpeed(0.5)">медленно</button>
+<button class="speed-btn active" onclick="setSpeed(1)">нормально</button>
+<button class="speed-btn" onclick="setSpeed(1.5)">быстро</button>
+</div>
+</div>
+
+<div class="feedback" id="feedback"></div>
+
+<button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
+<button class="btn btn-skip" onclick="skipWord()">Пропустить</button>
+</div>
+</div>
+
+<!-- TOPICS SECTION -->
+<div id="sec-topics" class="section">
+<div class="card">
+<h2>Выберите тему для тренировки</h2>
+<div class="topics-grid" id="topicsGrid"></div>
+<div style="margin-top:1rem;text-align:center">
+<button class="btn btn-primary" onclick="startTopicTraining()">Начать тренировку по теме</button>
+</div>
+</div>
+</div>
+
+<!-- DIALOGUES SECTION -->
+<div id="sec-dialogues" class="section">
+<div class="card">
+<h2>Диалоги — тренировка восприятия на слух</h2>
+<p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Прослушайте диалог и ответьте на вопрос. Все диалоги на казахском языке.</p>
+<div id="dialoguesList"></div>
+</div>
+</div>
+
+<!-- DICTIONARY SECTION -->
+<div id="sec-dictionary" class="section">
+<div class="card">
+<h2>Словарь</h2>
+<input type="text" class="search-box" id="searchInput" placeholder="Поиск слова на казахском или русском..." oninput="searchWords()">
+<div class="search-results" id="searchResults"></div>
+</div>
+</div>
+
+<!-- STATS SECTION -->
+<div id="sec-stats" class="section">
+<div class="card">
+<h2>Статистика</h2>
+<div class="stats-grid" id="statsGrid"></div>
+</div>
+<div class="card">
+<h2>Активность за неделю</h2>
+<div class="week-grid" id="weekGrid"></div>
+</div>
+<div class="card">
+<h2>Прогресс по темам</h2>
+<div id="topicProgress"></div>
+</div>
+</div>
+
+<!-- SETTINGS SECTION -->
+<div id="sec-settings" class="section">
+<div class="card">
+<h2>Настройки</h2>
+<div class="settings-row">
+<label>Скорость озвучки по умолчанию</label>
+<select id="defaultSpeed" onchange="saveSettings()">
+<option value="0.5">Медленно</option>
+<option value="1" selected>Нормально</option>
+<option value="1.5">Быстро</option>
+</select>
+</div>
+<div class="settings-row">
+<label>Новых слов в день</label>
+<div style="display:flex;align-items:center;gap:.5rem">
+<input type="number" id="dailyGoalInput" value="20" min="5" max="100" style="width:70px;padding:.4rem .5rem;border:1px solid var(--border);border-radius:6px;font-size:.85rem;text-align:center" onchange="saveCustomDailyGoal()">
+<span style="font-size:.8rem;color:var(--muted)">слов</span>
+</div>
+</div>
+<div class="settings-row">
+<label>Сбросить весь прогресс</label>
+<button class="btn btn-secondary" onclick="resetProgress()" style="font-size:.8rem;padding:.4rem .8rem">Сбросить</button>
+</div>
+</div>
+</div>
+
+<!-- GRAMMAR SECTION -->
+<div id="sec-grammar" class="section">
+<div class="card" style="background:linear-gradient(135deg,var(--blue3),#7c3aed);border:none">
+<h2 style="color:white">Грамматика за 20 минут</h2>
+<p style="font-size:.9rem;opacity:.9;color:rgba(255,255,255,.85)">Эти 7 правил — 80% всего, что нужно для разговора. Всё объяснено на пальцах, с реальными примерами из жизни.</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--blue)">
+<h2>1. ГЛАВНОЕ ПРАВИЛО: Глагол в конце</h2>
+<div style="background:var(--yellow-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--yellow);color:var(--text)">
+<strong>Правило:</strong> В казахском глагол ВСЕГДА стоит в КОНЦЕ предложения. Всегда. Без исключений.
+</div>
+<p style="font-size:.9rem;line-height:1.8">
+Русский: Я <strong>читаю</strong> книгу. (глагол — середина)<br>
+Казахский: Мен кітап<strong>ты</strong> оқы<strong>ймын</strong>. (глагол — конец)
+</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin:.75rem 0">
+<p style="font-size:.9rem"><strong>Реальные примеры:</strong></p>
+<p style="font-size:.88rem;margin:.4rem 0">☕ Мен шәй <strong>ішемін</strong>. — Я чай пью.</p>
+<p style="font-size:.88rem;margin:.4rem 0">📞 Ол телефон <strong>соғады</strong>. — Он звонит по телефону.</p>
+<p style="font-size:.88rem;margin:.4rem 0">🏠 Біз үйге <strong>бардық</strong>. — Мы домой пошли.</p>
+<p style="font-size:.88rem;margin:.4rem 0">🛒 Олар дүкенге <strong>кірді</strong>. — Они зашли в магазин.</p>
+</div>
+<p style="font-size:.85rem;color:var(--muted)"><strong>Запомните:</strong> Русский — СВО- порядок (сказуемое в середине). Казахский — ПОД-ДОП-СВО (глагол в конце). Просто переверните порядок слов.</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--green)">
+<h2>2. Слова-подставки: «в», «куда», «откуда»</h2>
+<div style="background:var(--green-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--green);color:var(--text)">
+<strong>Правило:</strong> Чтобы сказать «В школе», «В школу», «Из школы» — просто добавь суффикс к слову.
+</div>
+<p style="font-size:.9rem;margin-bottom:.5rem"><strong>Запомни 3 суффикса — и ты уже можешь говорить о местах:</strong></p>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:30%"><strong>ГДЕ? (в чём?)</strong></td><td style="padding:.5rem"><strong>-да/-де/-та/-те</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">үйде</td><td style="padding:.5rem">в доме (үй = дом)</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">мектепте</td><td style="padding:.5rem">в школе (мектеп = школа)</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">дүкенде</td><td style="padding:.5rem">в магазине (дүкен = магазин)</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">жұмыста</td><td style="padding:.5rem">на работе (жұмыс = работа)</td></tr>
+<tr><td style="padding:.5rem">автобуста</td><td style="padding:.5rem">в автобусе</td></tr>
+</table>
+</div>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:30%"><strong>КУДА? (в что?)</strong></td><td style="padding:.5rem"><strong>-ға/-ге/-қа/-ке</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">үйге</td><td style="padding:.5rem">домой</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">мектепке</td><td style="padding:.5rem">в школу</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">дүкенге</td><td style="padding:.5rem">в магазин</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">жұмысқа</td><td style="padding:.5rem">на работу</td></tr>
+<tr><td style="padding:.5rem">әуежайға</td><td style="padding:.5rem">в аэропорт</td></tr>
+</table>
+</div>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:30%"><strong>ОТКУДА? (из чего?)</strong></td><td style="padding:.5rem"><strong>-дан/-ден/-тан/-тен/-нан/-нен</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">үйден</td><td style="padding:.5rem">из дома</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">мектептен</td><td style="padding:.5rem">из школы</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">дүкенден</td><td style="padding:.5rem">из магазина</td></tr>
+<tr><td style="padding:.5rem">жұмыстан</td><td style="padding:.5rem">с работы</td></tr>
+</table>
+</div>
+
+<p style="font-size:.88rem;margin-top:.75rem"><strong>Как выбрать суффикс?</strong> Посмотри на последнюю гласную слова:</p>
+<p style="font-size:.88rem">Если буква «передняя» (ә, е, і, ө, ү) → суффикс с <strong>е</strong>: үй<strong>де</strong>, үй<strong>ге</strong>, үй<strong>ден</strong></p>
+<p style="font-size:.88rem">Если буква «задняя» (а, о, ұ, ы) → суффикс с <strong>а</strong>: мектеп<strong>те</strong> (нет — «е», потому что «п» — не гласная, смотри на предпоследнюю)</p>
+<p style="font-size:.85rem;color:var(--muted)"><strong>Проще говоря:</strong> Посмотри на последний ГЛАСНЫЙ звук слова. Үй → ү → «передний» → үйде. Мектеп → е → «передний» → мектепте. Дүкен → е → «передний» → дүкенде. Жұмыс → ы → «задний» → жұмыста.</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--blue)">
+<h2>3. Мой/твой/его — всё одним суффиксом</h2>
+<div style="background:var(--blue-glow);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--blue);color:var(--text)">
+<strong>Правило:</strong> В казахском нет слов «мой», «твой», «его». Вместо этого суффикс приклеивается к слову.
+</div>
+<p style="font-size:.9rem;margin-bottom:.5rem"><strong>Запомни 3 суффикса:</strong></p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>МОЙ</strong></td><td style="padding:.5rem"><strong>-ым/-ім/-ам/-ем</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй<strong>ім</strong></td><td style="padding:.5rem">Мой дом</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дәрігер<strong>ім</strong></td><td style="padding:.5rem">Мой врач</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дос<strong>ым</strong></td><td style="padding:.5rem">Мой друг</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бала<strong>м</strong></td><td style="padding:.5rem">Мой ребёнок</td></tr>
+<tr><td style="padding:.5rem">Телефон<strong>ым</strong></td><td style="padding:.5rem">Мой телефон</td></tr>
+</table>
+</div>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-top:.75rem">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>ТВОЙ</strong></td><td style="padding:.5rem"><strong>-ың/-ің/-аң/-ең</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй<strong>ің</strong></td><td style="padding:.5rem">Твой дом</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дәрігер<strong>ің</strong></td><td style="padding:.5rem">Твой врач</td></tr>
+<tr><td style="padding:.5rem">Дос<strong>ың</strong></td><td style="padding:.5rem">Твой друг</td></tr>
+</table>
+</div>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-top:.75rem">
+<table style="width:100%;font-size:.9rem;border-collapse:freeze">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>ЕГО/ЕЁ</strong></td><td style="padding:.5rem"><strong>-ы/-і/-а/-е</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй<strong>і</strong></td><td style="padding:.5rem">Его дом</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дәрігер<strong>і</strong></td><td style="padding:.5rem">Его врач</td></tr>
+<tr><td style="padding:.5rem">Дос<strong>ы</strong></td><td style="padding:.5rem">Его друг</td></tr>
+</table>
+</div>
+
+<p style="font-size:.88rem;margin-top:.75rem"><strong>Реальные фразы:</strong></p>
+<p style="font-size:.88rem">📞 <em>Менің дәрігерім айтты...</em> — Мой врач сказал...</p>
+<p style="font-size:.88rem">🏠 <em>Сенің үйің қайда?</em> — Где твой дом?</p>
+<p style="font-size:.88rem">👨‍👩‍👧 <em>Оның баласы мектепке барды.</em> — Её ребёнок пошёл в школу.</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--red)">
+<h2>4. «Нет» — просто добавь «ма/ме»</h2>
+<div style="background:var(--red-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--red);color:var(--text)">
+<strong>Правило:</strong> Чтобы сделать глагол отрицательным, вставь <strong>-ма/-ме</strong> перед окончанием.
+</div>
+<p style="font-size:.9rem;margin-bottom:.5rem"><strong>Как это работает:</strong></p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:35%"><strong>ПОЛОЖИТЕЛЬНО</strong></td><td style="padding:.5rem;width:35%"><strong>ОТРИЦАНИЕ</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бар<strong>амын</strong></td><td style="padding:.5rem">Бар<strong>ма</strong>ймын</td><td style="padding:.5rem">Я не иду</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Кел<strong>емін</strong></td><td style="padding:.5rem">Кел<strong>ме</strong>ймін</td><td style="padding:.5rem">Я не прихожу</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Жас<strong>аймын</strong></td><td style="padding:.5rem">Жас<strong>а</strong>й<strong>ма</strong>ймын</td><td style="padding:.5rem">Я не делаю</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Оқ<strong>ыдым</strong></td><td style="padding:.5rem">Оқ<strong>ы</strong>й<strong>ма</strong>дым</td><td style="padding:.5rem">Я не прочитал</td></tr>
+<tr><td style="padding:.5rem">Айт<strong>тым</strong></td><td style="padding:.5rem">Айт<strong>па</strong>дым</td><td style="padding:.5rem">Я не сказал</td></tr>
+</table>
+</div>
+
+<p style="font-size:.88rem;margin-top:.75rem"><strong>Реальные фразы:</strong></p>
+<p style="font-size:.88rem">🚫 <em>Мен бармаймын.</em> — Я не иду.</p>
+<p style="font-size:.88rem">🚫 <em>Ол келмеді.</em> — Он не пришёл.</p>
+<p style="font-size:.88rem">🚫 <em>Бұл жұмыс істемейді.</em> — Это не работает.</p>
+<p style="font-size:.88rem">🚫 <em>Маған керек емес.</em> — Мне не нужно.</p>
+</div>
+
+<div class="card" style="border-left:3px solid #a78bfa">
+<h2>5. Вопрос: просто добавь «ба/бе»</h2>
+<div style="background:rgba(167,139,250,.12);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid #a78bfa;color:var(--text)">
+<strong>Правило:</strong> Чтобы задать вопрос «да/нет», поставь <strong>-ма/-ме/-ба/-бе/-па/-пе</strong> в конец предложения.
+</div>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:40%"><strong>УТВЕРЖДЕНИЕ</strong></td><td style="padding:.5rem;width:40%"><strong>ВОПРОС</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Сен келдің.</td><td style="padding:.5rem">Сен келдің <strong>бе</strong>?</td><td style="padding:.5rem">Ты пришёл?</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бұл дәмді.</td><td style="padding:.5rem">Бұл дәмді <strong>ме</strong>?</td><td style="padding:.5rem">Это вкусно?</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Ол айтты.</td><td style="padding:.5rem">Ол айтты <strong>ма</strong>?</td><td style="padding:.5rem">Он сказал?</td></tr>
+<tr><td style="padding:.5rem">Сен түсіндің.</td><td style="padding:.5rem">Сен түсіндің <strong>бе</strong>?</td><td style="padding:.5rem">Ты понял?</td></tr>
+</table>
+</div>
+
+<p style="font-size:.88rem;margin-top:.75rem"><strong>Реальные вопросы:</strong></p>
+<p style="font-size:.88rem">❓ <em>Сен жұмысқа бардың ба?</em> — Ты на работу пошёл?</p>
+<p style="font-size:.88rem">❓ <em>Тамақ дәмді ме?</em> — Еда вкусная?</p>
+<p style="font-size:.88rem">❓ <em>Ол келді ме?</em> — Он пришёл?</p>
+<p style="font-size:.88rem">❓ <em>Бұл қанша тұрады?</em> — Сколько это стоит?</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--yellow)">
+<h2>6. Мой/твой/его + падеж = готовая фраза</h2>
+<div style="background:var(--yellow-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--yellow);color:var(--text)">
+<strong>Фишка:</strong> Сложи притяжательный суффикс + падежный суффикс — и получишь готовую фразу.
+</div>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.88rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>Слово</strong></td><td style="padding:.5rem"><strong>Мой + где?</strong></td><td style="padding:.5rem"><strong>Мой + куда?</strong></td><td style="padding:.5rem"><strong>Мой + откуда?</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Үй (дом)</td><td style="padding:.4rem">үйімде</td><td style="padding:.4rem">үйімге</td><td style="padding:.4rem">үйімнен</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Дәрігер (врач)</td><td style="padding:.4rem">дәрігерімде</td><td style="padding:.4rem">дәрігерімге</td><td style="padding:.4rem">дәрігерімнен</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Дүкен (магазин)</td><td style="padding:.4rem">дүкенімде</td><td style="padding:.4rem">дүкенімге</td><td style="padding:.4rem">дүкенімнен</td></tr>
+<tr><td style="padding:.4rem">Жұмыс (работа)</td><td style="padding:.4rem">жұмысымда</td><td style="padding:.4rem">жұмысыма</td><td style="padding:.4rem">жұмысымнан</td></tr>
+</table>
+</div>
+
+<p style="font-size:.88rem;margin-top:.75rem"><strong>Реальные фразы:</strong></p>
+<p style="font-size:.88rem">🏠 <em>Менің дәрігерім ауруханада.</em> — Мой врач в больнице.</p>
+<p style="font-size:.88rem">🛒 <em>Менің дүкенімге бар.</em> — Иди в мой магазин.</p>
+<p style="font-size:.88rem">💼 <em>Менің жұмысымнан кейін.</em> — После моей работы.</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--green)">
+<h2>7. Множественное число: просто «лар/лер»</h2>
+<div style="background:var(--green-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--green);color:var(--text)">
+<strong>Правило:</strong> Чтобы сказать «много» — добавь <strong>-лар/-лер</strong> к слову.
+</div>
+
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:35%"><strong>ЕДИНИЧНОЕ</strong></td><td style="padding:.5rem;width:35%"><strong>МНОЖЕСТВЕННОЕ</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дос</td><td style="padding:.5rem">Дос<strong>тар</strong></td><td style="padding:.5rem">Друзья</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Кітап</td><td style="padding:.5rem">Кітап<strong>тар</strong></td><td style="padding:.5rem">Книги</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бала</td><td style="padding:.5rem">Бала<strong>лар</strong></td><td style="padding:.5rem">Дети</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Қала</td><td style="padding:.5rem">Қала<strong>лар</strong></td><td style="padding:.5rem">Города</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй</td><td style="padding:.5rem">Үй<strong>лер</strong></td><td style="padding:.5rem">Дома</td></tr>
+<tr><td style="padding:.5rem">Тамақ</td><td style="padding:.5rem">Тамақ<strong>тар</strong></td><td style="padding:.5rem">Блюда</td></tr>
+</table>
+</div>
+
+<p style="font-size:.88rem;margin-top:.75rem"><strong>Реальные фразы:</strong></p>
+<p style="font-size:.88rem">👫 <em>Достарым көп.</em> — У меня много друзей.</p>
+<p style="font-size:.88rem">📚 <em>Кітаптарды оқы.</em> — Прочитай книги.</p>
+<p style="font-size:.88rem">👶 <em>Балалар ойнап жатыр.</em> — Дети играют.</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--blue);background:var(--card2)">
+<h2>Готовые фразы на каждый день</h2>
+<p style="font-size:.88rem;margin-bottom:.5rem;color:var(--text2)">Скопируй и используй — всё по правилам выше:</p>
+<div style="font-size:.88rem;line-height:2">
+<p>☕ <strong>Мен шәй ішемін.</strong> — Я пью чай.</p>
+<p>🏠 <strong>Мен үйге барамын.</strong> — Я иду домой.</p>
+<p>🛒 <strong>Дүкенде не бар?</strong> — Что есть в магазине?</p>
+<p>💰 <strong>Бұл қанша тұрады?</strong> — Сколько это стоит?</p>
+<p>👨‍⚕️ <strong>Менің дәрігерім айтты...</strong> — Мой врач сказал...</p>
+<p>🚫 <strong>Маған керек емес.</strong> — Мне не нужно.</p>
+<p>❓ <strong>Сен келдің бе?</strong> — Ты пришёл?</p>
+<p>📱 <strong>Телефоным жұмыс істемейді.</strong> — Мой телефон не работает.</p>
+<p>🚗 <strong>Мен таксимен барамын.</strong> — Я еду на такси.</p>
+<p>🍽️ <strong>Тамақ дәмді ме?</strong> — Еда вкусная?</p>
+</div>
+</div>
+
+<div class="card">
+<h2>1. Сингармонизм (гармония гласных)</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Самое важное правило казахского языка. Суффиксы меняются в зависимости от гласных в корне слова.</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<p style="font-weight:700;margin-bottom:.5rem">Передний ряд: ә, е, і, ө, ү</p>
+<p style="font-size:.88rem">Дом → <strong>үй</strong> → үй<strong>де</strong> (в доме), үй<strong>дің</strong> (дома — род. падеж)</p>
+<p style="font-weight:700;margin-bottom:.5rem;margin-top:.75rem">Задний ряд: а, о, ұ, ы</p>
+<p style="font-size:.88rem">Школа → <strong>мектеп</strong> → мектеп<strong>те</strong> (в школе), мектеп<strong>тің</strong> (школы — род. падеж)</p>
+</div>
+<p style="font-size:.85rem;color:var(--muted)"><strong>Запомните:</strong> Суффикс <em>-де/-да</em> (в), <em>-нің/-дың/-тің/-нің</em> (род. падеж) — всегда подстраивается под гласные корня.</p>
+</div>
+
+<div class="card">
+<h2>2. Падежные суффиксы (7 основных)</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Казахский — агглютинативный язык. Падеж выражается суффиксами.</p>
+
+<table style="width:100%;border-collapse:collapse;font-size:.88rem">
+<tr style="background:var(--teal);color:white"><th style="padding:.5rem;text-align:left">Падеж</th><th style="padding:.5rem;text-align:left">Суффикс</th><th style="padding:.5rem;text-align:left">Значение</th><th style="padding:.5rem;text-align:left">Пример</th></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem"><strong>Атау</strong> (именит.)</td><td style="padding:.4rem .5rem">—</td><td style="padding:.4rem .5rem">Кто? Что?</td><td style="padding:.4rem .5rem"><em>Мектеп</em> (школа)</td></tr>
+<tr style="border-bottom:1px solid var(--border);background:#f9fafb"><td style="padding:.4rem .5rem"><strong>Ілік</strong> (родит.)</td><td style="padding:.4rem .5rem">-ның/-дың/-тің/-нің</td><td style="padding:.4rem .5rem">Кого? Чего?</td><td style="padding:.4rem .5rem"><em>Мектептің</em> (школы)</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem"><strong>Барыс</strong> (направ.)</td><td style="padding:.4rem .5rem">-ға/-ге/-қа/-ке</td><td style="padding:.4rem .5rem">Куда?</td><td style="padding:.4rem .5rem"><em>Мектепке</em> (в школу)</td></tr>
+<tr style="border-bottom:1px solid var(--border);background:#f9fafb"><td style="padding:.4rem .5rem"><strong>Тұрғы</strong> (местный)</td><td style="padding:.4rem .5rem">-да/-де/-та/-те</td><td style="padding:.4rem .5rem">Где?</td><td style="padding:.4rem .5rem"><em>Мектепте</em> (в школе)</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem"><strong>Шығыс</strong> (отделит.)</td><td style="padding:.4rem .5rem">-дан/-ден/-тан/-тен/-нан/-нен</td><td style="padding:.4rem .5rem">Откуда?</td><td style="padding:.4rem .5rem"><em>Мектептен</em> (из школы)</td></tr>
+<tr style="border-bottom:1px solid var(--border);background:#f9fafb"><td style="padding:.4rem .5rem"><strong>Табыс</strong> (винит.)</td><td style="padding:.4rem .5rem">-ны/-ды/-ті/-ні</td><td style="padding:.4rem .5rem">Кого? Что?</td><td style="padding:.4rem .5rem"><em>Мектепті</em> (школу)</td></tr>
+<tr><td style="padding:.4rem .5rem"><strong>Жатыс</strong> (instrument.)</td><td style="padding:.4rem .5rem">-мен/-бен/-пен</td><td style="padding:.4rem .5rem">Чем? С чем?</td><td style="padding:.4rem .5rem"><em>Мектеппен</em> (со школой)</td></tr>
+</table>
+<p style="font-size:.85rem;color:var(--muted);margin-top:.75rem"><strong>Совет:</strong> Падежи Барыс (куда?) и Тұрғы (где?) — самые частотные. Начните с них.</p>
+</div>
+
+<div class="card">
+<h2>3. Притяжательные суффиксы</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Казахский не использует слова «мой», «твой» — притяжательность выражается суффиксом.</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<table style="width:100%;font-size:.88rem;border-collapse:collapse">
+<tr><td style="padding:.3rem 0"><strong>1-е лицо</strong> (мой)</td><td style="padding:.3rem 0">-ым/-ім/-ам/-ем</td><td style="padding:.3rem 0">Үй<strong>ім</strong> — мой дом</td></tr>
+<tr><td style="padding:.3rem 0"><strong>2-е лицо</strong> (твой)</td><td style="padding:.3rem 0">-ың/-ің/-аң/-ең</td><td style="padding:.3rem 0">Үй<strong>ің</strong> — твой дом</td></tr>
+<tr><td style="padding:.3rem 0"><strong>3-е лицо</strong> (его/её)</td><td style="padding:.3rem 0">-ы/-і/-а/-е</td><td style="padding:.3rem 0">Үй<strong>і</strong> — его дом</td></tr>
+</table>
+</div>
+<p style="font-size:.88rem">Пример: <strong>Дәрігер</strong> (врач) → Дәрігер<strong>ім</strong> (мой врач), Дәрігер<strong>ің</strong> (твой врач), Дәрігер<strong>і</strong> (его врач)</p>
+</div>
+
+<div class="card">
+<h2>4. Множественное число</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Суффикс <strong>-лар/-лер</strong> добавляется к корню:</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<p style="font-size:.88rem">Кітап → Кітап<strong>тар</strong> (книги) | Дос → Дос<strong>тар</strong> (друзья) | Қала → Қала<strong>лар</strong> (города)</p>
+<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Ряд гласных: а/о → лар/лор, ә/ө → лер, ұ → лар, ү → лер, ы/і → лар/лер</p>
+</div>
+</div>
+
+<div class="card">
+<h2>5. Порядок слов (SOV)</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Казахский — язык с порядком слов <strong>Подлежащее → Дополнение → Сказуемое</strong>.</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<p style="font-size:.88rem"><strong>Мен</strong> (подл.) <strong>кітапты</strong> (доп.) <strong>оқыдым</strong> (сказ.) — Я книгу прочитал.</p>
+<p style="font-size:.88rem;margin-top:.3rem"><strong>Ол</strong> (подл.) <strong>мектепке</strong> (доп.) <strong>барды</strong> (сказ.) — Он в школу пошёл.</p>
+<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Глагол ВСЕГДА в конце предложения. Это главное отличие от русского.</p>
+</div>
+</div>
+
+<div class="card">
+<h2>6. Отрицание</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Суффикс отрицания зависит от типа глагола:</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<table style="width:100%;font-size:.88rem;border-collapse:collapse">
+<tr><td style="padding:.3rem 0"><strong>Барыс етістік</strong> (глагол движения)</td><td style="padding:.3rem 0">-ма/-ме/-ба/-бе/-па/-пе</td><td style="padding:.3rem 0">Бар<strong>ма</strong>дым (не пошёл)</td></tr>
+<tr><td style="padding:.3rem 0"><strong>Тұру етістік</strong> (стоячий глагол)</td><td style="padding:.3rem 0">-ма/-ме/-ба/-бе/-па/-пе</td><td style="padding:.3rem 0">Тұр<strong>ма</strong> (не стой)</td></tr>
+<tr><td style="padding:.3rem 0"><strong>Жасау етістік</strong> (деятельный)</td><td style="padding:.3rem 0">-ма/-ме/-ба/-бе/-па/-пе</td><td style="padding:.3rem 0">Жаса<strong>ма</strong>ңыз (не делайте)</td></tr>
+</table>
+</div>
+<p style="font-size:.85rem;color:var(--muted)"><strong>Пример:</strong> Мен бар<strong>ма</strong>ймын (Я не иду), Ол кел<strong>ме</strongйді (Он не приходит)</p>
+</div>
+
+<div class="card">
+<h2>7. Вопросительные слова</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Основные вопросительные слова казахского языка:</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.88rem;border-collapse:collapse">
+<tr><td style="padding:.3rem 0"><strong>Кім?</strong> — Кто?</td><td style="padding:.3rem 0"><strong>Не?</strong> — Что?</td><td style="padding:.3rem 0"><strong>Қайда?</strong> — Где?</td></tr>
+<tr><td style="padding:.3rem 0"><strong>Қашан?</strong> — Когда?</td><td style="padding:.3rem 0"><strong>Қалай?</strong> — Как?</td><td style="padding:.3rem 0"><strong>Неге?</strong> — Почему?</td></tr>
+<tr><td style="padding:.3rem 0"><strong>Неше?</strong> — Сколько?</td><td style="padding:.3rem 0"><strong>Қайсы?</strong> — Какой?</td><td style="padding:.3rem 0"><strong>Ма?</strong> — Вопрос. частица</td></tr>
+</table>
+</div>
+<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Да/Нет: <strong>Иә</strong> (да), <strong>Жоқ</strong> (нет). Частица <strong>-ма/-ме/-ба/-бе/-па/-пе</strong> ставится в конец: Барасың <strong>ба</strong>? (Ты идёшь?)</p>
+</div>
+
+<div class="card">
+<h2>8. Послелоги (постпозиции)</h2>
+<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">В казахском предлогов нет — они ставятся ПОСЛЕ слова:</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.88rem;border-collapse:collapse">
+<tr><td style="padding:.3rem 0"><strong>Үстінде</strong> — на (чём-то)</td><td style="padding:.3rem 0"><strong>Астында</strong> — под</td><td style="padding:.3rem 0"><strong>Арасында</strong> — между</td></tr>
+<tr><td style="padding:.3rem 0"><strong>Артынан</strong> — после</td><td style="padding:.3rem 0"><strong>Алдында</strong> — перед</td><td style="padding:.3rem 0"><strong>Бойымен</strong> — вдоль</td></tr>
+<tr><td style="padding:.3rem 0"><strong>Туралы</strong> — о</td><td style="padding:.3rem 0"><strong>Үшін</strong> — для</td><td style="padding:.3rem 0"><strong>Бойынша</strong> — по</td></tr>
+<tr><td style="padding:.3rem 0"><strong>Сәйкес</strong> — согласно</td><td style="padding:.3rem 0"><strong>Қарамастан</strong> — несмотря на</td><td style="padding:.3rem 0"><strong>Дейін</strong> — до</td></tr>
+</table>
+</div>
+<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Пример: Мектеп<strong>тің</strong> алдын<strong>да</strong> (перед школой), Жұмыс<strong>тан</strong> кейін (после работы)</p>
+</div>
+
+<div class="card" style="border-left:4px solid var(--teal)">
+<h2>Практический шпаргалка</h2>
+<p style="font-size:.9rem;line-height:1.7">Как быстро построить предложение:</p>
+<div style="font-size:.88rem;line-height:1.8">
+<p><strong>Шаг 1:</strong> Подлежащее: <em>Мен / Ол / Біз / Олар</em></p>
+<p><strong>Шаг 2:</strong> Дополнение + падеж: <em>мектепке / кітапты / достармен</em></p>
+<p><strong>Шаг 3:</strong> Глагол в конце: <em>бардым / оқыдым / айттым</em></p>
+<p style="margin-top:.75rem"><strong>Пример:</strong> <em>Мен</em> (1) <em>мектепке</em> (2) <em>бардым</em> (3) — Я в школу пошёл.</p>
+<p style="margin-top:.3rem"><strong>Пример:</strong> <em>Біз</em> (1) <em>кітапты</em> (2) <em>оқыдық</em> (3) — Мы книгу прочитали.</p>
+</div>
+</div>
+</div>
+
+<!-- HARD WORDS SECTION -->
+<div id="sec-hard" class="section">
+<div class="card">
+<h2>Сложные слова</h2>
+<p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Слова, в которых вы чаще всего ошибаетесь. Повторяйте их чаще!</p>
+<div id="hardWordsList"></div>
+</div>
+</div>
+
+</div>
+
+<footer>
+<p style="color:var(--text)">Qazaq Tili — Қазақ тілін үйрену платформасы</p>
+<p style="margin-top:.3rem;color:var(--text2);font-size:.7rem">Разработано для этнических казахов с пассивным знанием языка | Уровень B1-B2</p>
+</footer>
+
+<script>
+const TOPICS=[
+{id:'work',name:'Работа и бизнес',nameKz:'Жұмыс және бизнес',count:150},
+{id:'city',name:'Город и транспорт',nameKz:'Қала және көлік',count:120},
+{id:'shop',name:'Покупки и услуги',nameKz:'Сауда және қызмет',count:100},
+{id:'food',name:'Еда и кафе',nameKz:'Тамақ және кафе',count:100},
+{id:'health',name:'Здоровье и тело',nameKz:'Денсаулық',count:100},
+{id:'emotion',name:'Эмоции и отношения',nameKz:'Эмоциялар',count:120},
+{id:'home',name:'Быт и дом',nameKz:'Тұрмыс және үй',count:130},
+{id:'tech',name:'Интернет и техника',nameKz:'Интернет және техника',count:80},
+{id:'movement',name:'Движение и состояние',nameKz:'Қозғалыс',count:100},
+{id:'abstract',name:'Абстрактные понятия',nameKz:'Абстракциялар',count:100}
+];
+
+const WORDS=[
+// === РАБОТА И БИЗНЕС (150) ===
+{id:1,kz:"Есеп",ru:"Отчёт",topic:"work",example_kz:"Есепті басшыға тапсырдым.",example_ru:"Я сдал отчёт руководителю."},
+{id:2,kz:"Келіссөз",ru:"Переговоры",topic:"work",example_kz:"Келіссөз сәтті өтті.",example_ru:"Переговоры прошли успешно."},
+{id:3,kz:"Басшы",ru:"Начальник",topic:"work",example_kz:"Басшы жиналысқа кешікті.",example_ru:"Начальник опоздал на совещание."},
+{id:4,kz:"Мерзім",ru:"Срок",topic:"work",example_kz:"Мерзім ертең аяқталады.",example_ru:"Срок заканчивается завтра."},
+{id:5,kz:"Жоба",ru:"Проект",topic:"work",example_kz:"Жоба сәтті аяқталды.",example_ru:"Проект успешно завершён."},
+{id:6,kz:"Қол қою",ru:"Подписать",topic:"work",example_kz:"Келісімшартқа қол қойдым.",example_ru:"Я подписал договор."},
+{id:7,kz:"Жауапкершілік",ru:"Ответственность",topic:"work",example_kz:"Бұл менің жауапкершілігім.",example_ru:"Это моя ответственность."},
+{id:8,kz:"Келіспеушілік",ru:"Разногласие",topic:"work",example_kz:"Келіспеушіліктер шешілді.",example_ru:"Разногласия урегулированы."},
+{id:9,kz:"Нәтиже",ru:"Результат",topic:"work",example_kz:"Нәтиже күткеннен жақсы.",example_ru:"Результат лучше ожидаемого."},
+{id:10,kz:"Шешім қабылдау",ru:"Принимать решение",topic:"work",example_kz:"Шешімді тез қабылдау керек.",example_ru:"Решение нужно принять быстро."},
+{id:11,kz:"Жалақы",ru:"Зарплата",topic:"work",example_kz:"Жалақы ай соңында түседі.",example_ru:"Зарплата приходит в конце месяца."},
+{id:12,kz:"Лауазым",ru:"Должность",topic:"work",example_kz:"Ол жаңа лауазымға тағайындалды.",example_ru:"Его назначили на новую должность."},
+{id:13,kz:"Бөлім",ru:"Отдел",topic:"work",example_kz:"Мен бухгалтерия бөлімінде жұмыс істеймін.",example_ru:"Я работаю в бухгалтерском отделе."},
+{id:14,kz:"Кеңес",ru:"Совет",topic:"work",example_kz:"Директор кеңес берді.",example_ru:"Директор дал совет."},
+{id:15,kz:"Тапсырма",ru:"Задание",topic:"work",example_kz:"Тапсырманы орындадым.",example_ru:"Я выполнил задание."},
+{id:16,kz:"Жұмысшы",ru:"Рабочий",topic:"work",example_kz:"Жұмысшылар көп.",example_ru:"Рабочих много."},
+{id:17,kz:"Мәжіліс",ru:"Совещание",topic:"work",example_kz:"Мәжіліс сағат онда басталады.",example_ru:"Совещание начинается в десять."},
+{id:18,kz:"Бұйрық",ru:"Приказ",topic:"work",example_kz:"Бұйрықты орындау міндетті.",example_ru:"Приказ обязателен к исполнению."},
+{id:19,kz:"Жұмыс орны",ru:"Рабочее место",topic:"work",example_kz:"Жұмыс орны таза болуы тиіс.",example_ru:"Рабочее место должно быть чистым."},
+{id:20,kz:"Іс-әрекет",ru:"Действие",topic:"work",example_kz:"Іс-әрекет жоспары дайын.",example_ru:"План действий готов."},
+{id:21,kz:"Серіктес",ru:"Партнёр",topic:"work",example_kz:"Серіктестермен кездесу болды.",example_ru:"Прошла встреча с партнёрами."},
+{id:22,kz:"Келісім",ru:"Соглашение",topic:"work",example_kz:"Келісімге қол жеттік.",example_ru:"Мы достигли соглашения."},
+{id:23,kz:"Талдау",ru:"Анализ",topic:"work",example_kz:"Талдау нәтижелері дайын.",example_ru:"Результаты анализа готовы."},
+{id:24,kz:"Дайындық",ru:"Подготовка",topic:"work",example_kz:"Дайындық жұмыстары жүріп жатыр.",example_ru:"Подготовительные работы идут."},
+{id:25,kz:"Жұмыс тәжірибесі",ru:"Опыт работы",topic:"work",example_kz:"Үш жылдық тәжірибем бар.",example_ru:"У меня трёхлетний опыт."},
+{id:26,kz:"Бюджет",ru:"Бюджет",topic:"work",example_kz:"Бюджетті бекіттік.",example_ru:"Мы утвердили бюджет."},
+{id:27,kz:"Еңбекақы",ru:"Оплата труда",topic:"work",example_kz:"Еңбекақы уақытында төленеді.",example_ru:"Оплата труда производится вовремя."},
+{id:28,kz:"Кәсіпорын",ru:"Предприятие",topic:"work",example_kz:"Кәсіпорында жүз адам жұмыс істейді.",example_ru:"На предприятии работают сто человек."},
+{id:29,kz:"Іскерлік",ru:"Деловая",topic:"work",example_kz:"Іскерлік кездесу өткіздік.",example_ru:"Мы провели деловую встречу."},
+{id:30,kz:"Тәжірибе",ru:"Опыт",topic:"work",example_kz:"Тәжірибе алмасу маңызды.",example_ru:"Обмен опытом важен."},
+{id:31,kz:"Жоспар",ru:"План",topic:"work",example_kz:"Жоспар бойынша алға жылжимыз.",example_ru:"Мы движемся вперёд по плану."},
+{id:32,kz:"Бәсеке",ru:"Конкуренция",topic:"work",example_kz:"Бәсеке күшейе түсуде.",example_ru:"Конкуренция усиливается."},
+{id:33,kz:"Тұтынушы",ru:"Потребитель",topic:"work",example_kz:"Тұтынушылардың пікірі маңызды.",example_ru:"Мнение потребителей важно."},
+{id:34,kz:"Өнім",ru:"Продукция",topic:"work",example_kz:"Өнім сапасы жоғары.",example_ru:"Качество продукции высокое."},
+{id:35,kz:"Қаржы",ru:"Финансы",topic:"work",example_kz:"Қаржы жағдайы тұрақты.",example_ru:"Финансовое положение стабильно."},
+{id:36,kz:"Нарық",ru:"Рынок",topic:"work",example_kz:"Нарықта бәсекелестік көп.",example_ru:"На рынке много конкуренции."},
+{id:37,kz:"Инвестиция",ru:"Инвестиция",topic:"work",example_kz:"Инвестиция тарту керек.",example_ru:"Нужно привлечь инвестиции."},
+{id:38,kz:"Табыс",ru:"Доход",topic:"work",example_kz:"Табыс өсті.",example_ru:"Доход вырос."},
+{id:39,kz:"Шығын",ru:"Расход",topic:"work",example_kz:"Шығындарды азайту керек.",example_ru:"Расходы нужно сократить."},
+{id:40,kz:"Кіріс",ru:"Прибыль",topic:"work",example_kz:"Кіріс көбейді.",example_ru:"Прибыль растёт."},
+{id:41,kz:"Міндет",ru:"Обязанность",topic:"work",example_kz:"Міндеттерді орындау қажет.",example_ru:"Нужно выполнять обязанности."},
+{id:42,kz:"Талап",ru:"Требование",topic:"work",example_kz:"Талаптар орындалды.",example_ru:"Требования выполнены."},
+{id:43,kz:"Тілек",ru:"Пожелание",topic:"work",example_kz:"Тілектеріңізге рахмет.",example_ru:"Спасибо за ваши пожелания."},
+{id:44,kz:"Жетістік",ru:"Достижение",topic:"work",example_kz:"Үлкен жетістікке жеттік.",example_ru:"Мы достигли 큰 достижения."},
+{id:45,kz:"Мүмкіндік",ru:"Возможность",topic:"work",example_kz:"Мүмкіндікті пайдалану керек.",example_ru:"Нужно воспользоваться возможностью."},
+{id:46,kz:"Тәртіп",ru:"Дисциплина",topic:"work",example_kz:"Тәртіпті сақтау міндетті.",example_ru:"Соблюдать дисциплину обязательно."},
+{id:47,kz:"Жиналыс",ru:"Собрание",topic:"work",example_kz:"Жиналыс күні белгіленді.",example_ru:"День собрания назначен."},
+{id:48,kz:"Мақсат",ru:"Цель",topic:"work",example_kz:"Мақсатқа жеттік.",example_ru:"Мы достигли цели."},
+{id:49,kz:"Жұмыс",ru:"Работа",topic:"work",example_kz:"Жұмыс істеу керек.",example_ru:"Нужно работать."},
+{id:50,kz:"Күнделікті",ru:"Ежедневный",topic:"work",example_kz:"Күнделікті тапсырмалар көп.",example_ru:"Ежедневных заданий много."},
+{id:51,kz:"Тиімді",ru:"Эффективный",topic:"work",example_kz:"Тиімді әдіс таптық.",example_ru:"Мы нашли эффективный метод."},
+{id:52,kz:"Кемшілік",ru:"Недостаток",topic:"work",example_kz:"Кемшіліктерді түзету керек.",example_ru:"Нужно исправить недостатки."},
+{id:53,kz:"Артықшылық",ru:"Преимущество",topic:"work",example_kz:"Біздің артықшылығымыз — сапа.",example_ru:"Наше преимущество — качество."},
+{id:54,kz:"Тиісті",ru:"Соответствующий",topic:"work",example_kz:"Тиісті құжаттар дайын.",example_ru:"Соответствующие документы готовы."},
+{id:55,kz:"Құжат",ru:"Документ",topic:"work",example_kz:"Құжаттарды рәсімдеу керек.",example_ru:"Нужно оформить документы."},
+{id:56,kz:"Келісімшарт",ru:"Договор",topic:"work",example_kz:"Келісімшартты бұзу мүмкін емес.",example_ru:"Договор нельзя расторгнуть."},
+{id:57,kz:"Бәсекелес",ru:"Конкурент",topic:"work",example_kz:"Бәсекелестерден озып тұрмыз.",example_ru:"Мы опережаем конкурентов."},
+{id:58,kz:"Іскер",ru:"Деловой человек",topic:"work",example_kz:"Ол тәжірибелі іскер.",example_ru:"Он опытный деловой человек."},
+{id:59,kz:"Саудагер",ru:"Торговец",topic:"work",example_kz:"Саудагерлер нарықта жұмыс істейді.",example_ru:"Торговцы работают на рынке."},
+{id:60,kz:"Кәсіпкер",ru:"Предприниматель",topic:"work",example_kz:"Кәсіпкер жаңа жоба бастады.",example_ru:"Предприниматель начал новый проект."},
+{id:61,kz:"Жұмысшы",ru:"Сотрудник",topic:"work",example_kz:"Жұмысшылар жиналыста отыр.",example_ru:"Сотрудники сидят на собрании."},
+{id:62,kz:"Бөлімше",ru:"Подразделение",topic:"work",example_kz:"Бөлімше басшысы келді.",example_ru:"Руководитель подразделения пришёл."},
+{id:63,kz:"Міндеттеме",ru:"Обязательство",topic:"work",example_kz:"Міндеттемелерді орындауымыз керек.",example_ru:"Мы должны выполнить обязательства."},
+{id:64,kz:"Жұмыс тобы",ru:"Рабочая группа",topic:"work",example_kz:"Жұмыс тобы құрылды.",example_ru:"Создана рабочая группа."},
+{id:65,kz:"Тапсырыс",ru:"Заказ",topic:"work",example_kz:"Тапсырыс орындалды.",example_ru:"Заказ выполнен."},
+{id:66,kz:"Жұмыс уақыты",ru:"Рабочее время",topic:"work",example_kz:"Жұмыс уақыты сағат тоғыздан басталады.",example_ru:"Рабочее время начинается с девяти."},
+{id:67,kz:"Демалыс",ru:"Отпуск",topic:"work",example_kz:"Демалысқа шыққым келеді.",example_ru:"Я хочу уйти в отпуск."},
+{id:68,kz:"Науқастану",ru:"Болезнь",topic:"work",example_kz:"Науқастануға байланысты жұмыста жоқпын.",example_ru:"Меня нет на работе из-за болезни."},
+{id:69,kz:"Іссапар",ru:"Командировка",topic:"work",example_kz:"Іссапарға шығуым керек.",example_ru:"Мне нужно ехать в командировку."},
+{id:70,kz:"Баяндама",ru:"Доклад",topic:"work",example_kz:"Баяндаманы дайындадым.",example_ru:"Я подготовил доклад."},
+{id:71,kz:"Мәселе",ru:"Вопрос, проблема",topic:"work",example_kz:"Мәселені шешу керек.",example_ru:"Нужно решить проблему."},
+{id:72,kz:"Шешім",ru:"Решение",topic:"work",example_kz:"Шешім қабылданды.",example_ru:"Решение принято."},
+{id:73,kz:"Келісім беру",ru:"Согласовать",topic:"work",example_kz:"Жоспарды басшы келісім берді.",example_ru:"План согласован начальником."},
+{id:74,kz:"Бекіту",ru:"Утвердить",topic:"work",example_kz:"Бюджетті бекіттік.",example_ru:"Мы утвердили бюджет."},
+{id:75,kz:"Тексеру",ru:"Проверить",topic:"work",example_kz:"Құжаттарды тексеру керек.",example_ru:"Нужно проверить документы."},
+{id:76,kz:"Тұрақты",ru:"Постоянный",topic:"work",example_kz:"Тұрақты тұтынушылар көп.",example_ru:"Постоянных клиентов много."},
+{id:77,kz:"Уақытша",ru:"Временный",topic:"work",example_kz:"Уақытша жұмыс істеймін.",example_ru:"Я работаю временно."},
+{id:78,kz:"Тиімсіз",ru:"Неэффективный",topic:"work",example_kz:"Тиімсіз әдістерді өзгертіңіз.",example_ru:"Измените неэффективные методы."},
+{id:79,kz:"Жұмыс нәтижесі",ru:"Результат работы",topic:"work",example_kz:"Жұмыс нәтижесі көңілден шықты.",example_ru:"Результат работы оказался неудовлетворительным."},
+{id:80,kz:"Бағалау",ru:"Оценка",topic:"work",example_kz:"Бағалау нәтижесі жақсы.",example_ru:"Результат оценки хороший."},
+{id:81,kz:"Қарым-қатынас",ru:"Общение",topic:"work",example_kz:"Қарым-қатынасты жақсарту керек.",example_ru:"Нужно улучшить общение."},
+{id:82,kz:"Топ",ru:"Группа, команда",topic:"work",example_kz:"Топпен жұмыс істеген жақсы.",example_ru:"Хорошо работать в группе."},
+{id:83,kz:"Басқару",ru:"Управление",topic:"work",example_kz:"Басқару жүйесі жаңарды.",example_ru:"Система управления обновилась."},
+{id:84,kz:"Ұйымдастыру",ru:"Организация",topic:"work",example_kz:"Іс-шараны ұйымдастырдық.",example_ru:"Мы организовали мероприятие."},
+{id:85,kz:"Сарапшы",ru:"Эксперт",topic:"work",example_kz:"Сарапшылар пікір айтты.",example_ru:"Эксперты высказали мнение."},
+{id:86,kz:"Дайындау",ru:"Подготовить",topic:"work",example_kz:"Есепті дайындау керек.",example_ru:"Нужно подготовить отчёт."},
+{id:87,kz:"Жеткізу",ru:"Доставить",topic:"work",example_kz:"Тауарды уақытында жеткізу керек.",example_ru:"Товар нужно доставить вовремя."},
+{id:88,kz:"Алу",ru:"Получить, купить",topic:"work",example_kz:"Тапсырысты алдым.",example_ru:"Я получил заказ."},
+{id:89,kz:"Беру",ru:"Дать",topic:"work",example_kz:"Басшыға есеп бердім.",example_ru:"Я отчитался перед начальником."},
+{id:90,kz:"Алу",ru:"Взять",topic:"work",example_kz:"Мәселені өз қолыма алдым.",example_ru:"Я взял проблему в свои руки."},
+{id:91,kz:"Түсіну",ru:"Понимать",topic:"work",example_kz:"Мәселені түсіну керек.",example_ru:"Нужно понять проблему."},
+{id:92,kz:"Білу",ru:"Знать",topic:"work",example_kz:"Бәрін білу керек емес.",example_ru:"Не обязательно знать всё."},
+{id:93,kz:"Үйрену",ru:"Научиться",topic:"work",example_kz:"Жаңа бағдарламаны үйрену керек.",example_ru:"Нужно выучить новую программу."},
+{id:94,kz:"Оқыту",ru:"Обучение",topic:"work",example_kz:"Оқыту курсы басталды.",example_ru:"Курс обучения начался."},
+{id:95,kz:"Білім",ru:"Знание",topic:"work",example_kz:"Білім — күш.",example_ru:"Знание — сила."},
+{id:96,kz:"Даму",ru:"Развитие",topic:"work",example_kz:"Кәсіпорын дамып келеді.",example_ru:"Предприятие развивается."},
+{id:97,kz:"Өсу",ru:"Рост",topic:"work",example_kz:"Өсу қарқыны жоғары.",example_ru:"Темп роста высокий."},
+{id:98,kz:"Тұрақтылық",ru:"Стабильность",topic:"work",example_kz:"Тұрақтылық маңызды.",example_ru:"Стабильность важна."},
+{id:99,kz:"Сенімді",ru:"Надёжный",topic:"work",example_kz:"Ол сенімді серіктес.",example_ru:"Он надёжный партнёр."},
+{id:100,kz:"Болашақ",ru:"Будущее",topic:"work",example_kz:"Болашақ жоспарлар көп.",example_ru:"Планов на будущее много."},
+{id:101,kz:"Табысты",ru:"Успешный",topic:"work",example_kz:"Табысты жоба болды.",example_ru:"Проект был успешным."},
+{id:102,kz:"Жүйелі",ru:"Систематический",topic:"work",example_kz:"Жүйелі түрде жұмыс істеу керек.",example_ru:"Нужно работать систематически."},
+{id:103,kz:"Тиімділік",ru:"Эффективность",topic:"work",example_kz:"Тиімділікті арттыру қажет.",example_ru:"Нужно повысить эффективность."},
+{id:104,kz:"Басқарушы",ru:"Управляющий",topic:"work",example_kz:"Басқарушы кеңес өткізді.",example_ru:"Управляющий провёл совещание."},
+{id:105,kz:"Жинақталу",ru:"Накопление",topic:"work",example_kz:"Тәжірибе жинақталды.",example_ru:"Опыт накопился."},
+{id:106,kz:"Шығармашылық",ru:"Творчество",topic:"work",example_kz:"Шығармашылық көзқарас керек.",example_ru:"Нужен творческий подход."},
+{id:107,kz:"Жаңашылдық",ru:"Инновация",topic:"work",example_kz:"Жаңашылықты енгізу керек.",example_ru:"Нужно внедрять инновации."},
+{id:108,kz:"Жоспарлау",ru:"Планирование",topic:"work",example_kz:"Жоспарлау — табыстың кілті.",example_ru:"Планирование — ключ к успеху."},
+{id:109,kz:"Талқылау",ru:"Обсуждение",topic:"work",example_kz:"Талқылау нәтижелі болды.",example_ru:"Обсуждение было результативным."},
+{id:110,kz:"Дәлелдеу",ru:"Доказать",topic:"work",example_kz:"Пікірімді дәлелдедім.",example_ru:"Я доказал свою точку зрения."},
+{id:111,kz:"Жинақтау",ru:"Обобщить",topic:"work",example_kz:"Нәтижелерді жинақтау керек.",example_ru:"Нужно обобщить результаты."},
+{id:112,kz:"Талдау жасау",ru:"Провести анализ",topic:"work",example_kz:"Нарықты талдау жасадық.",example_ru:"Мы провели анализ рынка."},
+{id:113,kz:"Бағыттау",ru:"Направить",topic:"work",example_kz:"Ресурстарды дұрыс бағыттау керек.",example_ru:"Нужно правильно направить ресурсы."},
+{id:114,kz:"Жұмыс беруші",ru:"Работодатель",topic:"work",example_kz:"Жұмыс беруші талаптарды айтты.",example_ru:"Работодатель озвучил требования."},
+{id:115,kz:"Қызметкер",ru:"Служащий",topic:"work",example_kz:"Қызметкерлерге оқыту өткіздік.",example_ru:"Мы провели обучение для служащих."},
+{id:116,kz:"Серіктестік",ru:"Партнёрство",topic:"work",example_kz:"Серіктестік келісімге қол қойдық.",example_ru:"Мы подписали партнёрское соглашение."},
+{id:117,kz:"Мүше",ru:"Член",topic:"work",example_kz:"Ол топтың мүшесі.",example_ru:"Он член группы."},
+{id:118,kz:"Директор",ru:"Директор",topic:"work",example_kz:"Директор кеңесінде болдым.",example_ru:"Я был на совете директоров."},
+{id:119,kz:"Касса",ru:"Касса",topic:"work",example_kz:"Кассада ақша бар.",example_ru:"В кассе есть деньги."},
+{id:120,kz:"Мөлшер",ru:"Размер, сумма",topic:"work",example_kz:"Мөлшерді көбейтіңіз.",example_ru:"Увеличьте сумму."},
+{id:121,kz:"Төлем",ru:"Оплата",topic:"work",example_kz:"Төлем тәсілін таңдаңыз.",example_ru:"Выберите способ оплаты."},
+{id:122,kz:"Есеп айырысу",ru:"Расчёт",topic:"work",example_kz:"Есеп айырысуды аяқтадық.",example_ru:"Мы завершили расчёт."},
+{id:123,kz:"Төлеме",ru:"Платёж",topic:"work",example_kz:"Төлеме уақытында жүргізілді.",example_ru:"Платёж произведен вовремя."},
+{id:124,kz:"Несие",ru:"Кредит",topic:"work",example_kz:"Несиені рәсімдедім.",example_ru:"Оформил кредит."},
+{id:125,kz:"Қарыз",ru:"Долг",topic:"work",example_kz:"Қарызды өтеу керек.",example_ru:"Нужно погасить долг."},
+{id:126,kz:"Пайда",ru:"Прибыль",topic:"work",example_kz:"Пайда көбейді.",example_ru:"Прибыль выросла."},
+{id:127,z:"Зиян",ru:"Убыток",topic:"work",example_kz:"Компания зиянға ұшырады.",example_ru:"Компания понесла убыток."},
+{id:128,kz:"Салық",ru:"Налог",topic:"work",example_kz:"Салықты уақытында төлеу керек.",example_ru:"Налог нужно платить вовремя."},
+{id:129,kz:"Мүлік",ru:"Имущество",topic:"work",example_kz:"Мүлікті тіркеу керек.",example_ru:"Нужно зарегистрировать имущество."},
+{id:130,kz:"Акция",ru:"Акция",topic:"work",example_kz:"Акциялар бағасы өсті.",example_ru:"Цена акций выросла."},
+{id:131,kz:"Филиал",ru:"Филиал",topic:"work",example_kz:"Жаңа филиал ашылды.",example_ru:"Открыт новый филиал."},
+{id:132,kz:"Штат",ru:"Штат",topic:"work",example_kz:"Штатты көбейту керек.",example_ru:"Нужно расширить штат."},
+{id:133,kz:"Кадр",ru:"Кадры",topic:"work",example_kz:"Кадр мәселесі шешілді.",example_ru:"Кадровый вопрос решён."},
+{id:134,kz:"Іскерлік кездесу",ru:"Деловая встреча",topic:"work",example_kz:"Іскерлік кездесу сәтті өтті.",example_ru:"Деловая встреча прошла успешно."},
+{id:135,kz:"Стратегия",ru:"Стратегия",topic:"work",example_kz:"Жаңа стратегия қабылданды.",example_ru:"Принята новая стратегия."},
+{id:136,kz:"Нақтылау",ru:"Уточнить",topic:"work",example_kz:"Мәселені нақтылау керек.",example_ru:"Нужно уточнить вопрос."},
+{id:137,kz:"Бекітілді",ru:"Утверждено",topic:"work",example_kz:"Бюджет бекітілді.",example_ru:"Бюджет утверждён."},
+{id:138,kz:"Жұмыс тәртібі",ru:"Распорядок работы",topic:"work",example_kz:"Жұмыс тәртібін сақтаңыз.",example_ru:"Соблюдайте распорядок работы."},
+{id:139,kz:"Демалыс күні",ru:"Выходной день",topic:"work",example_kz:"Демалыс күні — жексенбі.",example_ru:"Выходной день — воскресенье."},
+{id:140,kz:"Тамақтану",ru:"Питание",topic:"work",example_kz:"Тамақтану уақыты — сағат бірде.",example_ru:"Время питания — в час дня."},
+{id:141,kz:"Жұмыс орны",ru:"Рабочее место",topic:"work",example_kz:"Жұмыс орнын тазалаңыз.",example_ru:"Уберите рабочее место."},
+{id:142,kz:"Кеңсе",ru:"Офис",topic:"work",example_kz:"Кеңседе отырмын.",example_ru:"Я сижу в офисе."},
+{id:143,kz:"Бизнес-жоспар",ru:"Бизнес-план",topic:"work",example_kz:"Бизнес-жоспарды дайындадым.",example_ru:"Я подготовил бизнес-план."},
+{id:144,kz:"Тауар",ru:"Товар",topic:"work",example_kz:"Тауар жеткізілді.",example_ru:"Товар доставлен."},
+{id:145,kz:"Қойма",ru:"Склад",topic:"work",example_kz:"Қоймада тауарлар көп.",example_ru:"На складе много товаров."},
+{id:146,kz:"Жеткізуші",ru:"Поставщик",topic:"work",example_kz:"Жеткізушімен келістік.",example_ru:"Мы договорились с поставщиком."},
+{id:147,kz:"Тұтынушы",ru:"Покупатель",topic:"work",example_kz:"Тұтынушылар риза.",example_ru:"Покупатели довольны."},
+{id:148,kz:"Жарнама",ru:"Реклама",topic:"work",example_kz:"Жарнама науқаны басталды.",example_ru:"Рекламная кампания началась."},
+{id:149,kz:"Тираж",ru:"Тираж",topic:"work",example_kz:"Жаңа кітап тиражы шықты.",example_ru:"Вышел тираж новой книги."},
+{id:150,kz:"Имидж",ru:"Имидж",topic:"work",example_kz:"Компанияның имиджі жақсы.",example_ru:"Имидж компании хороший."},
+
+// === ГОРОД И ТРАНСПОРТ (120) ===
+{id:151,kz:"Кезек",ru:"Очередь",topic:"city",example_kz:"Дүкенде үлкен кезек тұр.",example_ru:"В магазине большая очередь."},
+{id:152,kz:"Аялдама",ru:"Остановка",topic:"city",example_kz:"Аялдамаға жеттім.",example_ru:"Я добрался до остановки."},
+{id:153,kz:"Бағыт",ru:"Направление",topic:"city",example_kz:"Бұл бағытта автобус жүрмейді.",example_ru:"В этом направлении автобус не ходит."},
+{id:154,kz:"Жолаушы",ru:"Пассажир",topic:"city",example_kz:"Жолаушылар көп.",example_ru:"Пассажиров много."},
+{id:155,kz:"Жөндеу",ru:"Ремонт",topic:"city",example_kz:"Көшені жөндеу жүріп жатыр.",example_ru:"Идёт ремонт улицы."},
+{id:156,kz:"Кешігу",ru:"Опаздывать",topic:"city",example_kz:"Автобус кешігіп келеді.",example_ru:"Автобус опаздывает."},
+{id:157,kz:"Бағдаршам",ru:"Светофор",topic:"city",example_kz:"Бағдаршам жасыл болды.",example_ru:"Светофор стал зелёным."},
+{id:158,kz:"Көше",ru:"Улица",topic:"city",example_kz:"Көше таза.",example_ru:"Улица чистая."},
+{id:159,kz:"Алаң",ru:"Площадь",topic:"city",example_kz:"Алаңда адамдар көп.",example_ru:"На площади много людей."},
+{id:160,kz:"Көпір",ru:"Мост",topic:"city",example_kz:"Көпірден өттім.",example_ru:"Я перешёл через мост."},
+{id:161,kz:"Такси",ru:"Такси",topic:"city",example_kz:"Такси шақырдым.",example_ru:"Я вызвал такси."},
+{id:162,kz:"Автобус",ru:"Автобус",topic:"city",example_kz:"Автобус келді.",example_ru:"Автобус приехал."},
+{id:163,kz:"Метро",ru:"Метро",topic:"city",example_kz:"Метроға түстім.",example_ru:"Я спустился в метро."},
+{id:164,kz:"Вокзал",ru:"Вокзал",topic:"city",example_kz:"Вокзалға жеттік.",example_ru:"Мы доехали до вокзала."},
+{id:165,kz:"Әуежай",ru:"Аэропорт",topic:"city",example_kz:"Әуежайға жарты сағат.",example_ru:"До аэропорта полчаса."},
+{id:166,kz:"Ұшақ",ru:"Самолёт",topic:"city",example_kz:"Ұшақ уақытында көтерілді.",example_ru:"Самолёт вовремя взлетел."},
+{id:167,kz:"Пойыз",ru:"Поезд",topic:"city",example_kz:"Пойыз кешікті.",example_ru:"Поезд опоздал."},
+{id:168,kz:"Автотұрақ",ru:"Парковка",topic:"city",example_kz:"Автотұрақта орын жоқ.",example_ru:"На парковке нет мест."},
+{id:169,kz:"Жол",ru:"Дорога",topic:"city",example_kz:"Жол кептелісі бар.",example_ru:"Пробка на дороге."},
+{id:170,kz:"Кептеліс",ru:"Пробка",topic:"city",example_kz:"Кептеліс сағатқа созылды.",example_ru:"Пробка растянулась на час."},
+{id:171,kz:"Сервистік жол",ru:"Служебная дорога",topic:"city",example_kz:"Сервистік жолдан өтіңіз.",example_ru:"Проехьте по служебной дороге."},
+{id:172,kz:"Тротуар",ru:"Тротуар",topic:"city",example_kz:"Тротуарда жүріңіз.",example_ru:"Идите по тротуару."},
+{id:173,kz:"Жаяу жүргінші",ru:"Пешеход",topic:"city",example_kz:"Жаяу жүргіншіге жол беріңіз.",example_ru:"Уступите дорогу пешеходу."},
+{id:174,kz:"Жол белгісі",ru:"Дорожный знак",topic:"city",example_kz:"Жол белгісін қараңыз.",example_ru:"Посмотрите на дорожный знак."},
+{id:175,kz:"Айналма жол",ru:"Объездная дорога",topic:"city",example_kz:"Айналма жолдан барыңыз.",example_ru:"Езжайте по объездной."},
+{id:176,kz:"Көше атауы",ru:"Название улицы",topic:"city",example_kz:"Көше атауын білесіз бе?",example_ru:"Вы знаете название улицы?"},
+{id:177,kz:"Мекенжай",ru:"Адрес",topic:"city",example_kz:"Мекенжайды айтыңыз.",example_ru:"Назовите адрес."},
+{id:178,kz:"Қала орталығы",ru:"Центр города",topic:"city",example_kz:"Қала орталығында тұрамын.",example_ru:"Я живу в центре города."},
+{id:179,kz:"Үй",ru:"Дом",topic:"city",example_kz:"Үйім жақын.",example_ru:"Мой дом близко."},
+{id:180,kz:"Пәтер",ru:"Квартира",topic:"city",example_kz:"Пәтер жалдағым келеді.",example_ru:"Я хочу снять квартиру."},
+{id:181,kz:"Ғимарат",ru:"Здание",topic:"city",example_kz:"Ғимарат әдемі.",example_ru:"Здание красивое."},
+{id:182,kz:"Көпқабатты",ru:"Многоэтажный",topic:"city",example_kz:"Көпқабатты үйде тұрамын.",example_ru:"Я живу в многоэтажном доме."},
+{id:183,kz:"Ғасыр",ru:"Эпоха",topic:"city",example_kz:"Жаңа ғасыр басталды.",example_ru:"Новая эпоха началась."},
+{id:184,kz:"Сәулет",ru:"Архитектура",topic:"city",example_kz:"Сәулет әсем.",example_ru:"Архитектура великолепна."},
+{id:185,kz:"Ескерткіш",ru:"Памятник",topic:"city",example_kz:"Ескерткіштің алдында суретке түстім.",example_ru:"Я сфотографировался у памятника."},
+{id:186,kz:"Мұражай",ru:"Музей",topic:"city",example_kz:"Мұражайды араладық.",example_ru:"Мы обошли музей."},
+{id:187,kz:"Кітапхана",ru:"Библиотека",topic:"city",example_kz:"Кітапханада оқып отырмын.",example_ru:"Я читаю в библиотеке."},
+{id:188,kz:"Стадион",ru:"Стадион",topic:"city",example_kz:"Стадионда жаттығу жүріп жатыр.",example_ru:"На стадионе идёт тренировка."},
+{id:189,kz:"Саябақ",ru:"Парк",topic:"city",example_kz:"Саябақта демалдым.",example_ru:"Я отдохнул в парке."},
+{id:190,kz:"Сауда орталығы",ru:"Торговый центр",topic:"city",example_kz:"Сауда орталығына бардым.",example_ru:"Я пошёл в торговый центр."},
+{id:191,kz:"Дәретхана",ru:"Туалет",topic:"city",example_kz:"Дәретхана қайда?",example_ru:"Где туалет?"},
+{id:192,kz:"Ақпарат",ru:"Информация",topic:"city",example_kz:"Ақпаратты телефоннан алдым.",example_ru:"Я получил информацию по телефону."},
+{id:193,kz:"Касса",ru:"Касса",topic:"city",example_kz:"Кассада тұрмын.",example_ru:"Я стою в кассе."},
+{id:194,kz:"Билет",ru:"Билет",topic:"city",example_kz:"Билет сатып алдым.",example_ru:"Я купил билет."},
+{id:195,kz:"Аралау",ru:"Обзор",topic:"city",example_kz:"Қалаға аралау жасадық.",example_ru:"Мы сделали обзор города."},
+{id:196,kz:"Жарық",ru:"Освещение",topic:"city",example_kz:"Жарық жақсы.",example_ru:"Освещение хорошее."},
+{id:197,kz:"Көше жарығы",ru:"Фонарь",topic:"city",example_kz:"Көше жарығы жанып тұр.",example_ru:"Фонарь горит."},
+{id:198,kz:"Жаңбыр",ru:"Дождь",topic:"city",example_kz:"Жаңбыр жауып тұр.",example_ru:"Идёт дождь."},
+{id:199,kz:"Қар",ru:"Снег",topic:"city",example_kz:"Қар жауды.",example_ru:"Выпал снег."},
+{id:200,kz:"Бұлт",ru:"Облако",topic:"city",example_kz:"Бұлттар көп.",example_ru:"Облаков много."},
+{id:201,kz:"Жел",ru:"Ветер",topic:"city",example_kz:"Жел күшті соғып тұр.",example_ru:"Ветер дует сильно."},
+{id:202,kz:"Температура",ru:"Температура",topic:"city",example_kz:"Температура минус онда.",example_ru:"Температура минус десять."},
+{id:203,kz:"Наурыз",ru:"Наурыз",topic:"city",example_kz:"Наурыз мейрамы келе жатыр.",example_ru:"Праздник Наурыз приближается."},
+{id:204,kz:"Мереке",ru:"Праздник",topic:"city",example_kz:"Мерекеде көше лық толды.",example_ru:"На празднике улицы были полны."},
+{id:205,kz:"Дүкен",ru:"Магазин",topic:"city",example_kz:"Дүкенге кірдім.",example_ru:"Я зашёл в магазин."},
+{id:206,kz:"Мекеме",ru:"Учреждение",topic:"city",example_kz:"Мекемеде жұмыс істеймін.",example_ru:"Я работаю в учреждении."},
+{id:207,kz:"Банк",ru:"Банк",topic:"city",example_kz:"Банкке бардым.",example_ru:"Я пошёл в банк."},
+{id:208,kz:"Пошта",ru:"Почта",topic:"city",example_kz:"Поштадан хат алдым.",example_ru:"Я получил письмо на почте."},
+{id:209,kz:"Дәріхана",ru:"Аптека",topic:"city",example_kz:"Дәріханадан дәрі алдым.",example_ru:"Я купил лекарство в аптеке."},
+{id:210,kz:"Наубайхана",ru:"Пекарня",topic:"city",example_kz:"Наубайханадан нан сатып алдым.",example_ru:"Я купил хлеб в пекарне."},
+{id:211,kz:"Базар",ru:"Рынок",topic:"city",example_kz:"Базардан жеміс алдым.",example_ru:"Я купил фрукты на базаре."},
+{id:212,kz:"Көше сыпырушы",ru:"Дворник",topic:"city",example_kz:"Көше сыпырушы жұмыс істеп тұр.",example_ru:"Дворник работает."},
+{id:213,kz:"Әкімшілік",ru:"Администрация",topic:"city",example_kz:"Әкімшілікке бардым.",example_ru:"Я пошёл в администрацию."},
+{id:214,kz:"Полиция",ru:"Полиция",topic:"city",example_kz:"Полицияға хабарластым.",example_ru:"Я обратился в полицию."},
+{id:215,kz:"Өрт сөндіру",ru:"Пожарная",topic:"city",example_kz:"Өрт сөндіру бөлімшесіне телефон соқтым.",example_ru:"Я позвонил в пожарную часть."},
+{id:216,kz:"Жедел жәрдем",ru:"Скорая помощь",topic:"city",example_kz:"Жедел жәрдем шақырдым.",example_ru:"Я вызвал скорую."},
+{id:217,kz:"Спортзал",ru:"Спортивный зал",topic:"city",example_kz:"Спортзалға барамын.",example_ru:"Я хожу в спортзал."},
+{id:218,kz:"Бассейн",ru:"Бассейн",topic:"city",example_kz:"Бассейнде жүзіп жатырмын.",example_ru:"Я плаваю в бассейне."},
+{id:219,kz:"Кинотеатр",ru:"Кинотеатр",topic:"city",example_kz:"Кинотеатрға бардық.",example_ru:"Мы пошли в кинотеатр."},
+{id:220,kz:"Театр",ru:"Театр",topic:"city",example_kz:"Театрда спектакль болды.",example_ru:"В театре был спектакль."},
+{id:221,kz:"Концерт",ru:"Концерт",topic:"city",example_kz:"Концертке билет сатып алдым.",example_ru:"Я купил билет на концерт."},
+{id:222,kz:"Көрме",ru:"Выставка",topic:"city",example_kz:"Көрмеге бардым.",example_ru:"Я пошёл на выставку."},
+{id:223,kz:"Саяжай",ru:"Дача",topic:"city",example_kz:"Саяжайға шықтық.",example_ru:"Мы выехали на дачу."},
+{id:224,kz:"Коттедж",ru:"Коттедж",topic:"city",example_kz:"Коттедж жалдағым келеді.",example_ru:"Я хочу арендовать коттедж."},
+{id:225,kz:"Шипажай",ru:"Санаторий",topic:"city",example_kz:"Шипажайда демалдым.",example_ru:"Я отдыхал в санатории."},
+{id:226,kz:"Курорт",ru:"Курорт",topic:"city",example_kz:"Курортта жағажайда болдым.",example_ru:"Я был на пляже курорта."},
+{id:227,kz:"Жолақ",ru:"Полоса движения",topic:"city",example_kz:"Жолақтан шықпаңыз.",example_ru:"Не съезжайте с полосы."},
+{id:228,kz:"Бұрылыс",ru:"Поворот",topic:"city",example_kz:"Бұрылыстан оңға бұрылыңыз.",example_ru:"На повороте поверните направо."},
+{id:229,kz:"Тұйық",ru:"Тупик",topic:"city",example_kz:"Бұл тұйық көше.",example_ru:"Это тупиковая улица."},
+{id:230,kz:"Көше бойы",ru:"Вдоль улицы",topic:"city",example_kz:"Көше бойымен жүріңіз.",example_ru:"Идите вдоль улицы."},
+{id:231,kz:"Артқы жақ",ru:"Задняя часть",topic:"city",example_kz:"Үйдің артқы жағында бақ бар.",example_ru:"Сзади дома есть сад."},
+{id:232,kz:"Алдыңғы есік",ru:"Передняя дверь",topic:"city",example_kz:"Алдыңғы есіктен кіріңіз.",example_ru:"Войдите через переднюю дверь."},
+{id:233,kz:"Подъезд",ru:"Подъезд",topic:"city",example_kz:"Подъезд таза.",example_ru:"Подъезд чистый."},
+{id:234,kz:"Лифт",ru:"Лифт",topic:"city",example_kz:"Лифт істемей тұр.",example_ru:"Лифт не работает."},
+{id:235,kz:"Басқыш",ru:"Лестница",topic:"city",example_kz:"Басқышпен көтерілдім.",example_ru:"Я поднялся по лестнице."},
+{id:236,kz:"Төбе",ru:"Крыша",topic:"city",example_kz:"Төбеде жөндеу жүріп жатыр.",example_ru:"На крыше идёт ремонт."},
+{id:237,kz:"Терезе",ru:"Окно",topic:"city",example_kz:"Терезені аштым.",example_ru:"Я открыл окно."},
+{id:238,kz:"Есік",ru:"Дверь",topic:"city",example_kz:"Есікті жабыңыз.",example_ru:"Закройте дверь."},
+{id:239,kz:"Балкон",ru:"Балкон",topic:"city",example_kz:"Балконда гүлдер өсіп тұр.",example_ru:"На балконе цветы растут."},
+{id:240,kz:"Аула",ru:"Двор",topic:"city",example_kz:"Аулада балалар ойнап жатыр.",example_ru:"Во дворе играют дети."},
+{id:241,kz:"Бақша",ru:"Сад",topic:"city",example_kz:"Бақшада ағаштар бар.",example_ru:"В саду есть деревья."},
+{id:242,kz:"Гараж",ru:"Гараж",topic:"city",example_kz:"Машинаны гаражға қойдым.",example_ru:"Я поставил машину в гараж."},
+{id:243,kz:"Су құбыры",ru:"Водопровод",topic:"city",example_kz:"Су құбыры жөнделді.",example_ru:"Водопровод отремонтировали."},
+{id:244,kz:"Кәріз",ru:"Канализация",topic:"city",example_kz:"Кәріз жүйесі істемей тұр.",example_ru:"Канализация не работает."},
+{id:245,kz:"Электр",ru:"Электричество",topic:"city",example_kz:"Электр өшіп қалды.",example_ru:"Свет выключился."},
+{id:246,kz:"Газ",ru:"Газ",topic:"city",example_kz:"Газ жүріп тұр.",example_ru:"Газ есть."},
+{id:247,kz:"Жылу",ru:"Отопление",topic:"city",example_kz:"Жылу беру басталды.",example_ru:"Началась подача отопления."},
+{id:248,kz:"Су",ru:"Вода",topic:"city",example_kz:"Су жылы болды.",example_ru:"Вода была тёплой."},
+{id:249,kz:"Жарық өшіру",ru:"Погасить свет",topic:"city",example_kz:"Жарықты өшіріңіз.",example_ru:"Погасите свет."},
+{id:250,kz:"Қоқыс",ru:"Мусор",topic:"city",example_kz:"Қоқысты шығарыңыз.",example_ru:"Вынесите мусор."},
+{id:251,kz:"Өрт",ru:"Пожар",topic:"city",example_kz:"Өрт шықты.",example_ru:"Вспыхнул пожар."},
+{id:252,kz:"Су басу",ru:"Наводнение",topic:"city",example_kz:"Су басу қаупі бар.",example_ru:"Есть угроза наводнения."},
+{id:253,kz:"Жер сілкінісі",ru:"Землетрясение",topic:"city",example_kz:"Жер сілкінісі болды.",example_ru:"Прошло землетрясение."},
+{id:254,kz:"Боран",ru:"Метель",topic:"city",example_kz:"Боран болып тұр.",example_ru:"Идёт метель."},
+{id:255,kz:"Тұман",ru:"Туман",topic:"city",example_kz:"Тұман түсіп тұр.",example_ru:"Стоит туман."},
+{id:256,kz:"Күн",ru:"Солнце",topic:"city",example_kz:"Күн жарқырап тұр.",example_ru:"Солнце светит ярко."},
+{id:257,kz:"Аспан",ru:"Небо",topic:"city",example_kz:"Аспан ашық.",example_ru:"Небо ясное."},
+{id:258,kz:"Шаң",ru:"Пыль",topic:"city",example_kz:"Көшеде шаң көп.",example_ru:"На улице много пыли."},
+{id:259,kz:"Көше тазалау",ru:"Уборка улиц",topic:"city",example_kz:"Көше тазалау жүріп жатыр.",example_ru:"Идёт уборка улиц."},
+{id:260,kz:"Автобус бағыты",ru:"Маршрут автобуса",topic:"city",example_kz:"Автобус бағытын білесіз бе?",example_ru:"Вы знаете маршрут автобуса?"},
+{id:261,kz:"Жол жүру",ru:"Проезд",topic:"city",example_kz:"Жол жүру ақысын төлеңіз.",example_ru:"Оплатите проезд."},
+{id:262,kz:"Баға",ru:"Стоимость",topic:"city",example_kz:"Баға қанша?",example_ru:"Сколько стоит?"},
+{id:263,kz:"Тұру орны",ru:"Место стоянки",topic:"city",example_kz:"Тұру орнын таппадым.",example_ru:"Я не нашёл место стоянки."},
+{id:264,kz:"Жолды кесу",ru:"Переходить дорогу",topic:"city",example_kz:"Жолды абайлап кесіңіз.",example_ru:"Осторожно переходите дорогу."},
+{id:265,kz:"Көпір асты",ru:"Под мостом",topic:"city",example_kz:"Көпір астынан өтіңіз.",example_ru:"Пройдите под мостом."},
+{id:266,kz:"Айналма",ru:"Круговое движение",topic:"city",example_kz:"Айналмадан айналыңыз.",example_ru:"Объезжайте по кругу."},
+{id:267,kz:"Жол сілтеу",ru:"Направление движения",topic:"city",example_kz:"Жол сілтеуін қараңыз.",example_ru:"Посмотрите указатель."},
+{id:268,kz:"Жылдамдық",ru:"Скорость",topic:"city",example_kz:"Жылдамдықты азайтыңыз.",example_ru:"Снизьте скорость."},
+{id:269,kz:"Шектеу",ru:"Ограничение",topic:"city",example_kz:"Жылдамдық шектеуі — 60.",example_ru:"Ограничение скорости — 60."},
+{id:270,kz:"Жол төсемі",ru:"Дорожное покрытие",topic:"city",example_kz:"Жол төсемі нашар.",example_ru:"Дорожное покрытие плохое."},
+{id:271,kz:"Сызық",ru:"Линия",topic:"city",example_kz:"Ақ сызықтан өтпеңіз.",example_ru:"Не переходите белую линию."},
+{id:272,kz:"Аралау жолы",ru:"Объездной путь",topic:"city",example_kz:"Аралау жолын пайдаланыңыз.",example_ru:"Используйте объездной путь."},
+{id:273,kz:"Жол бойы",ru:"Вдоль дороги",topic:"city",example_kz:"Жол бойында ағаштар тұр.",example_ru:"Вдоль дороги стоят деревья."},
+{id:274,kz:"Мәдениет",ru:"Культура",topic:"city",example_kz:"Мәдениет үйіне бардым.",example_ru:"Я пошёл в дом культуры."},
+{id:275,kz:"Білім беру",ru:"Образование",topic:"city",example_kz:"Білім беру саласы дамып келеді.",example_ru:"Сфера образования развивается."},
+{id:276,kz:"Мектеп",ru:"Школа",topic:"city",example_kz:"Мектепке бардым.",example_ru:"Я пошёл в школу."},
+{id:277,kz:"Университет",ru:"Университет",topic:"city",example_kz:"Университетті бітірдім.",example_ru:"Я окончил университет."},
+{id:278,kz:"Оқу орны",ru:"Учебное заведение",topic:"city",example_kz:"Оқу орнына түстім.",example_ru:"Я поступил в учебное заведение."},
+{id:279,kz:"Дәрісхана",ru:"Аудитория",topic:"city",example_kz:"Дәрісханаға кірдім.",example_ru:"Я зашёл в аудиторию."},
+{id:280,kz:"Оқытушы",ru:"Преподаватель",topic:"city",example_kz:"Оқытушы сабақ беріп жатыр.",example_ru:"Преподаватель ведёт урок."},
+{id:281,kz:"Студент",ru:"Студент",topic:"city",example_kz:"Студенттер емтиханға дайындалып жатыр.",example_ru:"Студенты готовятся к экзамену."},
+{id:282,kz:"Сабақ",ru:"Урок",topic:"city",example_kz:"Сабақ сағат тоғызда басталады.",example_ru:"Урок начинается в девять."},
+{id:283,kz:"Үзіліс",ru:"Перерыв",topic:"city",example_kz:"Үзіліс он бес минут.",example_ru:"Перерыв пятнадцать минут."},
+{id:284,kz:"Емтихан",ru:"Экзамен",topic:"city",example_kz:"Емтиханға дайындалдым.",example_ru:"Я подготовился к экзамену."},
+{id:285,kz:"Баға қою",ru:"Ставить оценку",topic:"city",example_kz:"Оқытушы баға қойды.",example_ru:"Преподаватель поставил оценку."},
+{id:286,kz:"Диплом",ru:"Диплом",topic:"city",example_kz:"Диплом алдым.",example_ru:"Я получил диплом."},
+{id:287,kz:"Біліктілік",ru:"Квалификация",topic:"city",example_kz:"Біліктілікті арттыру керек.",example_ru:"Нужно повысить квалификацию."},
+{id:288,kz:"Тренажёр",ru:"Тренажёр",topic:"city",example_kz:"Тренажёр залында жаттығып жатырмын.",example_ru:"Я тренируюсь в тренажёрном зале."},
+{id:289,kz:"Жаттықтырушы",ru:"Тренер",topic:"city",example_kz:"Жаттықтырушы көмектесті.",example_ru:"Тренер помог."},
+{id:290,kz:"Серуен",ru:"Прогулка",topic:"city",example_kz:"Серуенге шықтық.",example_ru:"Мы вышли на прогулку."},
+{id:291,kz:"Көңіл көтеру",ru:"Развлечение",topic:"city",example_kz:"Көңіл көтеру орнына бардық.",example_ru:"Мы пошли в место развлечений."},
+{id:292,kz:"Бильярд",ru:"Бильярд",topic:"city",example_kz:"Бильярд ойнадық.",example_ru:"Мы играли в бильярд."},
+{id:293,kz:"Караоке",ru:"Караоке",topic:"city",example_kz:"Караокеге бардық.",example_ru:"Мы пошли в караоке."},
+{id:294,kz:"Боулинг",ru:"Боулинг",topic:"city",example_kz:"Боулинг ойнадық.",example_ru:"Мы играли в боулинг."},
+{id:295,kz:"Аттракцион",ru:"Аттракцион",topic:"city",example_kz:"Балалар аттракционға мінді.",example_ru:"Дети покатались на аттракционе."},
+{id:296,kz:"Балалар алаңы",ru:"Детская площадка",topic:"city",example_kz:"Балалар алаңында ойнап жатыр.",example_ru:"Играют на детской площадке."},
+{id:297,kz:"Су бұрқағы",ru:"Фонтан",topic:"city",example_kz:"Су бұрқағы әдемі.",example_ru:"Фонтан красивый."},
+{id:298,kz:"Шағын аудан",ru:"Микрорайон",topic:"city",example_kz:"Шағын ауданда тұрамын.",example_ru:"Я живу в микрорайоне."},
+{id:299,kz:"Тұрғын үй",ru:"Жилой дом",topic:"city",example_kz:"Тұрғын үй салынып жатыр.",example_ru:"Строится жилой дом."},
+{id:300,kz:"Құрылыс",ru:"Строительство",topic:"city",example_kz:"Құрылыс жұмыстары жүріп жатыр.",example_ru:"Идут строительные работы."},
+{id:301,kz:"Биік",ru:"Высокий",topic:"city",example_kz:"Биік ғимарат.",example_ru:"Высокое здание."},
+{id:302,kz:"Төмен",ru:"Низкий",topic:"city",example_kz:"Төмен көпір.",example_ru:"Низкий мост."},
+{id:303,kz:"Кең",ru:"Широкий",topic:"city",example_kz:"Кең көше.",example_ru:"Широкая улица."},
+{id:304,kz:"Тар",ru:"Узкий",topic:"city",example_kz:"Тар жолдан өттім.",example_ru:"Я прошёл по узкой дороге."},
+{id:305,kz:"Үлкен",ru:"Большой",topic:"city",example_kz:"Үлкен сауда орталығы.",example_ru:"Большой торговый центр."},
+{id:306,kz:"Кішкентай",ru:"Маленький",topic:"city",example_kz:"Кішкентай дүкен.",example_ru:"Маленький магазин."},
+{id:307,kz:"Жаңа",ru:"Новый",topic:"city",example_kz:"Жаңа жол салынды.",example_ru:"Построена новая дорога."},
+{id:308,kz:"Ескі",ru:"Старый",topic:"city",example_kz:"Ескі үйді бұзды.",example_ru:"Старый дом снесли."},
+{id:309,kz:"Әдемі",ru:"Красивый",topic:"city",example_kz:"Әдемі ғимарат.",example_ru:"Красивое здание."},
+{id:310,kz:"Жақын",ru:"Близкий",topic:"city",example_kz:"Дүкен жақын.",example_ru:"Магазин близко."},
+{id:311,kz:"Алыс",ru:"Далёкий",topic:"city",example_kz:"Әуежай алыс.",example_ru:"Аэропорт далеко."},
+{id:312,kz:"Оң",ru:"Правый",topic:"city",example_kz:"Оңға бұрылыңыз.",example_ru:"Поверните направо."},
+{id:313,kz:"Сол",ru:"Левый",topic:"city",example_kz:"Солға бұрылыңыз.",example_ru:"Поверните налево."},
+{id:314,kz:"Алға",ru:"Вперёд",topic:"city",example_kz:"Алға жүріңіз.",example_ru:"Идите вперёд."},
+{id:315,kz:"Артқа",ru:"Назад",topic:"city",example_kz:"Артқа қайтыңыз.",example_ru:"Вернитесь назад."},
+
+// === ПОКУПКИ И УСЛУГИ (100) ===
+{id:316,kz:"Сауда",ru:"Торговля",topic:"shop",example_kz:"Сауда жүріп жатыр.",example_ru:"Торговля идёт."},
+{id:317,kz:"Баға",ru:"Цена",topic:"shop",example_kz:"Баға тым қымбат.",example_ru:"Цена слишком высокая."},
+{id:318,kz:"Арзандату",ru:"Скидка",topic:"shop",example_kz:"Арзандату бар.",example_ru:"Есть скидка."},
+{id:319,kz:"Түбіртек",ru:"Чек",topic:"shop",example_kz:"Түбіртекті беріңіз.",example_ru:"Дайте чек."},
+{id:320,kz:"Өлшем",ru:"Размер",topic:"shop",example_kz:"Өлшем кішірек болса?",example_ru:"Есть размер поменьше?"},
+{id:321,kz:"Ақау",ru:"Брак",topic:"shop",example_kz:"Ақау бар.",example_ru:"Есть брак."},
+{id:322,kz:"Сатушы",ru:"Продавец",topic:"shop",example_kz:"Сатушыдан сұрадым.",example_ru:"Я спросил у продавца."},
+{id:323,kz:"Тауар",ru:"Товар",topic:"shop",example_kz:"Тауар сапасыз.",example_ru:"Товар некачественный."},
+{id:324,kz:"Қайтару",ru:"Возврат",topic:"shop",example_kz:"Тауарды қайтарғым келеді.",example_ru:"Я хочу вернуть товар."},
+{id:325,kz:"Айырбастау",ru:"Обмен",topic:"shop",example_kz:"Тауарды айырбастауға бола ма?",example_ru:"Можно обменять товар?"},
+{id:326,kz:"Сатып алу",ru:"Купить",topic:"shop",example_kz:"Телефон сатып алдым.",example_ru:"Я купил телефон."},
+{id:327,kz:"Сату",ru:"Продать",topic:"shop",example_kz:"Машинаны сатқым келеді.",example_ru:"Я хочу продать машину."},
+{id:328,kz:"Төлем",ru:"Оплата",topic:"shop",example_kz:"Төлемді қалай жасайсыз?",example_ru:"Как вы будете оплачивать?"},
+{id:329,kz:"Наличные",ru:"Наличные",topic:"shop",example_kz:"Наличными төлеймін.",example_ru:"Я плачу наличными."},
+{id:330,kz:"Карта",ru:"Карта",topic:"shop",example_kz:"Карта арқылы төлеймін.",example_ru:"Я плачу картой."},
+{id:331,kz:"Касса",ru:"Касса",topic:"shop",example_kz:"Кассаға барыңыз.",example_ru:"Подойдите к кассе."},
+{id:332,kz:"Сөре",ru:"Полка",topic:"shop",example_kz:"Сөреден тауар алдым.",example_ru:"Я взял товар с полки."},
+{id:333,kz:"Топтама",ru:"Набор",topic:"shop",example_kz:"Топтама арзанырақ.",example_ru:"Набор дешевле."},
+{id:334,kz:"Жинақ",ru:"Комплект",topic:"shop",example_kz:"Жинақты сатып алдым.",example_ru:"Я купил комплект."},
+{id:335,kz:"Өнім",ru:"Продукт",topic:"shop",example_kz:"Өнім жарамсыз.",example_ru:"Продукт негодный."},
+{id:336,kz:"Жарамдылық",ru:"Срок годности",topic:"shop",example_kz:"Жарамдылық мерзімі өтті.",example_ru:"Срок годности истёк."},
+{id:337,kz:"Сапа",ru:"Качество",topic:"shop",example_kz:"Сапа жоғары.",example_ru:"Качество высокое."},
+{id:338,kz:"Артықшылық",ru:"Преимущество",topic:"shop",example_kz:"Бұл тауардың артықшылығы — жеңіл.",example_ru:"Преимущество этого товара — лёгкий."},
+{id:339,kz:"Кемшілік",ru:"Недостаток",topic:"shop",example_kz:"Кемшілікті таптым.",example_ru:"Я нашёл недостаток."},
+{id:340,kz:"Кепілдеме",ru:"Гарантия",topic:"shop",example_kz:"Кепілдеме қанша уақыт?",example_ru:"Гарантия на сколько?"},
+{id:341,kz:"Жөндеу",ru:"Ремонт по гарантии",topic:"shop",example_kz:"Телефонды жөндеуге бердім.",example_ru:"Я сдал телефон в ремонт."},
+{id:342,kz:"Тапсырыс",ru:"Заказ",topic:"shop",example_kz:"Тапсырыс бердім.",example_ru:"Я сделал заказ."},
+{id:343,kz:"Жеткізу",ru:"Доставка",topic:"shop",example_kz:"Жеткізу тегін бе?",example_ru:"Доставка бесплатная?"},
+{id:344,kz:"Дүкен",ru:"Магазин",topic:"shop",example_kz:"Дүкен сағат онда ашылады.",example_ru:"Магазин открывается в десять."},
+{id:345,kz:"Базар",ru:"Рынок",topic:"shop",example_kz:"Базардан арзанырақ.",example_ru:"На базаре дешевле."},
+{id:346,kz:"Супермаркет",ru:"Супермаркет",topic:"shop",example_kz:"Супермаркетке бардым.",example_ru:"Я пошёл в супермаркет."},
+{id:347,kz:"Магазин",ru:"Лавка",topic:"shop",example_kz:"Киім магазиніне кірдім.",example_ru:"Я зашёл в магазин одежды."},
+{id:348,kz:"Дүкенші",ru:"Продавец в лавке",topic:"shop",example_kz:"Дүкеншіге айттым.",example_ru:"Я сказал продавцу."},
+{id:349,kz:"Киім",ru:"Одежда",topic:"shop",example_kz:"Жаңа киім сатып алдым.",example_ru:"Я купил новую одежду."},
+{id:350,kz:"Аяқ киім",ru:"Обувь",topic:"shop",example_kz:"Аяқ киім тар болды.",example_ru:"Обувь оказалась тесной."},
+{id:351,kz:"Бас киім",ru:"Головной убор",topic:"shop",example_kz:"Бас киім қымбат екен.",example_ru:"Головной убор дорогой."},
+{id:352,kz:"Сөмке",ru:"Сумка",topic:"shop",example_kz:"Сөмке әдемі.",example_ru:"Сумка красивая."},
+{id:353,kz:"Сағат",ru:"Часы",topic:"shop",example_kz:"Сағат жұмыс істемей тұр.",example_ru:"Часы не работают."},
+{id:354,kz:"Зергерлік",ru:"Ювелирные изделия",topic:"shop",example_kz:"Зергерлік дүкеніне кірдім.",example_ru:"Я зашёл в ювелирный магазин."},
+{id:355,kz:"Алтын",ru:"Золото",topic:"shop",example_kz:"Алтын бағасы өсті.",example_ru:"Цена золота выросла."},
+{id:356,kz:"Күміс",ru:"Серебро",topic:"shop",example_kz:"Күміс сақина сатып алдым.",example_ru:"Я купил серебряное кольцо."},
+{id:357,kz:"Асептеру",ru:"Считать",topic:"shop",example_kz:"Бағаны асептердім.",example_ru:"Я посчитал цену."},
+{id:358,kz:"Төлеу",ru:"Платить",topic:"shop",example_kz:"Төлеуім керек.",example_ru:"Мне нужно заплатить."},
+{id:359,kz:"Бөліп төлеу",ru:"Рассрочка",topic:"shop",example_kz:"Бөліп төлеуге бола ма?",example_ru:"Можно в рассрочку?"},
+{id:360,kz:"Жинақтау",ru:"Копить",topic:"shop",example_kz:"Ақша жинақтап жатырмын.",example_ru:"Я коплю деньги."},
+{id:361,kz:"Қымбат",ru:"Дорогой",topic:"shop",example_kz:"Бұл тым қымбат.",example_ru:"Это слишком дорого."},
+{id:362,kz:"Арзан",ru:"Дешёвый",topic:"shop",example_kz:"Арзан тауарлар бар.",example_ru:"Есть дешёвые товары."},
+{id:363,kz:"Әдемі",ru:"Красивый",topic:"shop",example_kz:"Әдемі киім таптым.",example_ru:"Я нашёл красивую одежду."},
+{id:364,kz:"Сәнді",ru:"Модный",topic:"shop",example_kz:"Сәнді киім кигім келеді.",example_ru:"Я хочу носить модную одежду."},
+{id:365,kz:"Үлкен",ru:"Большой",topic:"shop",example_kz:"Үлкен өлшем керек.",example_ru:"Нужен большой размер."},
+{id:366,kz:"Кішкентай",ru:"Маленький",topic:"shop",example_kz:"Кішкентай өлшем жоқ.",example_ru:"Маленького размера нет."},
+{id:367,kz:"Орташа",ru:"Средний",topic:"shop",example_kz:"Орташа өлшем алдым.",example_ru:"Я взял средний размер."},
+{id:368,kz:"Тоқталу",ru:"Остановиться",topic:"shop",example_kz:"Дүкенде тоқталдым.",example_ru:"Я остановился в магазине."},
+{id:369,kz:"Шығу",ru:"Выйти",topic:"shop",example_kz:"Дүкенден шықтым.",example_ru:"Я вышел из магазина."},
+{id:370,kz:"Кіру",ru:"Войти",topic:"shop",example_kz:"Дүкенге кірдім.",example_ru:"Я вошёл в магазин."},
+{id:371,kz:"Әкелу",ru:"Принести",topic:"shop",example_kz:"Басқа өлшемді әкеліңіз.",example_ru:"Принесите другой размер."},
+{id:372,kz:"Таңдау",ru:"Выбирать",topic:"shop",example_kz:"Таңдауды қиындаттым.",example_ru:"Мне было трудно выбрать."},
+{id:373,kz:"Салыстыру",ru:"Сравнивать",topic:"shop",example_kz:"Екі тауарды салыстырдым.",example_ru:"Я сравнил два товара."},
+{id:374,kz:"Көру",ru:"Посмотреть",topic:"shop",example_kz:"Тауарды көріңіз.",example_ru:"Посмотрите товар."},
+{id:375,kz:"Ұнату",ru:"Понравиться",topic:"shop",example_kz:"Киім ұнады.",example_ru:"Одежда понравилась."},
+{id:376,kz:"Ұнамау",ru:"Не понравиться",topic:"shop",example_kz:"Бұл маған ұнамады.",example_ru:"Это мне не понравилось."},
+{id:377,kz:"Керек",ru:"Нужно",topic:"shop",example_kz:"Маған осы керек.",example_ru:"Мне нужно это."},
+{id:378,kz:"Қажет",ru:"Необходимо",topic:"shop",example_kz:"Басқа түсі қажет.",example_ru:"Нужен другой цвет."},
+{id:379,kz:"Түс",ru:"Цвет",topic:"shop",example_kz:"Түсі қандай?",example_ru:"Какого цвета?"},
+{id:380,kz:"Ақ",ru:"Белый",topic:"shop",example_kz:"Ақ түсті алдым.",example_ru:"Я взял белый цвет."},
+{id:381,kz:"Қара",ru:"Чёрный",topic:"shop",example_kz:"Қара киім әдемі.",example_ru:"Чёрная одежда красивая."},
+{id:382,kz:"Қызыл",ru:"Красный",topic:"shop",example_kz:"Қызыл түсті таңдадым.",example_ru:"Я выбрал красный цвет."},
+{id:383,kz:"Көк",ru:"Синий",topic:"shop",example_kz:"Көк түсті көріңіз.",example_ru:"Посмотрите синий цвет."},
+{id:384,kz:"Жасыл",ru:"Зелёный",topic:"shop",example_kz:"Жасыл түсті сатып алдым.",example_ru:"Я купил зелёный цвет."},
+{id:385,kz:"Сары",ru:"Жёлтый",topic:"shop",example_kz:"Сары түсті ұнаттым.",example_ru:"Мне понравился жёлтый цвет."},
+{id:386,kz:"Көрсету",ru:"Показать",topic:"shop",example_kz:"Басқа тауарды көрсетіңіз.",example_ru:"Покажите другой товар."},
+{id:387,kz:"Айту",ru:"Сказать",topic:"shop",example_kz:"Бағасын айтыңыз.",example_ru:"Назовите цену."},
+{id:388,kz:"Сұрау",ru:"Спросить",topic:"shop",example_kz:"Сатушыдан сұрадым.",example_ru:"Я спросил продавца."},
+{id:389,kz:"Жауап",ru:"Ответ",topic:"shop",example_kz:"Жауап алдым.",example_ru:"Я получил ответ."},
+{id:390,kz:"Құрал-жабдық",ru:"Инструменты",topic:"shop",example_kz:"Құрал-жабдық сатып алдым.",example_ru:"Я купил инструменты."},
+{id:391,kz:"Тұрмыстық",ru:"Бытовой",topic:"shop",example_kz:"Тұрмыстық химия керек.",example_ru:"Нужна бытовая химия."},
+{id:392,kz:"Тазалау",ru:"Чистящее средство",topic:"shop",example_kz:"Тазалау сұйықтығын алдым.",example_ru:"Я купил чистящую жидкость."},
+{id:393,kz:"Мылтық",ru:"Пылесос",topic:"shop",example_kz:"Мылтықты жөндеуге бердім.",example_ru:"Я сдал пылесос в ремонт."},
+{id:394,kz:"Тіс щеткасы",ru:"Зубная щётка",topic:"shop",example_kz:"Тіс щеткасын сатып алдым.",example_ru:"Я купил зубную щётку."},
+{id:395,kz:"Сабын",ru:"Мыло",topic:"shop",example_kz:"Сабын алыңыз.",example_ru:"Возьмите мыло."},
+{id:396,kz:"Шаштараз",ru:"Парикмахерская",topic:"shop",example_kz:"Шаштаразға бардым.",example_ru:"Я пошёл в парикмахерскую."},
+{id:397,kz:"Шаш қию",ru:"Стрижка",topic:"shop",example_kz:"Шаш қию жасаттым.",example_ru:"Я сделал стрижку."},
+{id:398,kz:"Маникюр",ru:"Маникюр",topic:"shop",example_kz:"Маникюр жасаттым.",example_ru:"Я сделала маникюр."},
+{id:399,kz:"Бұйым",ru:"Изделие",topic:"shop",example_kz:"Бұйым әдемі.",example_ru:"Изделие красивое."},
+{id:400,kz:"Тұтыну",ru:"Потребление",topic:"shop",example_kz:"Тұтыну азайды.",example_ru:"Потребление сократилось."},
+{id:401,kz:"Науқан",ru:"Акция",topic:"shop",example_kz:"Науқан бар.",example_ru:"Есть акция."},
+{id:402,kz:"Тегін",ru:"Бесплатно",topic:"shop",example_kz:"Тегін жеткізу бар.",example_ru:"Есть бесплатная доставка."},
+{id:403,kz:"Төлем жасау",ru:"Произвести оплату",topic:"shop",example_kz:"Төлемді жасадым.",example_ru:"Я произвёл оплату."},
+{id:404,kz:"Түбіртек алу",ru:"Получить чек",topic:"shop",example_kz:"Түбіртекті алдыңыз ба?",example_ru:"Вы получили чек?"},
+{id:405,kz:"Шағым",ru:"Жалоба",topic:"shop",example_kz:"Шағым жаздым.",example_ru:"Я написал жалобу."},
+{id:406,kz:"Риза",ru:"Довольный",topic:"shop",example_kz:"Сападан ризамын.",example_ru:"Я доволен качеством."},
+{id:407,kz:"Риза емес",ru:"Недовольный",topic:"shop",example_kz:"Бағадан риза емеспін.",example_ru:"Я недоволен ценой."},
+{id:408,kz:"Ұсыну",ru:"Предлагать",topic:"shop",example_kz:"Жақсы тауарды ұсынды.",example_ru:"Предложили хороший товар."},
+{id:409,kz:"Тіркеу",ru:"Регистрация",topic:"shop",example_kz:"Тіркеуден өтіңіз.",example_ru:"Пройдите регистрацию."},
+{id:410,kz:"Тіркелгі",ru:"Учётная запись",topic:"shop",example_kz:"Тіркелгі жасадым.",example_ru:"Я создал учётную запись."},
+{id:411,kz:"Жазылу",ru:"Подписка",topic:"shop",example_kz:"Жазылуға жазылдым.",example_ru:"Я подписался."},
+{id:412,kz:"Жарнама",ru:"Реклама",topic:"shop",example_kz:"Жарнаманы қараңыз.",example_ru:"Посмотрите рекламу."},
+{id:413,kz:"Бренд",ru:"Бренд",topic:"shop",example_kz:"Брендтің танымалы.",example_ru:"Бренд известный."},
+{id:414,kz:"Әлемдік",ru:"Мировой",topic:"shop",example_kz:"Әлемдік бренд.",example_ru:"Мировой бренд."},
+{id:415,kz:"Танымал",ru:"Известный",topic:"shop",example_kz:"Танымал дүкен.",example_ru:"Известный магазин."},
+
+// === ЕДА И КАФЕ (100) ===
+{id:416,kz:"Дәм",ru:"Вкус",topic:"food",example_kz:"Тамақтың дәмі жақсы.",example_ru:"Вкус еды хороший."},
+{id:417,kz:"Тұзды",ru:"Солёный",topic:"food",example_kz:"Тым тұзды болды.",example_ru:"Получилось слишком солёным."},
+{id:418,kz:"Тапсырыс",ru:"Заказ",topic:"food",example_kz:"Тапсырыс бердім.",example_ru:"Я сделал заказ."},
+{id:419,kz:"Есепшот",ru:"Счёт в ресторане",topic:"food",example_kz:"Есепшотты беріңіз.",example_ru:"Дайте счёт."},
+{id:420,kz:"Құрамы",ru:"Состав",topic:"food",example_kz:"Тамақтың құрамын білгім келеді.",example_ru:"Я хочу знать состав блюда."},
+{id:421,kz:"Тағам",ru:"Блюдо",topic:"food",example_kz:"Тағам дәмді болды.",example_ru:"Блюдо получилось вкусным."},
+{id:422,kz:"Асхана",ru:"Столовая",topic:"food",example_kz:"Асханада тамақтандым.",example_ru:"Я поел в столовой."},
+{id:423,kz:"Мәзір",ru:"Меню",topic:"food",example_kz:"Мәзірді беріңіз.",example_ru:"Дайте меню."},
+{id:424,kz:"Қант",ru:"Сахар",topic:"food",example_kz:"Қант салыңыз.",example_ru:"Добавьте сахар."},
+{id:425,kz:"Дәмдеуіш",ru:"Приправа",topic:"food",example_kz:"Дәмдеуіштерді беріңіз.",example_ru:"Дайте приправы."},
+{id:426,kz:"Тамақ",ru:"Еда",topic:"food",example_kz:"Тамақ дайындадым.",example_ru:"Я приготовил еду."},
+{id:427,kz:"Нан",ru:"Хлеб",topic:"food",example_kz:"Нан жұмсақ.",example_ru:"Хлеб мягкий."},
+{id:428,kz:"Пісіру",ru:"Готовить",topic:"food",example_kz:"Пісіру ұнайды.",example_ru:"Мне нравится готовить."},
+{id:429,kz:"Тамақтану",ru:"Питание",topic:"food",example_kz:"Тамақтану уақыты.",example_ru:"Время питания."},
+{id:430,kz:"Түскі ас",ru:"Обед",topic:"food",example_kz:"Түскі ас іштік.",example_ru:"Мы пообедали."},
+{id:431,kz:"Кешкі ас",ru:"Ужин",topic:"food",example_kz:"Кешкі ас дайын.",example_ru:"Ужин готов."},
+{id:432,kz:"Таңғы ас",ru:"Завтрак",topic:"food",example_kz:"Таңғы асты жедік.",example_ru:"Мы позавтракали."},
+{id:433,kz:"Кофе",ru:"Кофе",topic:"food",example_kz:"Кофе ішкім келеді.",example_ru:"Я хочу выпить кофе."},
+{id:434,kz:"Шәй",ru:"Чай",topic:"food",example_kz:"Шәй ішіңіз.",example_ru:"Пейте чай."},
+{id:435,kz:"Су",ru:"Вода",topic:"food",example_kz:"Су беріңіз.",example_ru:"Дайте воды."},
+{id:436,kz:"Шырын",ru:"Сок",topic:"food",example_kz:"Жеміс шырынын іштім.",example_ru:"Я выпил фруктовый сок."},
+{id:437,kz:"Сүт",ru:"Молоко",topic:"food",example_kz:"Сүт алдым.",example_ru:"Я купил молоко."},
+{id:438,kz:"Ірімшік",ru:"Творог",topic:"food",example_kz:"Ірімшікті ұнатамын.",example_ru:"Я люблю творог."},
+{id:439,kz:"Балық",ru:"Рыба",topic:"food",example_kz:"Балықты қуырдым.",example_ru:"Я пожарил рыбу."},
+{id:440,kz:"Ет",ru:"Мясо",topic:"food",example_kz:"Ет пісірдім.",example_ru:"Я приготовил мясо."},
+{id:441,kz:"Құс еті",ru:"Птица",topic:"food",example_kz:"Құс етін алдым.",example_ru:"Я купил птицу."},
+{id:442,kz:"Көкөніс",ru:"Овощи",topic:"food",example_kz:"Көкөністер жуыңыз.",example_ru:"Помойте овощи."},
+{id:443,kz:"Жеміс",ru:"Фрукты",topic:"food",example_kz:"Жемістер дәмді.",example_ru:"Фрукты вкусные."},
+{id:444,kz:"Күрке",ru:"Рис",topic:"food",example_kz:"Күрке пісірдім.",example_ru:"Я сварил рис."},
+{id:445,kz:"Макарон",ru:"Макароны",topic:"food",example_kz:"Макарон қайнаттым.",example_ru:"Я сварил макароны."},
+{id:446,kz:"Тұз",ru:"Соль",topic:"food",example_kz:"Тұз салыңыз.",example_ru:"Добавьте соль."},
+{id:447,kz:"Бұрыш",ru:"Перец",topic:"food",example_kz:"Бұрыш салыңыз.",example_ru:"Добавьте перец."},
+{id:448,kz:"Май",ru:"Масло, жир",topic:"food",example_kz:"Май құйыңыз.",example_ru:"Налейте масло."},
+{id:449,kz:"Қаймақ",ru:"Сметана",topic:"food",example_kz:"Қаймақ салыңыз.",example_ru:"Добавьте сметану."},
+{id:450,kz:"Томат",ru:"Томатная паста",topic:"food",example_kz:"Томат салыңыз.",example_ru:"Добавьте томат."},
+{id:451,kz:"Дәмді",ru:"Вкусный",topic:"food",example_kz:"Тамақ дәмді.",example_ru:"Еда вкусная."},
+{id:452,kz:"Дәмсіз",ru:"Безвкусный",topic:"food",example_kz:"Тамақ дәмсіз болды.",example_ru:"Еда оказалась безвкусной."},
+{id:453,kz:"Ыстық",ru:"Горячий",topic:"food",example_kz:"Тамақ ыстық.",example_ru:"Еда горячая."},
+{id:454,kz:"Суық",ru:"Холодный",topic:"food",example_kz:"Тамақ суық.",example_ru:"Еда холодная."},
+{id:455,kz:"Тәтті",ru:"Сладкий",topic:"food",example_kz:"Торт тәтті.",example_ru:"Торт сладкий."},
+{id:456,kz:"Қышқылды",ru:"Кислый",topic:"food",example_kz:"Лимон қышқылды.",example_ru:"Лимон кислый."},
+{id:457,kz:"Ащы",ru:"Горький",topic:"food",example_kz:"Дәрі ащы.",example_ru:"Лекарство горькое."},
+{id:458,kz:"Пісірілген",ru:"Варёный",topic:"food",example_kz:"Пісірілген ет.",example_ru:"Варёное мясо."},
+{id:459,kz:"Қуырылған",ru:"Жареный",topic:"food",example_kz:"Қуырылған балық.",example_ru:"Жареная рыба."},
+{id:460,kz:"Тұтас",ru:"Цельный",topic:"food",example_kz:"Тұтас нан алдым.",example_ru:"Я купил целую буханку."},
+{id:461,kz:"Тілім",ru:"Ломтик",topic:"food",example_kz:"Нанның бір тілімін алдым.",example_ru:"Я взял ломтик хлеба."},
+{id:462,kz:"Стакан",ru:"Стакан",topic:"food",example_kz:"Стакан шырын құйыңыз.",example_ru:"Налейте стакан сока."},
+{id:463,kz:"Тостаған",ru:"Тарелка",topic:"food",example_kz:"Тостағанды жуыңыз.",example_ru:"Помойте тарелку."},
+{id:464,kz:"Қасық",ru:"Ложка",topic:"food",example_kz:"Қасықпен жеңіз.",example_ru:"Ешьте ложкой."},
+{id:465,kz:"Пышақ",ru:"Нож",topic:"food",example_kz:"Пышақпен кесіңіз.",example_ru:"Режьте ножом."},
+{id:466,kz:"Вилка",ru:"Вилка",topic:"food",example_kz:"Вилка мен қасық.",example_ru:"Вилка и ложка."},
+{id:467,kz:"Табақ",ru:"Поднос",topic:"food",example_kz:"Табақпен алыңыз.",example_ru:"Возьмите на подносе."},
+{id:468,kz:"Құмырсақ",ru:"Чашка",topic:"food",example_kz:"Құмырсақта шәй.",example_ru:"В чашке чай."},
+{id:469,kz:"Шәйнек",ru:"Чайник",topic:"food",example_kz:"Шәйнекті қайнатыңыз.",example_ru:"Поставьте чайник."},
+{id:470,kz:"Қазан",ru:"Кастрюля",topic:"food",example_kz:"Қазанға су құйыңыз.",example_ru:"Налейте воду в кастрюлю."},
+{id:471,kz:"Пеш",ru:"Плита",topic:"food",example_kz:"Пешті қосыңыз.",example_ru:"Включите плиту."},
+{id:472,kz:"Микротолқынды",ru:"Микроволновка",topic:"food",example_kz:"Микротолқындыда қыздырыңыз.",example_ru:"Подогрейте в микроволновке."},
+{id:473,kz:"Тоңазытқыш",ru:"Холодильник",topic:"food",example_kz:"Тоңазытқышқа қойыңыз.",example_ru:"Поставьте в холодильник."},
+{id:474,kz:"Мерзімі",ru:"Срок",topic:"food",example_kz:"Мерзімі өтіп кетті.",example_ru:"Срок прошёл."},
+{id:475,kz:"Жарамды",ru:"Годный",topic:"food",example_kz:"Тамақ жарамды.",example_ru:"Еда годная."},
+{id:476,kz:"Жарамсыз",ru:"Негодный",topic:"food",example_kz:"Тамақ жарамсыз.",example_ru:"Еда негодная."},
+{id:477,kz:"Сақтау",ru:"Хранить",topic:"food",example_kz:"Тамақты дұрыс сақтаңыз.",example_ru:"Правильно храните еду."},
+{id:478,kz:"Мұздату",ru:"Заморозить",topic:"food",example_kz:"Етті мұздатыңыз.",example_ru:"Заморозьте мясо."},
+{id:479,kz:"Еріту",ru:"Разморозить",topic:"food",example_kz:"Етті ерітіңіз.",example_ru:"Разморозьте мясо."},
+{id:480,kz:"Қайнату",ru:"Варить",topic:"food",example_kz:"Сорпаны қайнатыңыз.",example_ru:"Сварите суп."},
+{id:481,kz:"Қуыру",ru:"Жарить",topic:"food",example_kz:"Картопты қуырды.",example_ru:"Я пожарил картошку."},
+{id:482,kz:"Пісіру",ru:"Выпекать",topic:"food",example_kz:"Нан пісірдім.",example_ru:"Я испёк хлеб."},
+{id:483,kz:"Дәм тату",ru:"Попробовать на вкус",topic:"food",example_kz:"Дәм татыңыз.",example_ru:"Попробуйте на вкус."},
+{id:484,kz:"Тойыну",ru:"Насытиться",topic:"food",example_kz:"Тойындым.",example_ru:"Я наелся."},
+{id:485,kz:"Аш",ru:"Голодный",topic:"food",example_kz:"Ашпын.",example_ru:"Я голоден."},
+{id:486,kz:"Тойыңқы",ru:"Сытый",topic:"food",example_kz:"Тойыңқы болдым.",example_ru:"Я сыт."},
+{id:487,kz:"Рецепт",ru:"Рецепт",topic:"food",example_kz:"Рецептті қарадым.",example_ru:"Я посмотрел рецепт."},
+{id:488,kz:"Дайындау",ru:"Приготовить",topic:"food",example_kz:"Тамақты дайындаңыз.",example_ru:"Приготовьте еду."},
+{id:489,kz:"Ингредиент",ru:"Ингредиент",topic:"food",example_kz:"Ингредиенттерді дайындаңыз.",example_ru:"Подготовьте ингредиенты."},
+{id:490,kz:"Дәмдеу",ru:"Приправить",topic:"food",example_kz:"Тамақты дәмдеңіз.",example_ru:"Приправьте блюдо."},
+{id:491,kz:"Тіс",ru:"Зуб",topic:"food",example_kz:"Тісім ауырды.",example_ru:"У меня болел зуб."},
+{id:492,kz:"Тіс дәрігері",ru:"Стоматолог",topic:"food",example_kz:"Тіс дәрігеріне бардым.",example_ru:"Я пошёл к стоматологу."},
+{id:493,kz:"Тамақ ауруы",ru:"Боль в горле",topic:"food",example_kz:"Тамағым ауырады.",example_ru:"Мне болит горло."},
+{id:494,kz:"Бас ауруы",ru:"Головная боль",topic:"food",example_kz:"Басым ауырады.",example_ru:"Мне болит голова."},
+{id:495,kz:"Дәрігер",ru:"Врач",topic:"food",example_kz:"Дәрігерге бардым.",example_ru:"Я пошёл к врачу."},
+{id:496,kz:"Рецепт жазу",ru:"Выписать рецепт",topic:"food",example_kz:"Дәрігер рецепт жазды.",example_ru:"Врач выписал рецепт."},
+{id:497,kz:"Дәрі",ru:"Лекарство",topic:"food",example_kz:"Дәрі іштім.",example_ru:"Я принял лекарство."},
+{id:498,kz:"Ауру",ru:"Болезнь",topic:"food",example_kz:"Ауру жұқтырдым.",example_ru:"Я заразился болезнью."},
+{id:499,kz:"Денсаулық",ru:"Здоровье",topic:"food",example_kz:"Денсаулықты сақтаңыз.",example_ru:"Берегите здоровье."},
+{id:500,kz:"Сауығу",ru:"Выздоровление",topic:"food",example_kz:"Сауығуым керек.",example_ru:"Мне нужно выздороветь."},
+{id:501,kz:"Тамақтану",ru:"Питание",topic:"food",example_kz:"Дұрыс тамақтану керек.",example_ru:"Нужно питаться правильно."},
+{id:502,kz:"Калория",ru:"Калория",topic:"food",example_kz:"Калорияны азайтыңыз.",example_ru:"Уменьшите калории."},
+{id:503,kz:"Дәрумен",ru:"Витамин",topic:"food",example_kz:"Дәрумендер ішіңіз.",example_ru:"Принимайте витамины."},
+{id:504,kz:"Тағамдық",ru:"Пищевой",topic:"food",example_kz:"Тағамдық құндылық.",example_ru:"Пищевая ценность."},
+{id:505,kz:"Рацион",ru:"Рацион",topic:"food",example_kz:"Рационды өзгертіңіз.",example_ru:"Измените рацион."},
+{id:506,kz:"Баланс",ru:"Баланс",topic:"food",example_kz:"Тамақтағы баланс маңызды.",example_ru:"Баланс в питании важен."},
+{id:507,kz:"Зиянды",ru:"Вредный",topic:"food",example_kz:"Зиянды тағамдардан аулақ болыңыз.",example_ru:"Избегайте вредной еды."},
+{id:508,kz:"Пайдалы",ru:"Полезный",topic:"food",example_kz:"Пайдалы тамақ жеңіз.",example_ru:"Ешьте полезную еду."},
+{id:509,kz:"Дәм салу",ru:"Добавить вкус",topic:"food",example_kz:"Дәмдеуіш салыңыз.",example_ru:"Добавьте приправу."},
+{id:510,kz:"Тойымды",ru:"Сытный",topic:"food",example_kz:"Тамақ тойымды.",example_ru:"Еда сытная."},
+{id:511,kz:"Жұмсақ",ru:"Мягкий",topic:"food",example_kz:"Нан жұмсақ.",example_ru:"Хлеб мягкий."},
+{id:512,kz:"Қатты",ru:"Твёрдый",topic:"food",example_kz:"Нан қатты.",example_ru:"Хлеб твёрдый."},
+{id:513,kz:"Жаңа",ru:"Свежий",topic:"food",example_kz:"Жаңа нан.",example_ru:"Свежий хлеб."},
+{id:514,kz:"Ескі",ru:"Несвежий",topic:"food",example_kz:"Нан ескі.",example_ru:"Хлеб несвежий."},
+{id:515,kz:"Майлы",ru:"Жирный",topic:"food",example_kz:"Тамақ тым майлы.",example_ru:"Еда слишком жирная."},
+
+// === ЗДОРОВЬЕ И ТЕЛО (100) ===
+{id:516,kz:"Жағдай",ru:"Состояние",topic:"health",example_kz:"Жағдайым жақсы.",example_ru:"Моё состояние хорошее."},
+{id:517,kz:"Емдеу",ru:"Лечение",topic:"health",example_kz:"Емдеу ұзаққа созылды.",example_ru:"Лечение затянулось."},
+{id:518,kz:"Белгі",ru:"Симптом",topic:"health",example_kz:"Белгілері көрінді.",example_ru:"Симптомы появились."},
+{id:519,kz:"Дәрі",ru:"Лекарство",topic:"health",example_kz:"Дәрі іштім.",example_ru:"Я принял лекарство."},
+{id:520,kz:"Ауырсыну",ru:"Боль",topic:"health",example_kz:"Ауырсыну басылды.",example_ru:"Боль утихла."},
+{id:521,kz:"Дәрігер",ru:"Врач",topic:"health",example_kz:"Дәрігерге бардым.",example_ru:"Я пошёл к врачу."},
+{id:522,kz:"Емхана",ru:"Поликлиника",topic:"health",example_kz:"Емханада тіркелдім.",example_ru:"Я встал на учёт в поликлинике."},
+{id:523,kz:"Ауру",ru:"Болезнь",topic:"health",example_kz:"Ауру асқынды.",example_ru:"Болезнь обострилась."},
+{id:524,kz:"Сауығу",ru:"Выздоровление",topic:"health",example_kz:"Сауығуға уақыт керек.",example_ru:"Для выздоровления нужно время."},
+{id:525,kz:"Алдын алу",ru:"Профилактика",topic:"health",example_kz:"Алдын алу үшін дәрігерге барыңыз.",example_ru:"Для профилактики сходите к врачу."},
+{id:526,kz:"Температура",ru:"Температура, жар",topic:"health",example_kz:"Температура көтерілді.",example_ru:"Температура поднялась."},
+{id:527,kz:"Жөтел",ru:"Кашель",topic:"health",example_kz:"Жөтелім көп.",example_ru:"У меня сильный кашель."},
+{id:528,kz:"Тұмау",ru:"Грипп",topic:"health",example_kz:"Тұмаумен ауырдым.",example_ru:"Я болел гриппом."},
+{id:529,kz:"Аллергия",ru:"Аллергия",topic:"health",example_kz:"Аллергиям бар.",example_ru:"У меня аллергия."},
+{id:530,kz:"Тіс",ru:"Зуб",topic:"health",example_kz:"Тісім ауырды.",example_ru:"У меня болел зуб."},
+{id:531,kz:"Көз",ru:"Глаз",topic:"health",example_kz:"Көзім ауырады.",example_ru:"У меня болит глаз."},
+{id:532,kz:"Мұрын",ru:"Нос",topic:"health",example_kz:"Мұрным бітті.",example_ru:"Нос заложен."},
+{id:533,kz:"Құлақ",ru:"Ухо",topic:"health",example_kz:"Құлағым ауырады.",example_ru:"Мне болит ухо."},
+{id:534,kz:"Бас",ru:"Голова",topic:"health",example_kz:"Басым айналды.",example_ru:"У меня закружилась голова."},
+{id:535,kz:"Арқа",ru:"Спина",topic:"health",example_kz:"Арқам ауырады.",example_ru:"У меня болит спина."},
+{id:536,kz:"Тізе",ru:"Колено",topic:"health",example_kz:"Тізем ауырады.",example_ru:"Мне болит колено."},
+{id:537,kz:"Қол",ru:"Рука",topic:"health",example_kz:"Қолым сынды.",example_ru:"Я сломал руку."},
+{id:538,kz:"Аяқ",ru:"Нога",topic:"health",example_kz:"Аяғым ауырады.",example_ru:"Мне болит нога."},
+{id:539,kz:"Жүрек",ru:"Сердце",topic:"health",example_kz:"Жүрек соғысы жиіледі.",example_ru:"Сердцебиение участилось."},
+{id:540,kz:"Қан",ru:"Кровь",topic:"health",example_kz:"Қанның қысымын өлшеді.",example_ru:"Измеряют давление крови."},
+{id:541,kz:"Дәрігер",ru:"Доктор",topic:"health",example_kz:"Дәрігер кеңес берді.",example_ru:"Доктор дал совет."},
+{id:542,kz:"Медсестра",ru:"Медсестра",topic:"health",example_kz:"Медсестра ине салды.",example_ru:"Медсестра сделала укол."},
+{id:543,kz:"Аурухана",ru:"Больница",topic:"health",example_kz:"Ауруханаға жатқызды.",example_ru:"Его положили в больницу."},
+{id:544,kz:"Емхана",ru:"Поликлиника",topic:"health",example_kz:"Емханаға бардым.",example_ru:"Я пошёл в поликлинику."},
+{id:545,kz:"Дәріхана",ru:"Аптека",topic:"health",example_kz:"Дәріханадан дәрі алдым.",example_ru:"Я купил лекарство в аптеке."},
+{id:546,kz:"Рецепт",ru:"Рецепт",topic:"health",example_kz:"Рецепт жазды.",example_ru:"Выписал рецепт."},
+{id:547,kz:"Дәрі қабылдау",ru:"Принимать лекарство",topic:"health",example_kz:"Дәріні күніне үш рет қабылдаңыз.",example_ru:"Принимайте лекарство три раза в день."},
+{id:548,kz:"Операция",ru:"Операция",topic:"health",example_kz:"Операция сәтті болды.",example_ru:"Операция прошла успешно."},
+{id:549,kz:"Тексеру",ru:"Обследование",topic:"health",example_kz:"Тексеруден өттім.",example_ru:"Я прошёл обследование."},
+{id:550,kz:"Анализ",ru:"Анализ",topic:"health",example_kz:"Анализ тапсырдым.",example_ru:"Я сдал анализ."},
+{id:551,kz:"Тамыр соғуы",ru:"Пульс",topic:"health",example_kz:"Тамыр соғуын өлшеді.",example_ru:"Измеряют пульс."},
+{id:552,kz:"Қысым",ru:"Давление",topic:"health",example_kz:"Қысым жоғары.",example_ru:"Давление повышенное."},
+{id:553,kz:"Қалыпты",ru:"Нормальный",topic:"health",example_kz:"Дене қалыпты.",example_ru:"Тело в норме."},
+{id:554,kz:"Асқыну",ru:"Осложнение",topic:"health",example_kz:"Асқыну болды.",example_ru:"Возникло осложнение."},
+{id:555,kz:"Сауықтыру",ru:"Оздоровление",topic:"health",example_kz:"Сауықтыру шараларын қабылдады.",example_ru:"Приняли меры по оздоровлению."},
+{id:556,kz:"Вакцинация",ru:"Вакцинация",topic:"health",example_kz:"Вакцинациядан өттім.",example_ru:"Я прошёл вакцинацию."},
+{id:557,kz:"Диета",ru:"Диета",topic:"health",example_kz:"Диетаны сақтау керек.",example_ru:"Нужно соблюдать диету."},
+{id:558,kz:"Жаттығу",ru:"Упражнение",topic:"health",example_kz:"Жаттығу жасадым.",example_ru:"Я сделал упражнения."},
+{id:559,kz:"Спорт",ru:"Спорт",topic:"health",example_kz:"Спортпен айналысу керек.",example_ru:"Нужно заниматься спортом."},
+{id:560,kz:"Жүгіру",ru:"Бег",topic:"health",example_kz:"Жүгірумен айналысамын.",example_ru:"Я занимаюсь бегом."},
+{id:561,kz:"Жүзу",ru:"Плавание",topic:"health",example_kz:"Жүзу ұнайды.",example_ru:"Мне нравится плавать."},
+{id:562,kz:"Таза ауа",ru:"Свежий воздух",topic:"health",example_kz:"Таза ауада серуендеңіз.",example_ru:"Гуляйте на свежем воздухе."},
+{id:563,kz:"Демалыс",ru:"Отдых",topic:"health",example_kz:"Демалыс керек.",example_ru:"Нужен отдых."},
+{id:564,kz:"Ұйқы",ru:"Сон",topic:"health",example_kz:"Ұйқым жетпейді.",example_ru:"Мне не хватает сна."},
+{id:565,kz:"Шаршау",ru:"Усталость",topic:"health",example_kz:"Шаршағанымды сезінемін.",example_ru:"Я чувствую усталость."},
+{id:566,kz:"Стресс",ru:"Стресс",topic:"health",example_kz:"Стресс көп.",example_ru:"Много стресса."},
+{id:567,kz:"Тыныштық",ru:"Спокойствие",topic:"health",example_kz:"Тыныштық керек.",example_ru:"Нужно спокойствие."},
+{id:568,kz:"Денсаулық",ru:"Здоровье",topic:"health",example_kz:"Денсаулық — бастысы.",example_ru:"Здоровье — главное."},
+{id:569,kz:"Тірі",ru:"Живой",topic:"health",example_kz:"Тірімін.",example_ru:"Я жив."},
+{id:570,kz:"Өлу",ru:"Умереть",topic:"health",example_kz:"Ол өлді.",example_ru:"Он умер."},
+{id:571,kz:"Тамыр",ru:"Вена",topic:"health",example_kz:"Тамырдан қан алды.",example_ru:"Взяли кровь из вены."},
+{id:572,kz:"Ине",ru:"Укол, игла",topic:"health",example_kz:"Ине салды.",example_ru:"Сделали укол."},
+{id:573,kz:"Бинт",ru:"Бинт",topic:"health",example_kz:"Бинтпен орады.",example_ru:"Забинтовали."},
+{id:574,kz:"Пластырь",ru:"Пластырь",topic:"health",example_kz:"Пластырь жабыстырды.",example_ru:"Наклеили пластырь."},
+{id:575,kz:"Термометр",ru:"Градусник",topic:"health",example_kz:"Термометрді көрсетіңіз.",example_ru:"Покажите градусник."},
+{id:576,kz:"Дәрігер",ru:"Врач",topic:"health",example_kz:"Дәрігер көріп тұр.",example_ru:"Врач осматривает."},
+{id:577,kz:"Сауықтыру",ru:"Оздоровление",topic:"health",example_kz:"Сауықтыру орталығында демалдым.",example_ru:"Я отдыхал в оздоровительном центре."},
+{id:578,kz:"Шипажай",ru:"Санаторий",topic:"health",example_kz:"Шипажайға бардым.",example_ru:"Я поехал в санаторий."},
+{id:579,kz:"Массаж",ru:"Массаж",topic:"health",example_kz:"Массаж жасаттым.",example_ru:"Я сделал массаж."},
+{id:580,kz:"ЛФК",ru:"Лечебная физкультура",topic:"health",example_kz:"ЛФК-ға қатысып жатырмын.",example_ru:"Я посещаю лечебную физкультуру."},
+{id:581,kz:"Физиотерапия",ru:"Физиотерапия",topic:"health",example_kz:"Физиотерапиядан өттім.",example_ru:"Я прошёл физиотерапию."},
+{id:582,kz:"Рентген",ru:"Рентген",topic:"health",example_kz:"Рентгенге түстім.",example_ru:"Я сделал рентген."},
+{id:583,kz:"УЗИ",ru:"УЗИ",topic:"health",example_kz:"УЗИ-ге жазылдым.",example_ru:"Я записался на УЗИ."},
+{id:584,kz:"МРТ",ru:"МРТ",topic:"health",example_kz:"МРТ-ге түстім.",example_ru:"Я прошёл МРТ."},
+{id:585,kz:"Диагноз",ru:"Диагноз",topic:"health",example_kz:"Диагноз қойды.",example_ru:"Поставили диагноз."},
+{id:586,kz:"Бақылау",ru:"Наблюдение",topic:"health",example_kz:"Бақылауда тұрмын.",example_ru:"Я нахожусь под наблюдением."},
+{id:587,kz:"Ем",ru:"Лечение",topic:"health",example_kz:"Ем курсын өттім.",example_ru:"Я прошёл курс лечения."},
+{id:588,kz:"Рецидив",ru:"Рецидив",topic:"health",example_kz:"Рецидив болды.",example_ru:"Произошёл рецидив."},
+{id:589,kz:"Иммунитет",ru:"Иммунитет",topic:"health",example_kz:"Иммунитетті күшейту керек.",example_ru:"Нужно укрепить иммунитет."},
+{id:590,kz:"Витамин",ru:"Витамин",topic:"health",example_kz:"Витаминдер ішемін.",example_ru:"Я принимаю витамины."},
+{id:591,kz:"Препарат",ru:"Препарат",topic:"health",example_kz:"Препарат тиімді.",example_ru:"Препарат эффективный."},
+{id:592,kz:"Доза",ru:"Доза",topic:"health",example_kz:"Дозаны сақтаңыз.",example_ru:"Соблюдайте дозу."},
+{id:593,kz:"Побочный",ru:"Побочный эффект",topic:"health",example_kz:"Побочный әсері бар.",example_ru:"Есть побочный эффект."},
+{id:594,kz:"Контраиндикация",ru:"Противопоказание",topic:"health",example_kz:"Контраиндикацияларды қараңыз.",example_ru:"Посмотрите противопоказания."},
+{id:595,kz:"Сау",ru:"Здоровый",topic:"health",example_kz:"Мен саумын.",example_ru:"Я здоров."},
+{id:596,kz:"Ауру",ru:"Больной",topic:"health",example_kz:"Ол ауру.",example_ru:"Он болен."},
+{id:597,kz:"Науқас",ru:"Больной",topic:"health",example_kz:"Науқас көп жатыр.",example_ru:"Больной много лежит."},
+{id:598,kz:"Дені сау",ru:"Здоровый",topic:"health",example_kz:"Дені сау адам.",example_ru:"Здоровый человек."},
+{id:599,kz:"Күшті",ru:"Сильный",topic:"health",example_kz:"Күшті адам.",example_ru:"Сильный человек."},
+{id:600,kz:"Әлсіз",ru:"Слабый",topic:"health",example_kz:"Әлсіз сезінемін.",example_ru:"Я чувствую себя слабо."},
+{id:601,kz:"Серімсу",ru:"Головокружение",topic:"health",example_kz:"Серімсу болып тұр.",example_ru:"Кружится голова."},
+{id:602,kz:"Құсу",ru:"Рвота",topic:"health",example_kz:"Құсу болды.",example_ru:"Была рвота."},
+{id:603,kz:"Іш ауруы",ru:"Боль в животе",topic:"health",example_kz:"Ішім ауырады.",example_ru:"Мне болит живот."},
+{id:604,kz:"Бөртпе",ru:"Сыпь",topic:"health",example_kz:"Бөртпе шықты.",example_ru:"Появилась сыпь."},
+{id:605,kz:"Көгеру",ru:"Синяк",topic:"health",example_kz:"Көгеру пайда болды.",example_ru:"Появился синяк."},
+{id:606,kz:"Кесу",ru:"Порез",topic:"health",example_kz:"Кесіп алдым.",example_ru:"Я порезался."},
+{id:607,kz:"Күйік",ru:"Ожог",topic:"health",example_kz:"Күйік алдым.",example_ru:"Я получил ожог."},
+{id:608,kz:"Шыққан тіс",ru:"Вывих",topic:"health",example_kz:"Шыққан тісім бар.",example_ru:"У меня вывих."},
+{id:609,kz:"Сыну",ru:"Перелом",topic:"health",example_kz:"Сыну болды.",example_ru:"Произошёл перелом."},
+{id:610,kz:"Бұлшықет",ru:"Мышца",topic:"health",example_kz:"Бұлшықетім ауырады.",example_ru:"Мне болит мышца."},
+{id:611,kz:"Сүйек",ru:"Кость",topic:"health",example_kz:"Сүйегім сынды.",example_ru:"Я сломал кость."},
+{id:612,kz:"Буын",ru:"Сустав",topic:"health",example_kz:"Буыным ауырады.",example_ru:"Мне болит сустав."},
+{id:613,kz:"Бұлшықет",ru:"Мышца",topic:"health",example_kz:"Бұлшықеттерім ауырып тұр.",example_ru:"Мышцы болят."},
+{id:614,kz:"Серпілу",ru:"Рекуперация",topic:"health",example_kz:"Серпілу баяу жүріп жатыр.",example_ru:"Рекуперация идёт медленно."},
+{id:615,kz:"Сауығу",ru:"Выздоровление",topic:"health",example_kz:"Сауығу жылдам болды.",example_ru:"Выздоровление прошло быстро."},
+{id:616,kz:"Жүйке",ru:"Нерв",topic:"health",example_kz:"Жүйкем тозды.",example_ru:"Нервы на пределе."},
+{id:617,kz:"Тыныс",ru:"Дыхание",topic:"health",example_kz:"Тынысым қысқарды.",example_ru:"Дыхание участилось."},
+{id:618,kz:"Тамақ",ru:"Горло",topic:"health",example_kz:"Тамағым қызарды.",example_ru:"Горло покраснело."},
+{id:619,kz:"Көзілдірік",ru:"Очки",topic:"health",example_kz:"Көзілдірік киіп жүрмін.",example_ru:"Я ношу очки."},
+{id:620,kz:"Линза",ru:"Линзы",topic:"health",example_kz:"Линза киіп жүрмін.",example_ru:"Я ношу линзы."},
+{id:621,kz:"Тіс протезі",ru:"Протез зуба",topic:"health",example_kz:"Тіс протезін салдырдым.",example_ru:"Я поставил протез зуба."},
+{id:622,kz:"Стоматолог",ru:"Стоматолог",topic:"health",example_kz:"Стоматологқа бардым.",example_ru:"Я пошёл к стоматологу."},
+{id:623,kz:"Окулист",ru:"Окулист",topic:"health",example_kz:"Окулистке бардым.",example_ru:"Я пошёл к окулисту."},
+{id:624,kz:"Кардиолог",ru:"Кардиолог",topic:"health",example_kz:"Кардиологқа жазылдым.",example_ru:"Я записался к кардиологу."},
+{id:625,kz:"Невропатолог",ru:"Невропатолог",topic:"health",example_kz:"Невропатологқа бардым.",example_ru:"Я пошёл к невропатологу."},
+
+// === ЭМОЦИИ И ОТНОШЕНИЯ (120) ===
+{id:626,kz:"Ренжу",ru:"Обижаться",topic:"emotion",example_kz:"Оған ренжідім.",example_ru:"Я обиделся на него."},
+{id:627,kz:"Уәде",ru:"Обещание",topic:"emotion",example_kz:"Уәде бердім.",example_ru:"Я дал обещание."},
+{id:628,kz:"Қолдау",ru:"Поддержка",topic:"emotion",example_kz:"Қолдау көрсеттім.",example_ru:"Я оказал поддержку."},
+{id:629,kz:"Келісу",ru:"Соглашаться",topic:"emotion",example_kz:"Оның пікірімен келістім.",example_ru:"Я согласился с его мнением."},
+{id:630,kz:"Қуану",ru:"Радоваться",topic:"emotion",example_kz:"Нәтижеге қуандым.",example_ru:"Я обрадовался результату."},
+{id:631,kz:"Сенім",ru:"Доверие",topic:"emotion",example_kz:"Сенім арттырдым.",example_ru:"Я завоевал доверие."},
+{id:632,kz:"Мазасыздық",ru:"Беспокойство",topic:"emotion",example_kz:"Мазасыздық басып тұр.",example_ru:"Меня одолевает беспокойство."},
+{id:633,kz:"Ризашылық",ru:"Благодарность",topic:"emotion",example_kz:"Ризашылығымды білдірдім.",example_ru:"Я выразил благодарность."},
+{id:634,kz:"Көңіл-күй",ru:"Настроение",topic:"emotion",example_kz:"Көңіл-күйім жақсы.",example_ru:"У меня хорошее настроение."},
+{id:635,kz:"Әсер",ru:"Впечатление",topic:"emotion",example_kz:"Жақсы әсер алдым.",example_ru:"Я получил хорошее впечатление."},
+{id:636,kz:"Қуаныш",ru:"Радость",topic:"emotion",example_kz:"Қуаныштан көзіме жас алдым.",example_ru:"Я расплакался от радости."},
+{id:637,kz:"Өкініш",ru:"Сожаление",topic:"emotion",example_kz:"Өкінішпін.",example_ru:"Я сожалею."},
+{id:638,kz:"Өшу",ru:"Разгневаться",topic:"emotion",example_kz:"Оған өшіп қалдым.",example_ru:"Я разозлился на него."},
+{id:639,kz:"Реніш",ru:"Обида",topic:"emotion",example_kz:"Ренішім көп.",example_ru:"У меня много обид."},
+{id:640,kz:"Мақтаныш",ru:"Гордость",topic:"emotion",example_kz:"Баламмен мақтанамын.",example_ru:"Я горжусь своим ребёнком."},
+{id:641,kz:"Қорқыныш",ru:"Страх",topic:"emotion",example_kz:"Қорқыныш басып тұр.",example_ru:"Меня охватывает страх."},
+{id:642,kz:"Үміт",ru:"Надежда",topic:"emotion",example_kz:"Үмітімді үзбеймін.",example_ru:"Я не теряю надежды."},
+{id:643,kz:"Күту",ru:"Ожидание",topic:"emotion",example_kz:"Күтумен отырмын.",example_ru:"Я сижу в ожидании."},
+{id:644,kz:"Сағыну",ru:"Скучать",topic:"emotion",example_kz:"Сағынып отырмын.",example_ru:"Я скучаю."},
+{id:645,kz:"Жек көру",ru:"Ненавидеть",topic:"emotion",example_kz:"Оны жек көремін.",example_ru:"Я его ненавижу."},
+{id:646,kz:"Сүю",ru:"Любить",topic:"emotion",example_kz:"Отбасымды сүйемін.",example_ru:"Я люблю свою семью."},
+{id:647,kz:"Жақсы көру",ru:"Нравиться, любить",topic:"emotion",example_kz:"Сені жақсы көремін.",example_ru:"Я тебя люблю."},
+{id:648,kz:"Жек көру",ru:"Ненависть",topic:"emotion",example_kz:"Жек көру — жаман қасиет.",example_ru:"Ненависть — плохое качество."},
+{id:649,kz:"Махаббат",ru:"Любовь",topic:"emotion",example_kz:"Махаббат — керемет сезім.",example_ru:"Любовь — замечательное чувство."},
+{id:650,kz:"Сағыныш",ru:"Тоска",topic:"emotion",example_kz:"Сағыныш мұңы.",example_ru:"Тоска печали."},
+{id:651,kz:"Құрмет",ru:"Уважение",topic:"emotion",example_kz:"Құрмет көрсетіңіз.",example_ru:"Окажите уважение."},
+{id:652,kz:"Иһат",ru:"Уважение",topic:"emotion",example_kz:"Иһат білдірдім.",example_ru:"Я выразил уважение."},
+{id:653,kz:"Ренжіту",ru:"Обидеть",topic:"emotion",example_kz:"Оны ренжітіп алдым.",example_ru:"Я его обидел."},
+{id:654,kz:"Кешіру",ru:"Простить",topic:"emotion",example_kz:"Оны кешірдім.",example_ru:"Я его простил."},
+{id:655,kz:"Кешірім",ru:"Прощение",topic:"emotion",example_kz:"Кешірім сұрадым.",example_ru:"Я попросил прощения."},
+{id:656,kz:"Жылау",ru:"Плакать",topic:"emotion",example_kz:"Ол жылап тұр.",example_ru:"Он плачет."},
+{id:657,kz:"Күлу",ru:"Смеяться",topic:"emotion",example_kz:"Көп күлдім.",example_ru:"Я много смеялся."},
+{id:658,kz:"Ашу",ru:"Злость",topic:"emotion",example_kz:"Ашуым келді.",example_ru:"Я разозлился."},
+{id:659,kz:"Тыныштық",ru:"Спокойствие",topic:"emotion",example_kz:"Тыныштықты ұнатамын.",example_ru:"Я люблю спокойствие."},
+{id:660,kz:"Толқу",ru:"Волнение",topic:"emotion",example_kz:"Толқып тұрмын.",example_ru:"Я волнуюсь."},
+{id:661,kz:"Қобалжу",ru:"Тревога",topic:"emotion",example_kz:"Қобалжудамын.",example_ru:"Я в тревоге."},
+{id:662,kz:"Сенімсіздік",ru:"Недоверие",topic:"emotion",example_kz:"Сенімсіздік пайда болды.",example_ru:"Появилось недоверие."},
+{id:663,kz:"Рахат",ru:"Удовольствие",topic:"emotion",example_kz:"Рахат алдым.",example_ru:"Я получил удовольствие."},
+{id:664,kz:"Мұң",ru:"Печаль",topic:"emotion",example_kz:"Мұным көп.",example_ru:"Много печали."},
+{id:665,kz:"Қайғы",ru:"Горе",topic:"emotion",example_kz:"Қайғыға баттым.",example_ru:"Я погрузился в горе."},
+{id:666,kz:"Үмітсіздік",ru:"Отчаяние",topic:"emotion",example_kz:"Үмітсіздікке баттым.",example_ru:"Я пал духом."},
+{id:667,kz:"Тойлану",ru:"Восторг",topic:"emotion",example_kz:"Тойланып қалдым.",example_ru:"Я был в восторге."},
+{id:668,kz:"Шаттық",ru:"Ликование",topic:"emotion",example_kz:"Шаттықтан жүрегім толқыды.",example_ru:"Сердце затрепетало от ликования."},
+{id:669,kz:"Мәз болу",ru:"Веселиться",topic:"emotion",example_kz:"Мәз болып қалдық.",example_ru:"Мы повеселились."},
+{id:670,kz:"Көңіл түсу",ru:"Унывать",topic:"emotion",example_kz:"Көңілім түсіп кетті.",example_ru:"Моё настроение упало."},
+{id:671,kz:"Көтерілу",ru:"Поднять настроение",topic:"emotion",example_kz:"Көңілім көтерілді.",example_ru:"Настроение поднялось."},
+{id:672,kz:"Сезім",ru:"Чувство",topic:"emotion",example_kz:"Сезімдерімді білдірдім.",example_ru:"Я выразил свои чувства."},
+{id:673,kz:"Жүрек",ru:"Сердце",topic:"emotion",example_kz:"Жүрегім соғып тұр.",example_ru:"Сердце колотится."},
+{id:674,kz:"Жүрек",ru:"Сердце (эмоц.)",topic:"emotion",example_kz:"Жүрегім елжіреді.",example_ru:"Сердце тает."},
+{id:675,kz:"Достық",ru:"Дружба",topic:"emotion",example_kz:"Достық — қымбат.",example_ru:"Дружба — драгоценна."},
+{id:676,kz:"Дос",ru:"Друг",topic:"emotion",example_kz:"Ол менің досым.",example_ru:"Он мой друг."},
+{id:677,kz:"Жақын",ru:"Близкий",topic:"emotion",example_kz:"Жақын адамым.",example_ru:"Мой близкий человек."},
+{id:678,kz:"Отбасы",ru:"Семья",topic:"emotion",example_kz:"Отбасымды сүйемін.",example_ru:"Я люблю свою семью."},
+{id:679,kz:"Ата-ана",ru:"Родители",topic:"emotion",example_kz:"Ата-анамды құрметтеймін.",example_ru:"Я уважаю своих родителей."},
+{id:680,kz:"Бала",ru:"Ребёнок",topic:"emotion",example_kz:"Баламды сүйемін.",example_ru:"Я люблю своего ребёнка."},
+{id:681,kz:"Бауыр",ru:"Брат, сестра",topic:"emotion",example_kz:"Бауырыммен тұрамын.",example_ru:"Я живу с братом/сестрой."},
+{id:682,kz:"Аға",ru:"Старший брат",topic:"emotion",example_kz:"Ағам көмектесті.",example_ru:"Старший брат помог."},
+{id:683,kz:"Іні",ru:"Младший брат",topic:"emotion",example_kz:"Інім мектепке барып жатыр.",example_ru:"Младший брат ходит в школу."},
+{id:684,kz:"Апа",ru:"Старшая сестра",topic:"emotion",example_kz:"Апам үйленіп жатыр.",example_ru:"Старшая сестра выходит замуж."},
+{id:685,kz:"Қарындас",ru:"Младшая сестра",topic:"emotion",example_kz:"Қарындасым оқиды.",example_ru:"Младшая сестра учится."},
+{id:686,kz:"Әке",ru:"Отец",topic:"emotion",example_kz:"Әкеммен мақтанамын.",example_ru:"Я горжусь отцом."},
+{id:687,kz:"Шеше",ru:"Мать",topic:"emotion",example_kz:"Шешемді сүйемін.",example_ru:"Я люблю маму."},
+{id:688,kz:"Жар",ru:"Супруг(а)",topic:"emotion",example_kz:"Жарыммен тұрамын.",example_ru:"Я живу с супругом."},
+{id:689,kz:"Жұбай",ru:"Супруг(а)",topic:"emotion",example_kz:"Жұбайым жұмыс істейді.",example_ru:"Мой супруг(а) работает."},
+{id:690,kz:"Көңіл бөлу",ru:"Уделять внимание",topic:"emotion",example_kz:"Балаға көңіл бөліңіз.",example_ru:"Уделяйте внимание ребёнку."},
+{id:691,kz:"Сыйластық",ru:"Уважение",topic:"emotion",example_kz:"Сыйластық керек.",example_ru:"Нужно взаимное уважение."},
+{id:692,kz:"Түсіністік",ru:"Взаимопонимание",topic:"emotion",example_kz:"Түсіністік болды.",example_ru:"Было взаимопонимание."},
+{id:693,kz:"Кешірімшілік",ru:"Милосердие",topic:"emotion",example_kz:"Кешірімшілік — жақсы қасиет.",example_ru:"Милосердие — хорошее качество."},
+{id:694,kz:"Игілік",ru:"Благо",topic:"emotion",example_kz:"Игілік жасаңыз.",example_ru:"Делайте добро."},
+{id:695,kz:"Жақсылық",ru:"Добро",topic:"emotion",example_kz:"Жақсылық жасаңыз.",example_ru:"Творите добро."},
+{id:696,kz:"Жамандық",ru:"Зло",topic:"emotion",example_kz:"Жамандықтан аулақ болыңыз.",example_ru:"Избегайте зла."},
+{id:697,kz:"Иман",ru:"Вера",topic:"emotion",example_kz:"Иманым мықты.",example_ru:"Вера крепкая."},
+{id:698,kz:"Сенімді",ru:"Надёжный",topic:"emotion",example_kz:"Сенімді дос.",example_ru:"Надёжный друг."},
+{id:699,kz:"Шынайы",ru:"Искренний",topic:"emotion",example_kz:"Шынайы пікірім.",example_ru:"Моё искреннее мнение."},
+{id:700,kz:"Жалған",ru:"Ложный",topic:"emotion",example_kz:"Жалған сөз айтпаңыз.",example_ru:"Не говорите ложь."},
+{id:701,kz:"Адал",ru:"Честный",topic:"emotion",example_kz:"Адал дос.",example_ru:"Честный друг."},
+{id:702,kz:"Көркем",ru:"Красивый",topic:"emotion",example_kz:"Көркем мінез.",example_ru:"Красивый характер."},
+{id:703,kz:"Игі",ru:"Добрый",topic:"emotion",example_kz:"Игі адам.",example_ru:"Добрый человек."},
+{id:704,kz:"Намыс",ru:"Честь",topic:"emotion",example_kz:"Намысты қорғаңыз.",example_ru:"Защищайте честь."},
+{id:705,kz:"Ар-ожан",ru:"Совесть",topic:"emotion",example_kz:"Ар-ожаным таза.",example_ru:"Совесть чиста."},
+{id:706,kz:"Қанағат",ru:"Удовлетворение",topic:"emotion",example_kz:"Қанағаттанамын.",example_ru:"Я удовлетворён."},
+{id:707,kz:"Қанағаттанбау",ru:"Неудовлетворённость",topic:"emotion",example_kz:"Қанағаттанбаймын.",example_ru:"Я не удовлетворён."},
+{id:708,kz:"Иілім",ru:"Поклон",topic:"emotion",example_kz:"Иілім еттім.",example_ru:"Я поклонился."},
+{id:709,kz:"Ризалық",ru:"Благодарность",topic:"emotion",example_kz:"Ризалық білдірдім.",example_ru:"Я выразил благодарность."},
+{id:710,kz:"Бата",ru:"Благословение",topic:"emotion",example_kz:"Бата берді.",example_ru:"Он дал благословение."},
+{id:711,kz:"Сыйлық",ru:"Подарок",topic:"emotion",example_kz:"Сыйлық алдым.",example_ru:"Я получил подарок."},
+{id:712,kz:"Мерейтой",ru:"Юбилей",topic:"emotion",example_kz:"Мерейтойға шақырды.",example_ru:"Пригласили на юбилей."},
+{id:713,kz:"Той",ru:"Свадьба, праздник",topic:"emotion",example_kz:"Тойда болдым.",example_ru:"Я был на празднике."},
+{id:714,kz:"Қонақ",ru:"Гость",topic:"emotion",example_kz:"Қонақтар келді.",example_ru:"Гости пришли."},
+{id:715,kz:"Шақыру",ru:"Пригласить",topic:"emotion",example_kz:"Шақырғаныңызға рахмет.",example_ru:"Спасибо за приглашение."},
+{id:716,kz:"Қонаққа бару",ru:"Пойти в гости",topic:"emotion",example_kz:"Қонаққа бардық.",example_ru:"Мы пошли в гости."},
+{id:717,kz:"Көңіл тілеу",ru:"Поздравить",topic:"emotion",example_kz:"Көңілін тіледім.",example_ru:"Я поздравил."},
+{id:718,kz:"Тілек",ru:"Пожелание",topic:"emotion",example_kz:"Тілегімді айттым.",example_ru:"Я сказал пожелание."},
+{id:719,kz:"Бақыт",ru:"Счастье",topic:"emotion",example_kz:"Бақытты болыңыз.",example_ru:"Будьте счастливы."},
+{id:720,kz:"Мұңаймаңыз",ru:"Не грустите",topic:"emotion",example_kz:"Мұңаймаңыз, бәрі жақсы болады.",example_ru:"Не грустите, всё будет хорошо."},
+{id:721,kz:"Көңіл аудару",ru:"Обратить внимание",topic:"emotion",example_kz:"Көңіл аударыңыз.",example_ru:"Обратите внимание."},
+{id:722,kz:"Сездіру",ru:"Дать почувствовать",topic:"emotion",example_kz:"Сездіріп қойдым.",example_ru:"Я дал почувствовать."},
+{id:723,kz:"Бөлу",ru:"Разделять",topic:"emotion",example_kz:"Бөлінбеңіз.",example_ru:"Не разделяйтесь."},
+{id:724,kz:"Бөлісу",ru:"Делиться",topic:"emotion",example_kz:"Қуанышпен бөлісіңіз.",example_ru:"Делитесь радостью."},
+{id:725,kz:"Шын жүректен",ru:"От всей души",topic:"emotion",example_kz:"Шын жүректен тілеймін.",example_ru:"Желаю от всей души."},
+{id:726,kz:"Жаным",ru:"Душа моя",topic:"emotion",example_kz:"Жаным, рахмет.",example_ru:"Душа моя, спасибо."},
+{id:727,kz:"Қымбаттым",ru:"Дорогой мой",topic:"emotion",example_kz:"Қымбаттым, сағындым.",example_ru:"Дорогой мой, я скучал."},
+{id:728,kz:"Ардақтым",ru:"Дорогой мой",topic:"emotion",example_kz:"Ардақтым, келші.",example_ru:"Дорогой мой, подойди."},
+{id:729,kz:"Сүйіктім",ru:"Любимый мой",topic:"emotion",example_kz:"Сүйіктім, күтемін.",example_ru:"Любимый мой, я жду."},
+{id:730,kz:"Жүрекжарды",ru:"Душевный",topic:"emotion",example_kz:"Жүрекжарды сөз.",example_ru:"Душевные слова."},
+{id:731,kz:"Таза жүрек",ru:"Чистое сердце",topic:"emotion",example_kz:"Таза жүрекпен айттым.",example_ru:"Я сказал чистосердечно."},
+{id:732,kz:"Саңлау",ru:"Звонкий, яркий",topic:"emotion",example_kz:"Саңлау күлкі.",example_ru:"Звонкий смех."},
+{id:733,kz:"Мәңгі",ru:"Вечно",topic:"emotion",example_kz:"Мәңгі достық.",example_ru:"Вечная дружба."},
+{id:734,kz:"Жарқын",ru:"Яркий",topic:"emotion",example_kz:"Жарқын күнім.",example_ru:"Мой яркий день."},
+{id:735,kz:"Нұрлы",ru:"Светлый",topic:"emotion",example_kz:"Нұрлы болашақ.",example_ru:"Светлое будущее."},
+{id:736,kz:"Сыпайы",ru:"Вежливый",topic:"emotion",example_kz:"Сыпайы адам.",example_ru:"Вежливый человек."},
+{id:737,kz:"Мәдениетті",ru:"Культурный",topic:"emotion",example_kz:"Мәдениетті адам.",example_ru:"Культурный человек."},
+{id:738,kz:"Иық",ru:"Плечо",topic:"emotion",example_kz:"Иығына сүйендім.",example_ru:"Я оперся на его плечо."},
+{id:739,kz:"Көмек",ru:"Помощь",topic:"emotion",example_kz:"Көмек керек.",example_ru:"Нужна помощь."},
+{id:740,kz:"Көмектесу",ru:"Помогать",topic:"emotion",example_kz:"Көмектесіңізші.",example_ru:"Помогите, пожалуйста."},
+{id:741,kz:"Тіреу",ru:"Опора",topic:"emotion",example_kz:"Тіреуімсің.",example_ru:"Ты моя опора."},
+{id:742,kz:"Сүйеу",ru:"Опора, поддержка",topic:"emotion",example_kz:"Сүйеу болдың.",example_ru:"Ты стал опорой."},
+{id:743,kz:"Сынау",ru:"Критиковать",topic:"emotion",example_kz:"Мені сынамаңыз.",example_ru:"Не критикуйте меня."},
+{id:744,kz:"Мадақтау",ru:"Хвалить",topic:"emotion",example_kz:"Баланы мадақтаңыз.",example_ru:"Хвалите ребёнка."},
+{id:745,kz:"Жұбату",ru:"Утешить",topic:"emotion",example_kz:"Оны жұбаттым.",example_ru:"Я его утешил."},
+{id:746,kz:"Әңгімелесу",ru:"Беседовать",topic:"emotion",example_kz:"Әңгімелесіп отырдық.",example_ru:"Мы беседовали."},
+{id:747,kz:"Пікірлесу",ru:"Обменяться мнениями",topic:"emotion",example_kz:"Пікірлестік.",example_ru:"Мы обменялись мнениями."},
+{id:748,kz:"Тіл табысу",ru:"Найти общий язык",topic:"emotion",example_kz:"Тіл табыстық.",example_ru:"Мы нашли общий язык."},
+{id:749,kz:"Араласу",ru:"Общаться",topic:"emotion",example_kz:"Онымен араласпаймын.",example_ru:"Я с ним не общаюсь."},
+{id:750,kz:"Шүйкелесу",ru:"Ссориться",topic:"emotion",example_kz:"Шүйкелесіп қалдық.",example_ru:"Мы поссорились."},
+
+// === БЫТ И ДОМ (130) ===
+{id:751,kz:"Кір жуу",ru:"Стирка",topic:"home",example_kz:"Кір жуғыш машина жұмыс істеп тұр.",example_ru:"Стиральная машина работает."},
+{id:752,kz:"Тазалау",ru:"Уборка",topic:"home",example_kz:"Үйді тазалауым керек.",example_ru:"Мне нужно убраться в доме."},
+{id:753,kz:"Жалдау",ru:"Арендовать",topic:"home",example_kz:"Пәтерді жалдадым.",example_ru:"Я снял квартиру."},
+{id:754,kz:"Көрші",ru:"Сосед",topic:"home",example_kz:"Көршіміз жақсы.",example_ru:"Соседи хорошие."},
+{id:755,kz:"Шам",ru:"Лампа, свет",topic:"home",example_kz:"Шамды жағыңыз.",example_ru:"Зажгите лампу."},
+{id:756,kz:"Жиһаз",ru:"Мебель",topic:"home",example_kz:"Жиһаз жаңасын сатып алдым.",example_ru:"Я купил новую мебель."},
+{id:757,kz:"Тұрмыстық",ru:"Бытовой",topic:"home",example_kz:"Тұрмыстық техника керек.",example_ru:"Нужна бытовая техника."},
+{id:758,kz:"Жөндеу",ru:"Ремонтировать",topic:"home",example_kz:"Үйді жөндеу керек.",example_ru:"Нужно отремонтировать дом."},
+{id:759,kz:"Үй жұмысы",ru:"Домашняя работа",topic:"home",example_kz:"Үй жұмысын істедім.",example_ru:"Я сделал домашнюю работу."},
+{id:760,kz:"Киім",ru:"Одежда",topic:"home",example_kz:"Киімді жуу керек.",example_ru:"Нужно постирать одежду."},
+{id:761,kz:"Киім алу",ru:"Стирать одежду",topic:"home",example_kz:"Киім алдым.",example_ru:"Я постирал одежду."},
+{id:762,kz:"Кептіру",ru:"Сушить",topic:"home",example_kz:"Киімді кептіріңіз.",example_ru:"Просушите одежду."},
+{id:763,kz:"Үтіктеу",ru:"Гладить",topic:"home",example_kz:"Киімді үтіктедім.",example_ru:"Я погладил одежду."},
+{id:764,kz:"Сүрту",ru:"Вытирать",topic:"home",example_kz:"Үстелді сүртіңіз.",example_ru:"Вытрите стол."},
+{id:765,kz:"Жуу",ru:"Мыть",topic:"home",example_kz:"Тостағанды жуыңыз.",example_ru:"Помойте тарелку."},
+{id:766,kz:"Шаңсорғыш",ru:"Пылесос",topic:"home",example_kz:"Шаңсорғышпен сорыңыз.",example_ru:"Проведите пылесосом."},
+{id:767,kz:"Қоқыс",ru:"Мусор",topic:"home",example_kz:"Қоқысты шығарыңыз.",example_ru:"Вынесите мусор."},
+{id:768,kz:"Су құйғыш",ru:"Ведро",topic:"home",example_kz:"Су құйғышқа су құйыңыз.",example_ru:"Налейте воду в ведро."},
+{id:769,kz:"Шүберек",ru:"Тряпка",topic:"home",example_kz:"Шүберекпен сүртіңіз.",example_ru:"Вытирайте тряпкой."},
+{id:770,kz:"Сабын",ru:"Мыло",topic:"home",example_kz:"Сабынмен жуыңыз.",example_ru:"Мойте с мылом."},
+{id:771,kz:"Тазалау құралы",ru:"Чистящее средство",topic:"home",example_kz:"Тазалау құралын сатып алдым.",example_ru:"Я купил чистящее средство."},
+{id:772,kz:"Раковина",ru:"Раковина",topic:"home",example_kz:"Раковинаны жуыңыз.",example_ru:"Помойте раковину."},
+{id:773,kz:"Дәретхана",ru:"Туалет",topic:"home",example_kz:"Дәретхананы тазалаңыз.",example_ru:"Почистите туалет."},
+{id:774,kz:"Ванна",ru:"Ванна",topic:"home",example_kz:"Ваннаны жуыңыз.",example_ru:"Помойте ванну."},
+{id:775,kz:"Жуыну бөлмесі",ru:"Ванная комната",topic:"home",example_kz:"Жуыну бөлмесі таза.",example_ru:"Ванная чистая."},
+{id:776,kz:"Ас бөлме",ru:"Кухня",topic:"home",example_kz:"Ас бөлмеде тамақ пісірдім.",example_ru:"Я готовил на кухне."},
+{id:777,kz:"Жатын бөлме",ru:"Спальня",topic:"home",example_kz:"Жатын бөлме таза.",example_ru:"Спальня чистая."},
+{id:778,kz:"Қонақ бөлме",ru:"Гостиная",topic:"home",example_kz:"Қонақ бөлмеде отырмыз.",example_ru:"Мы сидим в гостиной."},
+{id:779,kz:"Кіре беріс",ru:"Прихожая",topic:"home",example_kz:"Кіре берісте аяқ киім тұр.",example_ru:"В прихожей стоят туфли."},
+{id:780,kz:"Балкон",ru:"Балкон",topic:"home",example_kz:"Балконды жинадым.",example_ru:"Я убрал балкон."},
+{id:781,kz:"Терезе",ru:"Окно",topic:"home",example_kz:"Терезені жуыңыз.",example_ru:"Помойте окно."},
+{id:782,kz:"Перде",ru:"Штора",topic:"home",example_kz:"Пердені ауыстырдым.",example_ru:"Я заменил штору."},
+{id:783,kz:"Кілем",ru:"Ковёр",topic:"home",example_kz:"Кілемді шайыңыз.",example_ru:"Почистите ковёр."},
+{id:784,kz:"Төсеніш",ru:"Коврик",topic:"home",example_kz:"Төсенішті сілкіңіз.",example_ru:"Вытряхните коврик."},
+{id:785,kz:"Төсек",ru:"Кровать",topic:"home",example_kz:"Төсекті жинаңыз.",example_ru:"Заправьте кровать."},
+{id:786,kz:"Жастық",ru:"Подушка",topic:"home",example_kz:"Жастықты жуу керек.",example_ru:"Нужно постирать подушку."},
+{id:787,kz:"Көрпе",ru:"Одеяло",topic:"home",example_kz:"Көрпені кептіріңіз.",example_ru:"Просушите одеяло."},
+{id:788,kz:"Жайма",ru:"Простыня",topic:"home",example_kz:"Жайманы ауыстырдым.",example_ru:"Я сменил простыню."},
+{id:789,kz:"Диван",ru:"Диван",topic:"home",example_kz:"Диванда отырмын.",example_ru:"Я сижу на диване."},
+{id:790,kz:"Кресло",ru:"Кресло",topic:"home",example_kz:"Креслода кітап оқыдым.",example_ru:"Я читал книгу в кресле."},
+{id:791,kz:"Үстел",ru:"Стол",topic:"home",example_kz:"Үстелді сүртіңіз.",example_ru:"Вытрите стол."},
+{id:792,kz:"Орындық",ru:"Стул",topic:"home",example_kz:"Орындықты тазалаңыз.",example_ru:"Почистите стул."},
+{id:793,kz:"Шкаф",ru:"Шкаф",topic:"home",example_kz:"Шкафта киім тұр.",example_ru:"В шкафу стоят одежда."},
+{id:794,kz:"Кітап сөресі",ru:"Книжная полка",topic:"home",example_kz:"Кітап сөресінде кітаптар.",example_ru:"На книжной полке книги."},
+{id:795,kz:"Сурет",ru:"Картина",topic:"home",example_kz:"Сурет ілінген.",example_ru:"Картина повешена."},
+{id:796,kz:"Айна",ru:"Зеркало",topic:"home",example_kz:"Айнадан өзімді көрдім.",example_ru:"Я увидел себя в зеркале."},
+{id:797,kz:"Сағат",ru:"Часы",topic:"home",example_kz:"Сағат тоғызды көрсетті.",example_ru:"Часы показали девять."},
+{id:798,kz:"Тұрмыс",ru:"Быт",topic:"home",example_kz:"Тұрмыс тұрақты.",example_ru:"Быт стабилен."},
+{id:799,kz:"Шаруа",ru:"Хозяйство",topic:"home",example_kz:"Шаруаны жүргізу керек.",example_ru:"Нужно вести хозяйство."},
+{id:800,kz:"Үй",ru:"Дом",topic:"home",example_kz:"Үйге келдім.",example_ru:"Я пришёл домой."},
+{id:801,kz:"Бөлме",ru:"Комната",topic:"home",example_kz:"Бөлмені тазалаңыз.",example_ru:"Уберите комнату."},
+{id:802,kz:"Есік",ru:"Дверь",topic:"home",example_kz:"Есікті ашыңыз.",example_ru:"Откройте дверь."},
+{id:803,kz:"Терезе",ru:"Окно",topic:"home",example_kz:"Терезені ашыңыз.",example_ru:"Откройте окно."},
+{id:804,kz:"Жылу",ru:"Отопление",topic:"home",example_kz:"Жылу жүріп тұр.",example_ru:"Отопление работает."},
+{id:805,kz:"Су",ru:"Вода",topic:"home",example_kz:"Су жүріп тұр.",example_ru:"Вода есть."},
+{id:806,kz:"Газ",ru:"Газ",topic:"home",example_kz:"Газ ақсауы бар.",example_ru:"Есть утечка газа."},
+{id:807,kz:"Электр",ru:"Электричество",topic:"home",example_kz:"Электр өшіп қалды.",example_ru:"Свет выключился."},
+{id:808,kz:"Тамақ",ru:"Пища",topic:"home",example_kz:"Тамақ дайын.",example_ru:"Пища готова."},
+{id:809,kz:"Тұрмыстық",ru:"Бытовой",topic:"home",example_kz:"Тұрмыстық техника бұзылды.",example_ru:"Бытовая техника сломалась."},
+{id:810,kz:"Жөндеу",ru:"Ремонт",topic:"home",example_kz:"Жөндеу жұмыстары көп.",example_ru:"Ремонтных работ много."},
+{id:811,kz:"Су ағызу",ru:"Протечка",topic:"home",example_kz:"Су ағызы бар.",example_ru:"Есть протечка."},
+{id:812,kz:"Тоғызу",ru:"Замыкание",topic:"home",example_kz:"Тоғызу болды.",example_ru:"Произошло замыкание."},
+{id:813,kz:"Көрші",ru:"Соседка",topic:"home",example_kz:"Көршіміз әйел адам.",example_ru:"Соседка — женщина."},
+{id:814,kz:"Шу",ru:"Шум",topic:"home",example_kz:"Көрші шу жасап жатыр.",example_ru:"Сосед шумит."},
+{id:815,kz:"Тыныштық",ru:"Тишина",topic:"home",example_kz:"Тыныштықты сақтаңыз.",example_ru:"Соблюдайте тишину."},
+{id:816,kz:"Уақыт",ru:"Время",topic:"home",example_kz:"Уақытты тиімді пайдаланыңыз.",example_ru:"Эффективно используйте время."},
+{id:817,kz:"Күнделікті",ru:"Ежедневный",topic:"home",example_kz:"Күнделікті тазалау керек.",example_ru:"Нужно убираться ежедневно."},
+{id:818,kz:"Тәртіп",ru:"Порядок",topic:"home",example_kz:"Тәртіпті сақтаңыз.",example_ru:"Поддерживайте порядок."},
+{id:819,kz:"Таза",ru:"Чистый",topic:"home",example_kz:"Үй таза.",example_ru:"Дом чистый."},
+{id:820,kz:"Кір",ru:"Грязный",topic:"home",example_kz:"Үй кір.",example_ru:"Дом грязный."},
+{id:821,kz:"Жинау",ru:"Убрать",topic:"home",example_kz:"Үйді жинаңыз.",example_ru:"Уберите дом."},
+{id:822,kz:"Шашу",ru:"Рассыпать",topic:"home",example_kz:"Нанның қиқымын шаштым.",example_ru:"Я рассыпал крошки хлеба."},
+{id:823,kz:"Жинау",ru:"Собрать",topic:"home",example_kz:"Шашылғанды жинаңыз.",example_ru:"Соберите рассыпанное."},
+{id:824,kz:"Сүртіп тастау",ru:"Протереть",topic:"home",example_kz:"Үстелді сүртіп тастаңыз.",example_ru:"Протрите стол."},
+{id:825,kz:"Шаю",ru:"Ополоснуть",topic:"home",example_kz:"Тостағанды шайыңыз.",example_ru:"Ополосните тарелку."},
+{id:826,kz:"Құрғату",ru:"Высушить",topic:"home",example_kz:"Киімді құрғатыңыз.",example_ru:"Высушите одежду."},
+{id:827,kz:"Тігу",ru:"Вешать",topic:"home",example_kz:"Киімді іліңіз.",example_ru:"Повесьте одежду."},
+{id:828,kz:"Шешу",ru:"Снимать",topic:"home",example_kz:"Аяқ киімді шешіңіз.",example_ru:"Снимите обувь."},
+{id:829,kz:"Кию",ru:"Надевать",topic:"home",example_kz:"Киімді киіңіз.",example_ru:"Наденьте одежду."},
+{id:830,kz:"Шешу",ru:"Раздевать",topic:"home",example_kz:"Киімді шешіңіз.",example_ru:"Разденьтесь."},
+{id:831,kz:"Жылыту",ru:"Нагревать",topic:"home",example_kz:"Суды жылытыңыз.",example_ru:"Подогрейте воду."},
+{id:832,kz:"Суыту",ru:"Охлаждать",topic:"home",example_kz:"Тамақты суытыңыз.",example_ru:"Остудите еду."},
+{id:833,kz:"Сақтау",ru:"Хранить",topic:"home",example_kz:"Тамақты тоңазытқышта сақтаңыз.",example_ru:"Храните еду в холодильнике."},
+{id:834,kz:"Тастау",ru:"Выбросить",topic:"home",example_kz:"Ескі киімді тастаңыз.",example_ru:"Выбросьте старую одежду."},
+{id:835,kz:"Сақтау",ru:"Сохранять",topic:"home",example_kz:"Пайдалы заттарды сақтаңыз.",example_ru:"Сохраняйте полезные вещи."},
+{id:836,kz:"Қолдану",ru:"Использовать",topic:"home",example_kz:"Техниканы дұрыс қолданыңыз.",example_ru:"Правильно используйте технику."},
+{id:837,kz:"Жұмсау",ru:"Тратить",topic:"home",example_kz:"Ақшаны үнемдеу керек.",example_ru:"Нужно экономить деньги."},
+{id:838,kz:"Жинау",ru:"Накапливать",topic:"home",example_kz:"Заттарды жинау керек.",example_ru:"Нужно складывать вещи."},
+{id:839,kz:"Көмектесу",ru:"Помогать",topic:"home",example_kz:"Үй жұмысына көмектесіңіз.",example_ru:"Помогайте по дому."},
+{id:840,kz:"Бөлісу",ru:"Делить",topic:"home",example_kz:"Үй жұмысын бөлісіңіз.",example_ru:"Делите домашние обязанности."},
+
+// === ИНТЕРНЕТ И ТЕХНИКА (80) ===
+{id:841,kz:"Желі",ru:"Сеть",topic:"tech",example_kz:"Желі жұмыс істеп тұр.",example_ru:"Сеть работает."},
+{id:842,kz:"Құрылғы",ru:"Устройство",topic:"tech",example_kz:"Жаңа құрылғы сатып алдым.",example_ru:"Я купил новое устройство."},
+{id:843,kz:"Қосымша",ru:"Приложение",topic:"tech",example_kz:"Қосымшаны жүктедім.",example_ru:"Я скачал приложение."},
+{id:844,kz:"Жүктеу",ru:"Скачать",topic:"tech",example_kz:"Файлды жүктедім.",example_ru:"Я скачал файл."},
+{id:845,kz:"Ақаулық",ru:"Сбой",topic:"tech",example_kz:"Ақаулық шықты.",example_ru:"Произошёл сбой."},
+{id:846,kz:"Бағдарлама",ru:"Программа",topic:"tech",example_kz:"Бағдарламаны орнаттым.",example_ru:"Я установил программу."},
+{id:847,kz:"Экран",ru:"Экран",topic:"tech",example_kz:"Экран жарқырап тұр.",example_ru:"Экран светится."},
+{id:848,kz:"Перне",ru:"Клавиша",topic:"tech",example_kz:"Пернені басыңыз.",example_ru:"Нажмите клавишу."},
+{id:849,kz:"Файл",ru:"Файл",topic:"tech",example_kz:"Файлды сақтадым.",example_ru:"Я сохранил файл."},
+{id:850,kz:"Браузер",ru:"Браузер",topic:"tech",example_kz:"Браузерді ашыңыз.",example_ru:"Откройте браузер."},
+{id:851,kz:"Телефон",ru:"Телефон",topic:"tech",example_kz:"Телефонды қосыңыз.",example_ru:"Включите телефон."},
+{id:852,kz:"Компьютер",ru:"Компьютер",topic:"tech",example_kz:"Компьютерде жұмыс істеймін.",example_ru:"Я работаю за компьютером."},
+{id:853,kz:"Ноутбук",ru:"Ноутбук",topic:"tech",example_kz:"Ноутбукты алыңыз.",example_ru:"Возьмите ноутбук."},
+{id:854,kz:"Планшет",ru:"Планшет",topic:"tech",example_kz:"Планшеттен оқыдым.",example_ru:"Я читал с планшета."},
+{id:855,kz:"Принтер",ru:"Принтер",topic:"tech",example_kz:"Принтерге басып шығарыңыз.",example_ru:"Распечатайте на принтере."},
+{id:856,kz:"Тышқан",ru:"Мышь",topic:"tech",example_kz:"Тышқанды басыңыз.",example_ru:"Нажмите мышку."},
+{id:857,kz:"Пернетақта",ru:"Клавиатура",topic:"tech",example_kz:"Пернетақтада теріңіз.",example_ru:"Печатайте на клавиатуре."},
+{id:858,kz:"Динамик",ru:"Динамик",topic:"tech",example_kz:"Динамиктен дыбыс шықты.",example_ru:"Из динамика раздался звук."},
+{id:859,kz:"Наушник",ru:"Наушники",topic:"tech",example_kz:"Наушникты кидім.",example_ru:"Я надел наушники."},
+{id:860,kz:"Зарядка",ru:"Зарядка",topic:"tech",example_kz:"Телефонды зарядкаға қойыңыз.",example_ru:"Поставьте телефон на зарядку."},
+{id:861,kz:"Батарея",ru:"Батарея",topic:"tech",example_kz:"Батарея бітті.",example_ru:"Батарея села."},
+{id:862,kz:"Wi-Fi",ru:"Wi-Fi",topic:"tech",example_kz:"Wi-Fi қосылмай тұр.",example_ru:"Wi-Fi не подключается."},
+{id:863,kz:"Желі",ru:"Интернет",topic:"tech",example_kz:"Желі жылдам.",example_ru:"Интернет быстрый."},
+{id:864,kz:"Жүйе",ru:"Система",topic:"tech",example_kz:"Жүйе дұрыс жұмыс істеп тұр.",example_ru:"Система работает нормально."},
+{id:865,kz:"Жүйелік",ru:"Системный",topic:"tech",example_kz:"Жүйелік бағдарлама.",example_ru:"Системная программа."},
+{id:866,kz:"Орнату",ru:"Установить",topic:"tech",example_kz:"Бағдарламаны орнаттым.",example_ru:"Я установил программу."},
+{id:867,kz:"Жою",ru:"Удалить",topic:"tech",example_kz:"Файлды жойдым.",example_ru:"Я удалил файл."},
+{id:868,kz:"Көшірме",ru:"Копия",topic:"tech",example_kz:"Көшірмені жасадым.",example_ru:"Я сделал копию."},
+{id:869,kz:"Сақтау",ru:"Сохранить",topic:"tech",example_kz:"Файлды сақтаңыз.",example_ru:"Сохраните файл."},
+{id:870,kz:"Ашу",ru:"Открыть",topic:"tech",example_kz:"Файлды ашыңыз.",example_ru:"Откройте файл."},
+{id:871,kz:"Жабу",ru:"Закрыть",topic:"tech",example_kz:"Бағдарламаны жабыңыз.",example_ru:"Закройте программу."},
+{id:872,kz:"Іздеу",ru:"Искать",topic:"tech",example_kz:"Іздеу жолағына жазыңыз.",example_ru:"Напишите в строку поиска."},
+{id:873,kz:"Тіркелу",ru:"Зарегистрироваться",topic:"tech",example_kz:"Сайтта тіркелдім.",example_ru:"Я зарегистрировался на сайте."},
+{id:874,kz:"Кіру",ru:"Войти",topic:"tech",example_kz:"Тіркелгіге кірдім.",example_ru:"Я вошёл в аккаунт."},
+{id:875,kz:"Шығу",ru:"Выйти",topic:"tech",example_kz:"Тіркелгіден шықтым.",example_ru:"Я вышел из аккаунта."},
+{id:876,kz:"Құпия сөз",ru:"Пароль",topic:"tech",example_kz:"Құпия сөзді енгізіңіз.",example_ru:"Введите пароль."},
+{id:877,kz:"Пошта",ru:"Почта",topic:"tech",example_kz:"Поштаға хат жаздым.",example_ru:"Я написал письмо на почту."},
+{id:878,kz:"Хабарлама",ru:"Сообщение",topic:"tech",example_kz:"Хабарлама келді.",example_ru:"Пришло сообщение."},
+{id:879,kz:"Жіберу",ru:"Отправить",topic:"tech",example_kz:"Хабарламаны жібердім.",example_ru:"Я отправил сообщение."},
+{id:880,kz:"Алу",ru:"Получить",topic:"tech",example_kz:"Хабарламаны алдым.",example_ru:"Я получил сообщение."},
+{id:881,kz:"Жүктеу",ru:"Загрузить",topic:"tech",example_kz:"Программаны жүктедім.",example_ru:"Я загрузил программу."},
+{id:882,kz:"Жариялау",ru:"Опубликовать",topic:"tech",example_kz:"Суретті жарияладым.",example_ru:"Я опубликовал фото."},
+{id:883,kz:"Бөлісу",ru:"Поделиться",topic:"tech",example_kz:"Сілтемемен бөлістім.",example_ru:"Я поделился ссылкой."},
+{id:884,kz:"Жазылу",ru:"Подписаться",topic:"tech",example_kz:"Арнаға жазылдым.",example_ru:"Я подписался на канал."},
+{id:885,kz:"Жазылудан шығу",ru:"Отписаться",topic:"tech",example_kz:"Жазылудан шықтым.",example_ru:"Я отписался."},
+{id:886,kz:"Бағалау",ru:"Оценить",topic:"tech",example_kz:"Видеоны бағаладым.",example_ru:"Я оценил видео."},
+{id:887,kz:"Пікір",ru:"Комментарий",topic:"tech",example_kz:"Пікір қалдырдым.",example_ru:"Я оставил комментарий."},
+{id:888,kz:"Жүктелу",ru:"Загружаться",topic:"tech",example_kz:"Бет жүктеліп жатыр.",example_ru:"Страница загружается."},
+{id:889,kz:"Істен шығу",ru:"Сломаться",topic:"tech",example_kz:"Телефон істен шықты.",example_ru:"Телефон сломался."},
+{id:890,kz:"Жөндеу",ru:"Починить",topic:"tech",example_kz:"Телефонды жөндеуге бердім.",example_ru:"Я сдал телефон в ремонт."},
+{id:891,kz:"Жаңарту",ru:"Обновить",topic:"tech",example_kz:"Программаны жаңарттым.",example_ru:"Я обновил программу."},
+{id:892,kz:"Орнату",ru:"Настроить",topic:"tech",example_kz:"Принтерді орнаттым.",example_ru:"Я настроил принтер."},
+{id:893,kz:"Байланыс",ru:"Связь",topic:"tech",example_kz:"Байланыс үзілді.",example_ru:"Связь оборвалась."},
+{id:894,kz:"Нөмір",ru:"Номер",topic:"tech",example_kz:"Телефон нөмірін беріңіз.",example_ru:"Дайте номер телефона."},
+{id:895,kz:"Хабарласу",ru:"Связаться",topic:"tech",example_kz:"Хабарласыңыз.",example_ru:"Свяжитесь."},
+{id:896,kz:"Тіркелгі",ru:"Аккаунт",topic:"tech",example_kz:"Тіркелгіні жасадым.",example_ru:"Я создал аккаунт."},
+{id:897,kz:"Бұғаттау",ru:"Заблокировать",topic:"tech",example_kz:"Нөмірді бұғаттадым.",example_ru:"Я заблокировал номер."},
+{id:898,kz:"Бұғаттан шығару",ru:"Разблокировать",topic:"tech",example_kz:"Нөмірді бұғаттан шығардым.",example_ru:"Я разблокировал номер."},
+{id:899,kz:"Тілкеш",ru:"Ссылка",topic:"tech",example_kz:"Тілкешті көшірдім.",example_ru:"Я скопировал ссылку."},
+{id:900,kz:"Бет",ru:"Страница",topic:"tech",example_kz:"Бетті ашыңыз.",example_ru:"Откройте страницу."},
+{id:901,kz:"Жүктеу",ru:"Загрузка",topic:"tech",example_kz:"Жүктеу баяу.",example_ru:"Загрузка медленная."},
+{id:902,kz:"Жылдам",ru:"Быстрый",topic:"tech",example_kz:"Желі жылдам.",example_ru:"Интернет быстрый."},
+{id:903,kz:"Баяу",ru:"Медленный",topic:"tech",example_kz:"Бет баяу жүктеліп тұр.",example_ru:"Страница грузится медленно."},
+{id:904,kz:"Жұмыс істеу",ru:"Работать (техника)",topic:"tech",example_kz:"Принтер жұмыс істеп тұр.",example_ru:"Принтер работает."},
+{id:905,kz:"Өшу",ru:"Выключиться",topic:"tech",example_kz:"Телефон өшіп қалды.",example_ru:"Телефон выключился."},
+{id:906,kz:"Қосылу",ru:"Подключиться",topic:"tech",example_kz:"Wi-Fi-ге қосылдым.",example_ru:"Я подключился к Wi-Fi."},
+{id:907,kz:"Бөлу",ru:"Разделить",topic:"tech",example_kz:"Файлды бөлдім.",example_ru:"Я разделил файл."},
+{id:908,kz:"Біріктіру",ru:"Объединить",topic:"tech",example_kz:"Файлдарды біріктірдім.",example_ru:"Я объединил файлы."},
+{id:909,kz:"Құру",ru:"Создать",topic:"tech",example_kz:"Тіркелгіні құрдым.",example_ru:"Я создал аккаунт."},
+{id:910,kz:"Өңдеу",ru:"Обработать",topic:"tech",example_kz:"Фотосуретті өңдедім.",example_ru:"Я обработал фотографию."},
+
+// === ГЛАГОЛЫ ДВИЖЕНИЯ И СОСТОЯНИЯ (100) ===
+{id:911,kz:"Бару",ru:"Идти",topic:"movement",example_kz:"Дүкенге бардым.",example_ru:"Я пошёл в магазин."},
+{id:912,kz:"Келу",ru:"Приходить",topic:"movement",example_kz:"Дәрігер келді.",example_ru:"Врач пришёл."},
+{id:913,kz:"Шығу",ru:"Выходить",topic:"movement",example_kz:"Үйден шықтым.",example_ru:"Я вышел из дома."},
+{id:914,kz:"Кіру",ru:"Входить",topic:"movement",example_kz:"Кеңсеге кірдім.",example_ru:"Я зашёл в офис."},
+{id:915,kz:"Жету",ru:"Добираться",topic:"movement",example_kz:"Жұмысқа жеттім.",example_ru:"Я добрался до работы."},
+{id:916,kz:"Кешігу",ru:"Опаздывать",topic:"movement",example_kz:"Кешігіп келдім.",example_ru:"Я опоздал."},
+{id:917,kz:"Жүру",ru:"Ходить, ехать",topic:"movement",example_kz:"Автобуспен жүремін.",example_ru:"Я езжу на автобусе."},
+{id:918,kz:"Тұру",ru:"Стоять",topic:"movement",example_kz:"Кезекте тұрмын.",example_ru:"Я стою в очереди."},
+{id:919,kz:"Отыру",ru:"Сидеть",topic:"movement",example_kz:"Үстелде отырмын.",example_ru:"Я сижу за столом."},
+{id:920,kz:"Жату",ru:"Лежать",topic:"movement",example_kz:"Төсекте жатырмын.",example_ru:"Я лежу на кровати."},
+{id:921,kz:"Түсу",ru:"Спускаться",topic:"movement",example_kz:"Басқыштан түстім.",example_ru:"Я спустился по лестнице."},
+{id:922,kz:"Көтерілу",ru:"Подниматься",topic:"movement",example_kz:"Басқышпен көтерілдім.",example_ru:"Я поднялся по лестнице."},
+{id:923,kz:"Айналу",ru:"Поворачивать",topic:"movement",example_kz:"Оңға айналдым.",example_ru:"Я повернул направо."},
+{id:924,kz:"Тоқтау",ru:"Останавливаться",topic:"movement",example_kz:"Дүкенде тоқтадым.",example_ru:"Я остановился в магазине."},
+{id:925,kz:"Жүгіру",ru:"Бежать",topic:"movement",example_kz:"Жүгіріп келдім.",example_ru:"Я прибежал."},
+{id:926,kz:"Секіру",ru:"Прыгать",topic:"movement",example_kz:"Бала секіріп ойнап жатыр.",example_ru:"Ребёнок прыгая играет."},
+{id:927,kz:"Жүзу",ru:"Плыть",topic:"movement",example_kz:"Өзенде жүздім.",example_ru:"Я плавал в реке."},
+{id:928,kz:"Ұшып бару",ru:"Лететь",topic:"movement",example_kz:"Ұшақпен ұшып бардым.",example_ru:"Я полетел на самолёте."},
+{id:929,kz:"Көлік жүру",ru:"Ехать на транспорте",topic:"movement",example_kz:"Көлік жүріп тұр.",example_ru:"Транспорт ходит."},
+{id:930,kz:"Аттану",ru:"Отправляться",topic:"movement",example_kz:"Ертең аттанамын.",example_ru:"Я отправлюсь завтра."},
+{id:931,kz:"Қайту",ru:"Возвращаться",topic:"movement",example_kz:"Үйге қайттым.",example_ru:"Я вернулся домой."},
+{id:932,kz:"Өту",ru:"Проходить",topic:"movement",example_kz:"Көпірден өттім.",example_ru:"Я прошёл через мост."},
+{id:933,kz:"Кіріп бару",ru:"Зайти",topic:"movement",example_kz:"Дүкенге кіріп бардым.",example_ru:"Я зайти в магазин."},
+{id:934,kz:"Шығып бару",ru:"Выйти",topic:"movement",example_kz:"Сыртқа шығып бардым.",example_ru:"Я вышел наружу."},
+{id:935,kz:"Жеткізу",ru:"Доставить",topic:"movement",example_kz:"Тауарды жеткіздім.",example_ru:"Я доставил товар."},
+{id:936,kz:"Апару",ru:"Увезти",topic:"movement",example_kz:"Тауарды апардым.",example_ru:"Я увёз товар."},
+{id:937,kz:"Әкелу",ru:"Привезти",topic:"movement",example_kz:"Тауарды әкелдім.",example_ru:"Я привёз товар."},
+{id:938,kz:"Жөнелту",ru:"Отправить",topic:"movement",example_kz:"Хатты жөнелттім.",example_ru:"Я отправил письмо."},
+{id:939,kz:"Шақыру",ru:"Вызвать",topic:"movement",example_kz:"Таксиді шақырдым.",example_ru:"Я вызвал такси."},
+{id:940,kz:"Міну",ru:"Сесть (в транспорт)",topic:"movement",example_kz:"Автобусқа міндім.",example_ru:"Я сел в автобус."},
+{id:941,kz:"Түсу",ru:"Выйти (из транспорта)",topic:"movement",example_kz:"Автобустан түстім.",example_ru:"Я вышел из автобуса."},
+{id:942,kz:"Бұрылу",ru:"Повернуть",topic:"movement",example_kz:"Бұрылып бардым.",example_ru:"Я свернул."},
+{id:943,kz:"Түзу",ru:"Идти прямо",topic:"movement",example_kz:"Түзу жүріңіз.",example_ru:"Идите прямо."},
+{id:944,kz:"Артқа бұру",ru:"Повернуть назад",topic:"movement",example_kz:"Артқа бұрылыңыз.",example_ru:"Поверните назад."},
+{id:945,kz:"Тездету",ru:"Ускориться",topic:"movement",example_kz:"Тездетіңіз.",example_ru:"Прибавьте скорость."},
+{id:946,kz:"Баяулату",ru:"Замедлиться",topic:"movement",example_kz:"Баяулатыңыз.",example_ru:"Замедлитесь."},
+{id:947,kz:"Тоқтату",ru:"Остановить",topic:"movement",example_kz:"Таксиді тоқтаттым.",example_ru:"Я остановил такси."},
+{id:948,kz:"Жүру",ru:"Идти пешком",topic:"movement",example_kz:"Жаяу жүріп бардым.",example_ru:"Я пошёл пешком."},
+{id:949,kz:"Атпен жүру",ru:"Ехать верхом",topic:"movement",example_kz:"Атпен жүрдім.",example_ru:"Я ехал верхом."},
+{id:950,kz:"Шарлау",ru:"Обходить",topic:"movement",example_kz:"Қалаға шарлау жасадым.",example_ru:"Я обошёл город."},
+{id:951,kz:"Кезігу",ru:"Встретиться",topic:"movement",example_kz:"Досыма кезіктім.",example_ru:"Я встретился с другом."},
+{id:952,kz:"Жиналу",ru:"Собраться",topic:"movement",example_kz:"Жиналып кеттік.",example_ru:"Мы собрались и ушли."},
+{id:953,kz:"Бөліну",ru:"Разделиться",topic:"movement",example_kz:"Жолда бөліндік.",example_ru:"Мы разделились на дороге."},
+{id:954,kz:"Бірігу",ru:"Объединиться",topic:"movement",example_kz:"Бөлімдер бірікті.",example_ru:"Отделы объединились."},
+{id:955,kz:"Жиналу",ru:"Собираться",topic:"movement",example_kz:"Жиналып жатырмыз.",example_ru:"Мы собираемся."},
+{id:956,kz:"Таралу",ru:"Расходиться",topic:"movement",example_kz:"Көп таралды.",example_ru:"Толпа разошлась."},
+{id:957,kz:"Жақындау",ru:"Приближаться",topic:"movement",example_kz:"Күн жақындап келеді.",example_ru:"День приближается."},
+{id:958,kz:"Алыстау",ru:"Удаляться",topic:"movement",example_kz:"Күн алыстап барады.",example_ru:"День удаляется."},
+{id:959,kz:"Көтеру",ru:"Поднять",topic:"movement",example_kz:"Сөмкені көтердім.",example_ru:"Я поднял сумку."},
+{id:960,kz:"Түсіру",ru:"Опустить",topic:"movement",example_kz:"Сөмкені түсірдім.",example_ru:"Я опустил сумку."},
+{id:961,kz:"Илеу",ru:"Повесить",topic:"movement",example_kz:"Киімді іліп қойдым.",example_ru:"Я повесил одежду."},
+{id:962,kz:"Қою",ru:"Поставить, положить",topic:"movement",example_kz:"Сөмкені қойдым.",example_ru:"Я положил сумку."},
+{id:963,kz:"Алу",ru:"Взять",topic:"movement",example_kz:"Кітапты алдым.",example_ru:"Я взял книгу."},
+{id:964,kz:"Беру",ru:"Дать",topic:"movement",example_kz:"Кітапты бердім.",example_ru:"Я дал книгу."},
+{id:965,kz:"Соғу",ru:"Ударить",topic:"movement",example_kz:"Есікті соғып кірдім.",example_ru:"Я вошёл, хлопнув дверью."},
+{id:966,kz:"Сүйреу",ru:"Тащить",topic:"movement",example_kz:"Сөмкені сүйреп бардым.",example_ru:"Я потащил сумку."},
+{id:967,kz:"Итеру",ru:"Толкнуть",topic:"movement",example_kz:"Есікті итердім.",example_ru:"Я толкнул дверь."},
+{id:968,kz:"Тарту",ru:"Тянуть",topic:"movement",example_kz:"Есікті тарттым.",example_ru:"Я потянул дверь."},
+{id:969,kz:"Ұстау",ru:"Держать",topic:"movement",example_kz:"Қолымда ұстап тұрмын.",example_ru:"Я держу в руке."},
+{id:970,kz:"Босату",ru:"Отпустить",topic:"movement",example_kz:"Қолымды босаттым.",example_ru:"Я отпустил руку."},
+{id:971,kz:"Созу",ru:"Протянуть",topic:"movement",example_kz:"Қолымды создым.",example_ru:"Я протянул руку."},
+{id:972,kz:"Бұру",ru:"Повернуть",topic:"movement",example_kz:"Басымды бұрдым.",example_ru:"Я повернул голову."},
+{id:973,kz:"Еңкею",ru:"Наклониться",topic:"movement",example_kz:"Еңкейіп алдым.",example_ru:"Я наклонился."},
+{id:974,kz:"Тікелеп тұру",ru:"Выпрямиться",topic:"movement",example_kz:"Тікелеп тұрдым.",example_ru:"Я выпрямился."},
+{id:975,kz:"Отыру",ru:"Сесть",topic:"movement",example_kz:"Орындықта отырдым.",example_ru:"Я сел на стул."},
+{id:976,kz:"Тұру",ru:"Встать",topic:"movement",example_kz:"Орындықтан тұрдым.",example_ru:"Я встал со стула."},
+{id:977,kz:"Жату",ru:"Лечь",topic:"movement",example_kz:"Төсекке жаттым.",example_ru:"Я лёг на кровать."},
+{id:978,kz:"Ояну",ru:"Проснуться",topic:"movement",example_kz:"Таңертең ояндым.",example_ru:"Я проснулся утром."},
+{id:979,kz:"Ұйықтау",ru:"Уснуть",topic:"movement",example_kz:"Ерте ұйықтадым.",example_ru:"Я рано уснул."},
+{id:980,kz:"Ояну",ru:"Бодрствовать",topic:"movement",example_kz:"Кешке дейін оянмын.",example_ru:"Я бодрствую до вечера."},
+{id:981,kz:"Тұру",ru:"Подниматься",topic:"movement",example_kz:" Таңертең ерте тұрамын.",example_ru:"Я рано встаю утром."},
+{id:982,kz:"Жүру",ru:"Ходить",topic:"movement",example_kz:"Жаяу жүремін.",example_ru:"Я хожу пешком."},
+{id:983,kz:"Жүру",ru:"Ехать",topic:"movement",example_kz:"Машинамен жүремін.",example_ru:"Я езжу на машине."},
+{id:984,kz:"Бару",ru:"Ехать",topic:"movement",example_kz:"Дәрігерге бардым.",example_ru:"Я ездил к врачу."},
+{id:985,kz:"Келу",ru:"Приехать",topic:"movement",example_kz:"Автобуспен келдім.",example_ru:"Я приехал на автобусе."},
+{id:986,kz:"Шығу",ru:"Уехать",topic:"movement",example_kz:"Кешке шықтым.",example_ru:"Я уехал вечером."},
+{id:987,kz:"Кіру",ru:"Заехать",topic:"movement",example_kz:"Дүкенге кірдім.",example_ru:"Я заехал в магазин."},
+{id:988,kz:"Жету",ru:"Доехать",topic:"movement",example_kz:"Уақытында жеттім.",example_ru:"Я доехал вовремя."},
+{id:989,kz:"Қайту",ru:"Вернуться",topic:"movement",example_kz:"Ертең қайтамын.",example_ru:"Я вернусь завтра."},
+{id:990,kz:"Шығу",ru:"Выехать",topic:"movement",example_kz:"Таңертең шықтым.",example_ru:"Я выехал утром."},
+{id:991,kz:"Тоқтау",ru:"Остановиться",topic:"movement",example_kz:"Машинамен тоқтадым.",example_ru:"Я остановился на машине."},
+{id:992,kz:"Жүру",ru:"Ехать",topic:"movement",example_kz:"Жолда жүріп келемін.",example_ru:"Я еду по дороге."},
+{id:993,kz:"Бару",ru:"Пойти",topic:"movement",example_kz:"Сыртқа бардым.",example_ru:"Я пошёл наружу."},
+{id:994,kz:"Келу",ru:"Прийти",topic:"movement",example_kz:"Үйге келдім.",example_ru:"Я пришёл домой."},
+{id:995,kz:"Шығу",ru:"Выйти",topic:"movement",example_kz:"Үйден шықтым.",example_ru:"Я вышел из дома."},
+{id:996,kz:"Кіру",ru:"Войти",topic:"movement",example_kz:"Кеңсеге кірдім.",example_ru:"Я вошёл в офис."},
+{id:997,kz:"Жүру",ru:"Идти",topic:"movement",example_kz:"Жаяу көше бойымен жүрдім.",example_ru:"Я шёл пешком по улице."},
+{id:998,kz:"Бару",ru:"Дойти",topic:"movement",example_kz:"Жаяу бардым.",example_ru:"Я дошёл пешком."},
+{id:999,kz:"Келу",ru:"Прибыть",topic:"movement",example_kz:"Поезд уақытында келді.",example_ru:"Поезд прибыл вовремя."},
+{id:1000,kz:"Жету",ru:"Прибыть",topic:"movement",example_kz:"Әуежайға жеттік.",example_ru:"Мы прибыли в аэропорт."}
+];
+
+// Fix entry with typo
+WORDS.find(w=>w.id===127).kz="Зиян";
+
+const DIALOGUES=[
+{id:1,title:"Офисте",lines:[{s:"A",t:"Сәлем, кешегі жиналыстың хаттамасын көрдің бе?"},{s:"B",t:"Әлі жоқ. Басшы әлі бекіткен жоқ."},{s:"A",t:"Ал қашан болады? Мен есепке қосуым керек."},{s:"B",t:"Ертең таңертең дайын болады деп уәде берді."}],q:"Не күтіп тұр?",a:["Хаттаманы","Есепті","Бағаны"],c:1},
+{id:2,title:"Таксиде",lines:[{s:"A",t:"Ағай, қала орталығына баруға бола ма?"},{s:"B",t:"Әрине, мініңіз. Қайда дәл барасыз?"},{s:"A",t:"Сауда орталығының алдына тастап қойыңыз."},{s:"B",t:"Жақсы, он бес минутта жетеміз."}],q:"Жолаушы қайда бара жатыр?",a:["Үйіне","Сауда орталығына","Дәрігерге"],c:1},
+{id:3,title:"Ресторанда",lines:[{s:"A",t:"Сәлеметсіз бе, мәзірді беріңізші."},{s:"B",t:"Әрине, мынау мәзір. Бүгінгі тағамымыз — қазы."},{s:"A",t:"Қазы мен күрке алсам бола ма?"},{s:"B",t:"Әрине, тағамды қалай дайындауымыз керек?"},{s:"A",t:"Қазыны қуырып беріңіз, ал күркені қайнатыңыз."}],q:"Клиент не тапсырыс берді?",a:["Балық пен салат","Қазы мен күрке","Ет пен көкөніс"],c:1},
+{id:4,title:"Поликлиникада",lines:[{s:"A",t:"Сәлеметсіз бе, дәрігерге жазылыңызшы."},{s:"B",t:"Кешіріңіз, дәрігер бүгін қабылдау жүргізіп тұр ма?"},{s:"A",t:"Иә, бірақ кезек көп. Сағат үшке дейін күтуіңізге болады."},{s:"B",t:"Жақсы, күтейін."}],q:"Дәрігерге не істеу керек?",a:["Ертең келу","Кезекте тұру","Телефон соғу"],c:1},
+{id:5,title:"Магазинде",lines:[{s:"A",t:"Сәлеметсіз бе, бұл көйлектің өлшемі бар ма?"},{s:"B",t:"Иә, бар. Қандай өлшем керек?"},{s:"A",t:"Кішірек болса екен."},{s:"B",t:"Мынауын қараңызшы."},{s:"A",t:"Бағасы қанша?"},{s:"B",t:"Он бес мың теңге."}],q:"Клиент не іздеп тұр?",a:["Аяқ киім","Көйлек","Сөмке"],c:1},
+{id:6,title:"Достар арасында",lines:[{s:"A",t:"Сәлем, кеше қайда болдың?"},{s:"B",t:"Кинотеатрға бардым. Жаңа фильм көрдім."},{s:"A",t:"Қалай болды?"},{s:"B",t:"Өте жақсы болды! Саған да ұнайды деп ойлаймын."},{s:"A",t:"Көрсетіңізші, қашан барамыз?"}],q:"Досы не істеді?",a:["Кітап оқыды","Фильм көрді","Спортпен айналысты"],c:1},
+{id:7,title:"Көршімен",lines:[{s:"A",t:"Сәлеметсіз бе, кешіріңіз, түнде шу естілді."},{s:"B",t:"Кешіріңізші, балалар ойнап жатқан болар."},{s:"A",t:"Иә, түн ортасында көп шу болды."},{s:"B",t:"Енді мұқият боламын, кешіріңіз."}],q:"Не туралы әңгіме?",a:["Дүкен","Шу","Серуен"],c:1},
+{id:8,title:"Банкте",lines:[{s:"A",t:"Сәлеметсіз бе, несиені қалай рәсімдеймін?"},{s:"B",t:"Құжаттарыңызды беріңізші."},{s:"A",t:"Міне, төлқұжатым мен жұмыс орнынан анықтама."},{s:"B",t:"Жақсы, сағат ішінде шешім шығады."}],q:"Адам не істемек?",a:["Банк ашу","Несие рәсімдеу","Ақша салу"],c:1},
+{id:9,title:"Кеңседе",lines:[{s:"A",t:"Басшы, жоба туралы айтқым келеді."},{s:"B",t:"Әрине, тыңдап тұрмын."},{s:"A",t:"Бізге қосымша ресурс керек."},{s:"B",t:"Жақсы, жоспарды дайындаңыз, талқылаймыз."}],q:"Не керек?",a:["Көбірек уақыт","Қосымша ресурс","Жаңа құжат"],c:1},
+{id:10,title:"Дәріханада",lines:[{s:"A",t:"Сәлеметсіз бе, бас ауруына дәрі бар ма?"},{s:"B",t:"Иә, бар. Мынауын қабылдаңыз — күніне үш рет."},{s:"A",t:"Рахмет. Басқа да дәрілер бар ма?"},{s:"B",t:"Иә, витаминдер де бар."}],q:"Адам не іздеп тұр?",a:["Тамақ","Дәрі","Киім"],c:0},
+{id:11,title:"Таксиде 2",lines:[{s:"A",t:"Әкем, әуежайға тез баруға бола ма?"},{s:"B",t:"Әрине, бірақ жолда кептеліс бар."},{s:"A",t:"Ұшақ сағат төртте ұшады."},{s:"B",t:"Жақсы, тездетеміз."}],q:"Жолаушы қайда бара жатыр?",a:["Үйіне","Әуежайға","Вокзалға"],c:1},
+{id:12,title:"Ресторанда 2",lines:[{s:"A",t:"Есепшотты беріңізші."},{s:"B",t:"Әрине, сізге не ұнады?"},{s:"A",t:"Тамақ өте дәмді болды!"},{s:"B",t:"Рахмет! Тағы келіңіз."}],q:"Клиент не айтты?",a:["Тамақ дәмсіз","Тамақ дәмді","Тамақ аз"],c:1},
+{id:13,title:"Мектепте",lines:[{s:"A",t:"Оқушылар, бүгінгі сабақ — емтиханға дайындық."},{s:"B",t:"Мұғалім, емтихан қашан болады?"},{s:"A",t:"Келесі аптада. Дайындалыңыздар."}],q:"Сабақ не туралы?",a:["Жаңа тақырып","Емтиханға дайындық","Ойын"],c:1},
+{id:14,title:"Дүкенде",lines:[{s:"A",t:"Сәлеметсіз бе, бұл аяқ киімнің бағасы қанша?"},{s:"B",t:"Он бес мың теңге."},{s:"A",t:"Арзандату бар ма?"},{s:"B",t:"Иә, осы аптада отыз пайыз арзандату."}],q:"Арзандату қанша?",a:["Он пайыз","Отыз пайыз","Елу пайыз"],c:1},
+{id:15,title:"Поликлиникада 2",lines:[{s:"A",t:"Дәрігер, температурам көтерілді."},{s:"B",t:"Термометрді көрсетіңізші."},{s:"A",t:"Отыз сегіз градус."},{s:"B",t:"Тұмау болып тұр. Дәрі ішіңіз."}],q:"Науқастың температурасы қанша?",a:["Отыз алты","Отыз сегіз","Қырық"],c:1},
+{id:16,title:"Кеңседе 2",lines:[{s:"A",t:"Тапсырма орындалды ма?"},{s:"B",t:"Иә, барлығы дайын."},{s:"A",t:"Жақсы, басшыға көрсетіңіз."}],q:"Не дайын?",a:["Есеп","Тамақ","Киім"],c:0},
+{id:17,title:"Автобуста",lines:[{s:"A",t:"Осы бағыт қала орталығына бара ма?"},{s:"B",t:"Иә, бұл бағыт орталықтан өтеді."},{s:"A",t:"Рахмет."}],q:"Жолаушы не сұрады?",a:["Такси","Автобус бағыты","Пойыз"],c:1},
+{id:18,title:"Серуенде",lines:[{s:"A",t:"Бүгін көңіл-күйің қалай?"},{s:"B",t:"Жақсы, серуенге шықтым."},{s:"A",t:"Мен де серуенге шыққым келеді."}],q:"Достар не істеп жатыр?",a:["Жұмыс істеп тұр","Серуенде жүр","Тамақ ішіп тұр"],c:1},
+{id:19,title:"Жұмыста",lines:[{s:"A",t:"Бүгінгі жиналыс қашан?"},{s:"B",t:"Сағат онда."},{s:"A",t:"Жақсы, дайындаламын."}],q:"Жиналыс қашан болады?",a:["Сағат сегізде","Сағат онда","Сағат онда"],c:1},
+{id:20,title:"Үйде",lines:[{s:"A",t:"Үй жұмысын істеу керек."},{s:"B",t:"Мен кір жууға көмектесемін."},{s:"A",t:"Рахмет, сенің көмегің керек."}],q:"Не істеу керек?",a:["Тамақ пісіру","Үй жұмысы","Серуенге шығу"],c:1},
+{id:21,title:"Дүкенде 2",lines:[{s:"A",t:"Бұл көйлектің түсі басқа бар ма?"},{s:"B",t:"Иә, көк түсті де бар."},{s:"A",t:"Көк түсті көрсетіңізші."}],q:"Клиент не сұрады?",a:["Басқа өлшем","Басқа түс","Басқа баға"],c:1},
+{id:22,title:"Дәріханада 2",lines:[{s:"A",t:"Дәріні қалай қабылдауым керек?"},{s:"B",t:"Күніне үш рет, тамақтан кейін."},{s:"A",t:"Рахмет."}],q:"Дәріні қалай ішу керек?",a:["Күніне бір рет","Күніне үш рет","Тәулігіне бір рет"],c:1},
+{id:23,title:"Банкте 2",lines:[{s:"A",t:"Төлем жасағым келеді."},{s:"B",t:"Наличными ма, әлде карта арқылы ма?"},{s:"A",t:"Карта арқылы төлеймін."}],q:"Төлем тәсілі қандай?",a:["Наличными","Карта арқылы","Телефон арқылы"],c:1},
+{id:24,title:"Студенттер арасында",lines:[{s:"A",t:"Емтиханға дайындалдың ба?"},{s:"B",t:"Әрине, түні бойы оқыдым."},{s:"A",t:"Менің де дайындығым жақсы."}],q:"Студенттер не істеді?",a:["Ойын ойнады","Емтиханға дайындалды","Серуенге шықты"],c:1},
+{id:25,title:"Сауда орталығында",lines:[{s:"A",t:"Бұл сауда орталығында кинотеатр бар ма?"},{s:"B",t:"Иә, бесінші қабатта."},{s:"A",t:"Рахмет."}],q:"Кинотеатр қайда?",a:["Бірінші қабатта","Бесінші қабатта","Үшінші қабатта"],c:1},
+{id:26,title:"Тамақтану орнында",lines:[{s:"A",t:"Мәзірдегі ең дәмді тағам — қайсысы?"},{s:"B",t:"Бүгінгі қазы — ең танымал тағам."},{s:"A",t:"Жақсы, қазы аламын."}],q:"Клиент не алмақ?",a:["Балық","Қазы","Салат"],c:1},
+{id:27,title:"Спортзалда",lines:[{s:"A",t:"Сәлем, жаттығуға көмектесесің бе?"},{s:"B",t:"Әрине, қандай жаттығу жасағың келеді?"},{s:"A",t:"Арқа жаттығуын жасағым келеді."}],q:"Адам не істемек?",a:["Жүгіру","Арқа жаттығуы","Секіру"],c:1},
+{id:28,title:"Поштада",lines:[{s:"A",t:"Сәлеметсіз бе, хатты қалай жіберемін?"},{s:"B",t:"Конвертке салып, мекенжай жазыңыз."},{s:"A",t:"Рахмет."}],q:"Адам не істемек?",a:["Ақша жіберу","Хат жіберу","Тауар алу"],c:1},
+{id:29,title:"Кітапханада",lines:[{s:"A",t:"Сәлеметсіз бе, осы кітапты алуға бола ма?"},{s:"B",t:"Иә, тіркелгіңіз бар ма?"},{s:"A",t:"Иә, міне."}],q:"Адам не істемек?",a:["Кітап сатып алу","Кітап алу","Кітап оқу"],c:1},
+{id:30,title:"Мектепте 2",lines:[{s:"A",t:"Балам, сабақ қалай өтті?"},{s:"B",t:"Жақсы, жақсы баға алдым."},{s:"A",t:"Жақсы, мақтанышымсың."}],q:"Бала не айтты?",a:["Баға жаман","Баға жақсы","Сабақ жоқ"],c:1},
+{id:31,title:"Көршімен 2",lines:[{s:"A",t:"Сәлеметсіз бе, сізде қант бар ма?"},{s:"B",t:"Иә, бар. Не үшін керек?"},{s:"A",t:"Шәй ішкім келеді."},{s:"B",t:"Мынауын алыңыз."}],q:"Неден көкейтеді?",a:["Нан","Қант","Тұз"],c:1},
+{id:32,title:"Таксиде 3",lines:[{s:"A",t:"Әкем, осы таксиметр дұрыс жұмыс істеп тұр ма?"},{s:"B",t:"Иә, бәрі дұрыс."},{s:"A",t:"Жақсы."}],q:"Жолаушы не сұрады?",a:["Таксиметр","Жол","Баға"],c:0},
+{id:33,title:"Ресторанда 3",lines:[{s:"A",t:"Тамақтың құрамында аллергендер бар ма?"},{s:"B",t:"Иә, құрамында сүт бар."},{s:"A",t:"Маған сүтсіз тағам керек."}],q:"Клиент не сұрады?",a:["Тамақтың бағасы","Тамақтың құрамы","Тамақтың дәмі"],c:1},
+{id:34,title:"Жұмыста 3",lines:[{s:"A",t:"Жоба мерзімі қашан аяқталады?"},{s:"B",t:"Келесі аптада."},{s:"A",t:"Жақсы, дайындықты күшейтейік."}],q:"Не туралы сөйлесіп тұр?",a:["Жалақы","Жоба мерзімі","Демалыс"],c:1},
+{id:35,title:"Дүкенде 3",lines:[{s:"A",t:"Бұл тауарды қайтаруға бола ма?"},{s:"B",t:"Иә, он күннің ішінде."},{s:"A",t:"Жақсы, қайтарамын."}],q:"Клиент не істемек?",a:["Тауарды айырбастау","Тауарды қайтару","Тауарды сату"],c:1},
+{id:36,title:"Емханада",lines:[{s:"A",t:"Дәрігер, тамағым ауырып тұр."},{s:"B",t:"Аузыңызды ашып, тамағыңызды қараңыз."},{s:"A",t:"Иә."},{s:"B",t:"Тамағыңыз қызарған. Антибиотик ішу керек."}],q:"Науқастың несі ауырады?",a:["Басы","Тамағы","Аяғы"],c:1},
+{id:37,title:"Студенттер арасында 2",lines:[{s:"A",t:"Бүгін кешке не істейміз?"},{s:"B",t:"Караокеге барғым келеді."},{s:"A",t:"Жақсы идея!"}],q:"Студенттер не істемек?",a:["Кинотеатр","Караоке","Мектеп"],c:1},
+{id:38,title:"Банкте 3",lines:[{s:"A",t:"Бұл төлемді қалай жасаймын?"},{s:"B",t:"Бөліп төлеуге болады."},{s:"A",t:"Жақсы, онда бөліп төлеймін."}],q:"Төлем тәсілі қандай?",a:["Бірден төлеу","Бөліп төлеу","Кейінірек төлеу"],c:1},
+{id:39,title:"Серуенде 2",lines:[{s:"A",t:"Бүгін ауа райы қандай?"},{s:"B",t:"Күн жарқырап тұр."},{s:"A",t:"Жақсы, серуенге шығайық."}],q:"Ауа райы қандай?",a:["Жаңбырлы","Күн ашық","Боранды"],c:1},
+{id:40,title:"Көңіл көтеру орнында",lines:[{s:"A",t:"Бильярд ойнаймыз ба?"},{s:"B",t:"Әрине, мен жеңемін!"},{s:"A",t:"Көріп алайық."}],q:"Достар не істемек?",a:["Бильярд","Боулинг","Караоке"],c:0},
+{id:41,title:"Дүкенде 4",lines:[{s:"A",t:"Бұл өнімнің кепілдемесі бар ма?"},{s:"B",t:"Иә, бір жылдық кепілдеме бар."},{s:"A",t:"Жақсы, аламын."}],q:"Клиент не сұрады?",a:["Тауардың бағасы","Кепілдеме","Тауардың түсі"],c:1},
+{id:42,title:"Поштада 2",lines:[{s:"A",t:"Бұл хатты халықаралық жіберуге бола ма?"},{s:"B",t:"Иә, бірақ бағасы қымбатырақ."},{s:"A",t:"Қанша тұрады?"},{s:"B",t:"Бес мың теңге."}],q:"Адам не істемек?",a:["Хат жіберу","Ақша жіберу","Тауар жіберу"],c:0},
+{id:43,title:"Мектепте 3",lines:[{s:"A",t:"Балалар, бүгінгі сабақ — математика."},{s:"B",t:"Мұғалім, бүгінгі тапсырма қандай?"},{s:"A",t:"Он есеп шығарыңыздар."}],q:"Сабақ не туралы?",a:["Математика","Әдебиет","Тарих"],c:0},
+{id:44,title:"Сауда орталығында 2",lines:[{s:"A",t:"Бұл сауда орталығында дәмхана бар ма?"},{s:"B",t:"Иә, бірінші қабатта."},{s:"A",t:"Рахмет, барамын."}],q:"Адам не іздеп тұр?",a:["Магазин","Дәмхана","Кинотеатр"],c:1},
+{id:45,title:"Тамақтану орнында 2",lines:[{s:"A",t:"Мәзірде вегетариандық тағам бар ма?"},{s:"B",t:"Иә, бар. Мынауын ұсынамын."},{s:"A",t:"Жақсы, аламын."}],q:"Клиент не сұрады?",a:["Тәтті тағам","Вегетариандық тағам","Ет тағамы"],c:1},
+{id:46,title:"Поликлиникада 3",lines:[{s:"A",t:"Дәрігер, вакцинациядан өткім келеді."},{s:"B",t:"Әрине, мынау тізімге жазылыңыз."},{s:"A",t:"Рахмет."}],q:"Науқастың несі керек?",a:["Дәрі","Вакцинация","Операция"],c:1},
+{id:47,title:"Жұмыста 4",lines:[{s:"A",t:"Іссапарға шығуым керек."},{s:"B",t:"Қайда барасыз?"},{s:"A",t:"Алматыға."},{s:"B",t:"Жақсы, жол жүру құжаттарын дайындаңыз."}],q:"Адам қайда бара жатыр?",a:["Астана","Алматы","Шымкент"],c:1},
+{id:48,title:"Таксиде 4",lines:[{s:"A",t:"Әкем, бұл жолмен тезірек барамыз ба?"},{s:"B",t:"Иә, бұл жол бос."},{s:"A",t:"Жақсы."}],q:"Таксист не айтты?",a:["Жол толық","Жол бос","Жол жабық"],c:1},
+{id:49,title:"Дүкенде 5",lines:[{s:"A",t:"Бұл бағада көрсетілген ба?"},{s:"B",t:"Иә, науқан бар, отыз пайыз арзандату."},{s:"A",t:"Жақсы, аламын."}],q:"Неліктен арзан?",a:["Көрсетілген","Науқан","Қате"],c:1},
+{id:50,title:"Үйде 2",lines:[{s:"A",t:"Үйді жинау керек."},{s:"B",t:"Мен терезені жуамын."},{s:"A",t:"Жақсы, мен кір жуамын."}],q:"Отбасы не істемек?",a:["Тамақ пісіру","Үйді жинау","Серуенге шығу"],c:1}
+];
+
+let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{newCount:0,repeatCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+const STORAGE_KEY='qazaq_tili_v2';
+
+function loadState(){
+try{const s=localStorage.getItem(STORAGE_KEY);if(s)state={...state,...JSON.parse(s)}}catch(e){}
+const today=new Date().toDateString();
+if(state.daily.date!==today){
+const yesterday=new Date(Date.now()-86400000).toDateString();
+if(state.daily.date===yesterday&&state.daily.repeatCount>0){state.streak=(state.streak||0)+1}
+else if(state.daily.date!==today){state.streak=0}
+state.daily={newCount:0,repeatCount:0,date:today,answeredIds:[]};
+state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
+saveState();
+}
+if(!state.streak)state.streak=0;
+if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
+if(!state.daily.answeredIds)state.daily.answeredIds=[];
+}
+
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
+
+function getWordStatus(id){
+const w=state.words[id];
+if(!w)return'new';
+if(w.level>=4)return'learned';
+return'learning';
+}
+
+function getDueWords(){
+const now=Date.now();
+const due=[];
+const newWords=[];
+WORDS.forEach(w=>{
+const ws=state.words[w.id];
+if(!ws){
+if(state.daily.newCount<state.settings.dailyGoal)newWords.push(w);
+}else{
+if(ws.nextReview<=now)due.push(w);
+}
+});
+const remaining=state.settings.dailyGoal-state.daily.newCount;
+const shuffled=newWords.sort(()=>Math.random()-.5).slice(0,Math.max(0,remaining));
+return[...due,...shuffled];
+}
+
+function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+
+function initQueue(){
+const due=getDueWords();
+state.queue=shuffleArray([...due]);
+if(state.queue.length===0){
+const hard=getHardWords();
+if(hard.length>0){state.queue=shuffleArray([...hard])}
+else{state.queue=shuffleArray([...WORDS]).slice(0,20)}
+}
+showNextWord();
+}
+
+function getHardWords(){
+return WORDS.filter(w=>{
+const ws=state.words[w.id];
+return ws&&ws.errors>=3;
+});
+}
+
+function showNextWord(){
+if(state.queue.length===0){initQueue();return}
+state.current=state.queue.shift();
+state.answered=false;
+renderWord();
+updateStats();
+showSessionReview();
+}
+
+function renderWord(){
+if(!state.current)return;
+const w=state.current;
+const topic=TOPICS.find(t=>t.id===w.topic);
+document.getElementById('wordTopic').textContent=topic?topic.name:'';
+document.getElementById('wordExample').style.display='none';
+document.getElementById('feedback').className='feedback';
+document.getElementById('feedback').textContent='';
+document.getElementById('nextBtn').style.display='none';
+document.getElementById('answerInput').value='';
+document.getElementById('answerInput').focus();
+
+if(state.mode==='A'){
+document.getElementById('mainWord').textContent=w.ru;
+document.getElementById('inputRow').style.display='flex';
+document.getElementById('answerInput').placeholder='Введите перевод на казахском...';
+}else if(state.mode==='B'){
+document.getElementById('mainWord').textContent=w.kz;
+document.getElementById('inputRow').style.display='none';
+renderQuizOptions(w);
+}else if(state.mode==='C'){
+document.getElementById('mainWord').textContent='🔊';
+document.getElementById('inputRow').style.display='none';
+renderAudioOptions(w);
+playAudio();
+}
+updateDailyProgress();
+}
+
+function renderQuizOptions(w){
+const correct=w.ru;
+const others=WORDS.filter(x=>x.id!==w.id&&x.topic===w.topic).sort(()=>Math.random()-.5).slice(0,3);
+if(others.length<3){
+const extra=WORDS.filter(x=>x.id!==w.id&&!others.find(o=>o.id===x.id)).sort(()=>Math.random()-.5).slice(0,3-others.length);
+others.push(...extra);
+}
+const options=shuffleArray([correct,...others.map(o=>o.ru)].slice(0,4));
+const html=options.map(o=>`<button class="quiz-option" onclick="checkQuiz(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
+document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="quizOptions" style="margin-top:.75rem">${html}</div>`);
+const existing=document.getElementById('quizOptions');
+if(existing.previousElementSibling!==document.getElementById('inputRow'))existing.remove();
+}
+
+function renderAudioOptions(w){
+const correct=w.kz;
+const others=WORDS.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3);
+const options=shuffleArray([correct,...others.map(o=>o.kz)].slice(0,4));
+const html=options.map(o=>`<button class="quiz-option" onclick="checkAudio(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
+let el=document.getElementById('audioOptions');
+if(el)el.remove();
+document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="audioOptions" style="margin-top:.75rem">${html}</div>`);
+}
+
+function escHtml(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+
+function checkAnswer(){
+if(state.answered||!state.current)return;
+const input=document.getElementById('answerInput').value.trim().toLowerCase();
+const correct=state.current.kz.toLowerCase();
+const alts=(state.current.alts||[]).map(a=>a.toLowerCase());
+const isCorrect=input===correct||alts.includes(input);
+showFeedback(isCorrect);
+updateWordProgress(state.current.id,isCorrect);
+state.answered=true;
+document.getElementById('nextBtn').style.display='inline-block';
+}
+
+function checkQuiz(el,correct){
+if(state.answered)return;
+state.answered=true;
+const isCorrect=el.textContent===correct;
+document.querySelectorAll('#quizOptions .quiz-option').forEach(b=>{
+if(b.textContent===correct)b.classList.add('correct-opt');
+else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
+});
+showFeedback(isCorrect);
+updateWordProgress(state.current.id,isCorrect);
+document.getElementById('nextBtn').style.display='inline-block';
+}
+
+function checkAudio(el,correct){
+if(state.answered)return;
+state.answered=true;
+const isCorrect=el.textContent===correct;
+document.querySelectorAll('#audioOptions .quiz-option').forEach(b=>{
+if(b.textContent===correct)b.classList.add('correct-opt');
+else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
+});
+showFeedback(isCorrect);
+updateWordProgress(state.current.id,isCorrect);
+document.getElementById('nextBtn').style.display='inline-block';
+}
+
+function showFeedback(correct){
+const fb=document.getElementById('feedback');
+if(correct){
+fb.className='feedback correct';
+fb.textContent='✓ Правильно!';
+}else{
+fb.className='feedback wrong';
+fb.textContent=`✗ Неправильно. Правильно: ${state.current.kz}`;
+}
+document.getElementById('wordExample').style.display='block';
+document.getElementById('wordExample').innerHTML=`<strong>Казахский:</strong> ${state.current.example_kz}<br><strong>Русский:</strong> ${state.current.example_ru}`;
+}
+
+function updateWordProgress(id,correct){
+if(!state.words[id])state.words[id]={interval:0,nextReview:0,errors:0,total:0,correct:0,level:0};
+const ws=state.words[id];
+ws.total++;
+state.sessionStats.total++;
+if(correct){
+ws.correct++;
+state.sessionStats.correct++;
+ws.level=(ws.level||0)+1;
+if(ws.level===1)ws.interval=1;
+else if(ws.level===2)ws.interval=3;
+else if(ws.level===3)ws.interval=7;
+else ws.interval=14;
+ws.nextReview=Date.now()+ws.interval*86400000;
+if(!state.daily.repeatCount)state.daily.repeatCount=0;
+state.daily.repeatCount++;
+}else{
+ws.errors=(ws.errors||0)+1;
+state.sessionStats.wrong++;
+ws.level=0;
+ws.interval=0;
+ws.nextReview=Date.now()+3600000;
+if(!state.daily.newCount)state.daily.newCount=0;
+state.daily.newCount++;
+}
+if(!state.daily.answeredIds)state.daily.answeredIds=[];
+if(!state.daily.answeredIds.includes(id))state.daily.answeredIds.push(id);
+saveState();
+updateStats();
+updateStreakDisplay();
+}
+
+function showHint(){
+if(!state.current)return;
+const fb=document.getElementById('feedback');
+fb.className='feedback';
+fb.style.background='#fef3c7';
+fb.style.color='#92400e';
+fb.textContent=`Подсказка: ${state.current.kz.substring(0,Math.ceil(state.current.kz.length/2))}...`;
+fb.style.display='block';
+}
+
+function playAudio(){
+if(!state.current)return;
+if('speechSynthesis' in window){
+window.speechSynthesis.cancel();
+const u=new SpeechSynthesisUtterance(state.current.kz);
+u.lang='kk-KZ';
+u.rate=state.settings.speed||1;
+window.speechSynthesis.speak(u);
+}
+}
+
+function setSpeed(s){
+state.settings.speed=s;
+saveState();
+document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
+event.target.classList.add('active');
+}
+
+function nextWord(){
+const quizEl=document.getElementById('quizOptions');
+if(quizEl)quizEl.remove();
+const audioEl=document.getElementById('audioOptions');
+if(audioEl)audioEl.remove();
+showNextWord();
+}
+
+function skipWord(){
+const quizEl=document.getElementById('quizOptions');
+if(quizEl)quizEl.remove();
+const audioEl=document.getElementById('audioOptions');
+if(audioEl)audioEl.remove();
+if(state.current){
+state.queue.push(state.current);
+state.daily.answeredIds=state.daily.answeredIds.filter(id=>id!==state.current.id);
+}
+showNextWord();
+}
+
+function setMode(m){
+state.mode=m;
+document.querySelectorAll('.mode-switch button').forEach(b=>b.classList.remove('active'));
+document.getElementById('mode'+m).classList.add('active');
+const quizEl=document.getElementById('quizOptions');
+if(quizEl)quizEl.remove();
+const audioEl=document.getElementById('audioOptions');
+if(audioEl)audioEl.remove();
+showNextWord();
+}
+
+function showSection(id){
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+document.getElementById('sec-'+id).classList.add('active');
+document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+event.target.classList.add('active');
+if(id==='topics')renderTopics();
+if(id==='dialogues')renderDialogues();
+if(id==='dictionary')renderDictionary();
+if(id==='stats')renderStats();
+if(id==='hard')renderHardWords();
+if(id==='train')showSessionReview();
+}
+
+function renderTopics(){
+const grid=document.getElementById('topicsGrid');
+grid.innerHTML=TOPICS.map(t=>{
+const learned=WORDS.filter(w=>w.topic===t.id&&getWordStatus(w.id)==='learned').length;
+const total=WORDS.filter(w=>w.topic===t.id).length;
+return`<div class="topic-card${state.currentTopic===t.id?' active':''}" onclick="selectTopic('${t.id}')"><div class="name">${t.name}</div><div class="count">${learned}/${total} выучено</div><div class="progress-bar" style="margin-top:.3rem"><div class="progress-fill" style="width:${total?Math.round(learned/total*100):0}%"></div></div></div>`;
+}).join('');
+}
+
+function selectTopic(id){
+state.currentTopic=state.currentTopic===id?null:id;
+renderTopics();
+}
+
+function startTopicTraining(){
+if(!state.currentTopic){alert('Выберите тему');return}
+const topicWords=WORDS.filter(w=>w.topic===state.currentTopic);
+state.queue=shuffleArray([...topicWords]);
+showSection('train');
+document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+document.querySelectorAll('#mainNav button')[0].classList.add('active');
+showNextWord();
+}
+
+function renderDialogues(){
+const list=document.getElementById('dialoguesList');
+list.innerHTML=DIALOGUES.map(d=>{
+const lines=d.lines.map(l=>`<div class="dialogue-line"><span class="speaker">${l.s}:</span> ${l.t}</div>`).join('');
+const opts=d.a.map((o,i)=>`<button class="quiz-option" onclick="checkDialogue(${d.id},${i},this)">${o}</button>`).join('');
+return`<div class="dialogue-item"><h3>${d.id}. ${d.title}</h3>${lines}<div class="dialogue-quiz"><p style="font-weight:600;margin-bottom:.3rem">Вопрос: ${d.q}</p><div id="dq${d.id}">${opts}</div></div></div>`;
+}).join('');
+}
+
+function checkDialogue(id,idx,el){
+if(state.dialogueState[id])return;
+state.dialogueState[id]=true;
+const d=DIALOGUES.find(x=>x.id===id);
+const correct=d.c;
+document.querySelectorAll(`#dq${id} .quiz-option`).forEach((b,i)=>{
+if(i===correct)b.classList.add('correct-opt');
+else if(b===el&&i!==correct)b.classList.add('wrong-opt');
+});
+saveState();
+}
+
+function renderDictionary(){
+const input=document.getElementById('searchInput');
+const results=document.getElementById('searchResults');
+const query=input.value.trim().toLowerCase();
+if(!query){results.innerHTML='<p style="color:var(--muted);font-size:.85rem">Введите слово для поиска...</p>';return}
+const found=WORDS.filter(w=>w.kz.toLowerCase().includes(query)||w.ru.toLowerCase().includes(query)).slice(0,50);
+results.innerHTML=found.map(w=>`<div class="search-item"><span class="kz">${w.kz} — ${w.ru}</span><span class="ru">${TOPICS.find(t=>t.id===w.topic)?.name||''}</span></div>`).join('')||'<p style="color:var(--muted)">Ничего не найдено</p>';
+}
+
+function searchWords(){renderDictionary()}
+
+function renderStats(){
+const total=WORDS.length;
+const learned=WORDS.filter(w=>getWordStatus(w.id)==='learned').length;
+const learning=WORDS.filter(w=>getWordStatus(w.id)==='learning').length;
+const newW=total-learned-learning;
+const accuracy=Object.values(state.words).reduce((a,w)=>a+(w.total?w.correct:0),0);
+const totalAttempts=Object.values(state.words).reduce((a,w)=>a+(w.total||0),0);
+const pct=totalAttempts?Math.round(accuracy/totalAttempts*100):0;
+document.getElementById('statsGrid').innerHTML=`
+<div class="stat-card"><div class="val">${total}</div><div class="label">Всего слов</div></div>
+<div class="stat-card"><div class="val">${learned}</div><div class="label">Выучено</div></div>
+<div class="stat-card"><div class="val">${learning}</div><div class="label">В процессе</div></div>
+<div class="stat-card"><div class="val">${newW}</div><div class="label">Новых</div></div>
+<div class="stat-card"><div class="val">${pct}%</div><div class="label">Точность</div></div>
+<div class="stat-card"><div class="val">${totalAttempts}</div><div class="label">Всего попыток</div></div>
+`;
+const week=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+const today=new Date();
+let weekHtml='';
+for(let i=6;i>=0;i--){
+const d=new Date(today);d.setDate(d.getDate()-i);
+const dayName=week[d.getDay()];
+const isToday=i===0;
+weekHtml+=`<div class="week-day${isToday?' today':''}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div></div>`;
+}
+document.getElementById('weekGrid').innerHTML=weekHtml;
+let tpHtml='';
+TOPICS.forEach(t=>{
+const tw=WORDS.filter(w=>w.topic===t.id);
+const tl=tw.filter(w=>getWordStatus(w.id)==='learned').length;
+const pct=tw.length?Math.round(tl/tw.length*100):0;
+tpHtml+=`<div style="margin-bottom:.5rem"><div style="display:flex;justify-content:space-between;font-size:.85rem"><span>${t.name}</span><span>${tl}/${tw.length}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+});
+document.getElementById('topicProgress').innerHTML=tpHtml;
+}
+
+function renderHardWords(){
+const hard=getHardWords().sort((a,b)=>{
+const wa=state.words[a.id],wb=state.words[b.id];
+return(wb.errors||0)-(wa.errors||0);
+});
+const el=document.getElementById('hardWordsList');
+if(hard.length===0){el.innerHTML='<p style="color:var(--muted)">Пока нет сложных слов. Продолжайте тренировку!</p>';return}
+el.innerHTML=hard.map(w=>{
+const ws=state.words[w.id];
+return`<div class="search-item"><span class="kz">${w.kz} — ${w.ru}</span><span class="ru">Ошибок: ${ws.errors}</span></div>`;
+}).join('');
+}
+
+function updateStats(){
+const total=WORDS.length;
+const learned=WORDS.filter(w=>getWordStatus(w.id)==='learned').length;
+const pct=total?Math.round(learned/total*100):0;
+document.getElementById('totalWords').textContent=total;
+document.getElementById('learnedWords').textContent=learned;
+document.getElementById('percentWords').textContent=pct+'%';
+const hard=getHardWords().length;
+const hc=document.getElementById('hardCount');
+if(hard>0){hc.textContent=hard;hc.style.display='inline'}else hc.style.display='none';
+updateStreakDisplay();
+}
+
+function updateDailyProgress(){
+const goal=state.settings.dailyGoal;
+const done=state.daily.newCount||0;
+const pct=Math.min(100,Math.round(done/goal*100));
+document.getElementById('dailyProgress').style.width=pct+'%';
+const streakText=state.streak>0?` 🔥 ${state.streak} дн.`:'';
+document.getElementById('dailyLabel').textContent=`Дневная цель: ${done} / ${goal} новых слов${streakText}`;
+}
+
+function updateStreakDisplay(){
+const el=document.getElementById('streakDisplay');
+if(el){
+if(state.streak>0){el.innerHTML=`<span style="font-size:1.5rem">🔥</span><span style="font-size:1.1rem;font-weight:700">${state.streak}</span><span style="font-size:.75rem;color:var(--muted)">дн. подряд</span>`;el.style.display='flex'}
+else{el.style.display='none'}
+}
+}
+
+function getSessionSummary(){
+const s=state.sessionStats;
+const elapsed=Math.round((Date.now()-s.startTime)/60000);
+const accuracy=s.total>0?Math.round(s.correct/s.total*100):0;
+return{correct:s.correct,wrong:s.wrong,total:s.total,accuracy,minutes:elapsed};
+}
+
+function showSessionReview(){
+const s=getSessionSummary();
+const el=document.getElementById('sessionReview');
+if(el&&s.total>0){
+el.style.display='block';
+el.innerHTML=`<div style="background:linear-gradient(135deg,var(--blue3),#7c3aed);color:white;border-radius:var(--radius);padding:1.25rem;text-align:center;margin-bottom:.75rem">
+<div style="font-size:2rem;margin-bottom:.5rem">${s.accuracy>=80?'🎉':s.accuracy>=50?'👍':'💪'}</div>
+<div style="font-size:1.2rem;font-weight:700;margin-bottom:.3rem">${s.accuracy}% точности</div>
+<div style="font-size:.85rem;opacity:.9">${s.correct} правильных · ${s.wrong} ошибок · ${s.minutes} мин</div>
+${state.streak>1?`<div style="margin-top:.75rem;font-size:1rem">🔥 ${state.streak} дней подряд!</div>`:''}
+</div>`;
+}
+}
+
+function saveSettings(){
+state.settings.speed=parseFloat(document.getElementById('defaultSpeed').value);
+saveState();
+}
+
+function saveCustomDailyGoal(){
+const val=parseInt(document.getElementById('dailyGoalInput').value);
+if(val>=5&&val<=100){
+state.settings.dailyGoal=val;
+saveState();
+updateDailyProgress();
+}
+}
+
+function resetProgress(){
+if(confirm('Вы уверены? Весь прогресс будет сброшен.')){
+localStorage.removeItem(STORAGE_KEY);
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{newCount:0,repeatCount:0,date:new Date().toDateString()},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[]};
+saveState();
+updateStats();
+initQueue();
+alert('Прогресс сброшен.');
+}
+}
+
+loadState();
+document.getElementById('defaultSpeed').value=state.settings.speed;
+document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||20;
+updateStats();
+initQueue();
+</script>
+</body>
+</html>
