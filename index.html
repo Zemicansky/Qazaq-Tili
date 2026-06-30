@@ -18,7 +18,8 @@
   --border:#30363d;--border2:#21262d;
   --radius:12px;--radius-sm:8px;
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+html{touch-action:pan-x pan-y;-ms-touch-action:pan-x pan-y}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden;touch-action:pan-x pan-y}
 
 /* === HEADER === */
 header{background:linear-gradient(135deg,#0d1117 0%,#1a1f2e 50%,#1a2744 100%);color:var(--text);padding:.75rem .75rem .6rem;position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border)}
@@ -196,14 +197,14 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <nav id="mainNav">
 <button class="active" onclick="showSection('train')" style="position:relative">Тренажёр <span id="dueCount" class="hard-words-badge" style="display:none">0</span></button>
+<button onclick="showSection('chat')">ИИ-чат</button>
 <button onclick="showSection('topics')">Темы</button>
 <button onclick="showSection('grammar')">Грамматика</button>
 <button onclick="showSection('dialogues')">Диалоги</button>
 <button onclick="showSection('dictionary')">Словарь</button>
 <button onclick="showSection('stats')">Статистика</button>
-<button onclick="showSection('settings')">Настройки</button>
-<button onclick="showSection('chat')">ИИ-чат</button>
 <button onclick="showSection('hard')" style="position:relative">Сложные <span id="hardCount" class="hard-words-badge" style="display:none">0</span></button>
+<button onclick="showSection('settings')">Настройки</button>
 </nav>
 
 <div class="container">
@@ -2429,11 +2430,11 @@ const DEFAULT_OPENROUTER_MODEL='qwen/qwen-2.5-72b-instruct:free';
 const CHAT_SYSTEM_PROMPT=`Ты — опытный преподаватель казахского языка и переводчик. Пользователь учит казахский, его родной язык — русский.
 
 КРИТИЧЕСКИ ВАЖНОЕ ОГРАНИЧЕНИЕ ЯЗЫКА:
-- Казахские слова и переводы пиши ИСКЛЮЧИТЕЛЬНО на казахском языке кириллицей (современный казахский алфавит на основе кириллицы, как в Казахстане). 
-- НИКОГДА не используй киргизский, татарский, узбекский, турецкий, азербайджанский или любой другой тюркский язык, даже если слова похожи.
-- НИКОГДА не используй арабскую графику, латиницу для казахского текста, персидский или любой другой язык, кроме казахского (кириллица) и русского.
-- Все объяснения и комментарии пиши только на русском языке.
-- Если не уверен в точном казахском переводе слова, честно скажи об этом по-русски, а не подменяй другим похожим языком.
+- В ответе разрешены ТОЛЬКО ДВА языка: русский (для всех объяснений) и казахский кириллицей (для переводов и примеров).
+- ЗАПРЕЩЕНО использовать любые другие языки: английский, испанский, киргизский, татарский, узбекский, турецкий, азербайджанский, арабский — ни единого слова на этих языках, даже в скобках или как пояснение термина.
+- НИКОГДА не используй арабскую графику и латиницу для казахских слов — только современный казахский алфавит на основе кириллицы (как в Казахстане).
+- Перед тем как написать любое слово, проверь: оно либо русское, либо казахское кириллицей. Если нет — не пиши его, перефразируй мысль только этими двумя языками.
+- Если не уверен в точном казахском переводе слова, честно скажи об этом по-русски, а не подменяй другим языком или транслитерацией.
 
 Твои задачи:
 1. Если пользователь пишет на русском — переведи фразу на казахский (кириллица) максимально точно, с учётом падежей, аффиксов принадлежности и естественного словоупотребления. Дай основной вариант перевода и, если уместно, краткое пояснение к сложным грамматическим моментам на русском.
@@ -2581,21 +2582,42 @@ const json=await resp.json();
 return{resp,json};
 }
 
-// Конкретные стабильные бесплатные модели, которые перебираются по очереди при недоступности.
-// Случайный роутер openrouter/free используется только в самом конце, так как он иногда
-// подбирает модели, плохо знающие казахский язык (путает с другими тюркскими).
+// Конкретные стабильные бесплатные модели, которые перебираются по очереди при недоступности
+// или при загрязнении ответа посторонним языком (латиницей, арабской графикой и т.п.).
+// Случайный роутер openrouter/free используется только в самом конце.
 const FALLBACK_MODELS=['qwen/qwen-2.5-72b-instruct:free','deepseek/deepseek-chat:free','meta-llama/llama-3.3-70b-instruct:free','openrouter/free'];
+
+// Проверяет, что в ответе нет посторонних алфавитов: латиницы (кроме отдельных аббревиатур типа ИИ),
+// арабской графики, или специфических букв других тюркских языков (киргизский/татарский используют
+// похожую, но не идентичную кириллицу — здесь ловим явную латиницу и арабицу как самый частый случай).
+function containsForeignScript(text){
+if(!text)return false;
+// Арабская графика
+if(/[\u0600-\u06FF]/.test(text))return true;
+// Заметный блок латинских букв (3+ подряд) — отличаем от единичных вкраплений типа "OK", "WI-FI" и т.п.
+const latinRun=/[a-zA-Z]{4,}/.test(text);
+if(latinRun)return true;
+return false;
+}
 
 const chosenModel=getOpenRouterModel();
 let{resp:response,json:data}=await callOpenRouter(chosenModel);
+let reply=response.ok?(data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content):null;
 
-if(!response.ok){
+const triedModels=[chosenModel];
+// Если запрос не удался ИЛИ ответ содержит посторонний язык — пробуем следующую модель.
+if(!response.ok||containsForeignScript(reply)){
 for(const fallbackModel of FALLBACK_MODELS){
-if(fallbackModel===chosenModel)continue;
-const fallback=await callOpenRouter(fallbackModel);
-response=fallback.resp;
-data=fallback.json;
-if(response.ok)break;
+if(triedModels.includes(fallbackModel))continue;
+triedModels.push(fallbackModel);
+const attempt=await callOpenRouter(fallbackModel);
+const attemptReply=attempt.resp.ok?(attempt.json&&attempt.json.choices&&attempt.json.choices[0]&&attempt.json.choices[0].message&&attempt.json.choices[0].message.content):null;
+if(attempt.resp.ok&&!containsForeignScript(attemptReply)){
+response=attempt.resp;data=attempt.json;reply=attemptReply;
+break;
+}
+// Запоминаем хоть какой-то успешный ответ на случай, если ни одна модель не даст чистый текст
+if(attempt.resp.ok&&!response.ok){response=attempt.resp;data=attempt.json;reply=attemptReply}
 }
 }
 
@@ -2605,7 +2627,6 @@ if(!response.ok){
 const errMsg=(data&&data.error&&data.error.message)?data.error.message:`Ошибка запроса (${response.status})`;
 chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Проверьте ключ OpenRouter в Настройках.`});
 }else{
-const reply=data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
 chatHistory.push({role:'assistant',content:reply||'⚠ Пустой ответ от модели. Попробуйте ещё раз или смените модель в Настройках.'});
 }
 }catch(e){
@@ -2621,6 +2642,18 @@ renderChatMessages();
 }
 
 loadState();
+// Блокировка зума по двойному тапу (iOS Safari игнорирует CSS touch-action для этого жеста)
+let lastTouchEndTime=0;
+document.addEventListener('touchend',(e)=>{
+const now=Date.now();
+if(now-lastTouchEndTime<=300){e.preventDefault()}
+lastTouchEndTime=now;
+},{passive:false});
+// Блокировка зума жестом сведения пальцев (на случай если CSS touch-action не сработал)
+document.addEventListener('touchmove',(e)=>{
+if(e.scale&&e.scale!==1){e.preventDefault()}
+},{passive:false});
+document.addEventListener('gesturestart',(e)=>{e.preventDefault()});
 if('speechSynthesis' in window){
 checkKkVoice();
 window.speechSynthesis.onvoiceschanged=checkKkVoice;
