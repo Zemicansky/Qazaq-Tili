@@ -344,11 +344,15 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <div class="settings-row">
 <label>Модель ИИ-чата</label>
 <select id="openrouterModelSelect" onchange="saveOpenRouterModel()">
+<option value="openrouter/free">Авто (сам выберет рабочую бесплатную модель)</option>
 <option value="deepseek/deepseek-r1:free">DeepSeek R1 (бесплатно)</option>
 <option value="deepseek/deepseek-chat:free">DeepSeek V3 (бесплатно)</option>
 <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (бесплатно)</option>
 <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (бесплатно)</option>
 </select>
+<div style="font-size:.72rem;color:var(--text2);line-height:1.5;margin-top:.3rem">
+Если конкретная модель временно недоступна бесплатно, выберите «Авто» — OpenRouter сам подберёт рабочую бесплатную модель.
+</div>
 </div>
 <div class="settings-row">
 <label>Резервная копия прогресса</label>
@@ -2421,7 +2425,7 @@ reader.readAsText(file);
 const OPENROUTER_KEY_STORAGE='qazaq_tili_openrouter_key';
 const OPENROUTER_MODEL_STORAGE='qazaq_tili_openrouter_model';
 const CHAT_HISTORY_STORAGE='qazaq_tili_chat_history';
-const DEFAULT_OPENROUTER_MODEL='deepseek/deepseek-r1:free';
+const DEFAULT_OPENROUTER_MODEL='openrouter/free';
 const CHAT_SYSTEM_PROMPT=`Ты — опытный преподаватель казахского языка и переводчик. Пользователь учит казахский, его родной язык — русский.
 Твои задачи:
 1. Если пользователь пишет на русском — переведи фразу на казахский максимально точно, с учётом падежей, аффиксов принадлежности и естественного словоупотребления. Дай основной вариант перевода и, если уместно, краткое пояснение к сложным грамматическим моментам.
@@ -2555,23 +2559,36 @@ const messages=[
 {role:'system',content:CHAT_SYSTEM_PROMPT},
 ...chatHistory.slice(-20).map(m=>({role:m.role,content:m.content}))
 ];
-const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+
+async function callOpenRouter(model){
+const resp=await fetch('https://openrouter.ai/api/v1/chat/completions',{
 method:'POST',
 headers:{
 'Authorization':'Bearer '+apiKey,
 'Content-Type':'application/json'
 },
-body:JSON.stringify({
-model:getOpenRouterModel(),
-messages:messages
-})
+body:JSON.stringify({model:model,messages:messages})
 });
-const data=await response.json();
+const json=await resp.json();
+return{resp,json};
+}
+
+const chosenModel=getOpenRouterModel();
+let{resp:response,json:data}=await callOpenRouter(chosenModel);
+
+// Если выбранная вручную модель недоступна бесплатно (частая ситуация у бесплатных слотов),
+// автоматически пробуем универсальный бесплатный роутер вместо неё.
+if(!response.ok&&chosenModel!=='openrouter/free'){
+const fallback=await callOpenRouter('openrouter/free');
+response=fallback.resp;
+data=fallback.json;
+}
+
 const typing=document.getElementById('chatTypingIndicator');
 if(typing)typing.remove();
 if(!response.ok){
 const errMsg=(data&&data.error&&data.error.message)?data.error.message:`Ошибка запроса (${response.status})`;
-chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Проверьте ключ OpenRouter в Настройках.`});
+chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Попробуйте выбрать модель «Авто» в Настройках или проверьте ключ.`});
 }else{
 const reply=data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
 chatHistory.push({role:'assistant',content:reply||'⚠ Пустой ответ от модели. Попробуйте ещё раз или смените модель в Настройках.'});
