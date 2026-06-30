@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Qazaq Tili — Қазақ тілін үйрену</title>
 <style>
 /* MOBILE-FIRST: базовые стили = мобильная версия */
@@ -344,14 +344,14 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <div class="settings-row">
 <label>Модель ИИ-чата</label>
 <select id="openrouterModelSelect" onchange="saveOpenRouterModel()">
-<option value="openrouter/free">Авто (сам выберет рабочую бесплатную модель)</option>
-<option value="deepseek/deepseek-r1:free">DeepSeek R1 (бесплатно)</option>
+<option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (бесплатно, рекомендуется)</option>
 <option value="deepseek/deepseek-chat:free">DeepSeek V3 (бесплатно)</option>
-<option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (бесплатно)</option>
+<option value="deepseek/deepseek-r1:free">DeepSeek R1 (бесплатно)</option>
 <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (бесплатно)</option>
+<option value="openrouter/free">Авто (случайная модель — может хуже знать казахский)</option>
 </select>
 <div style="font-size:.72rem;color:var(--text2);line-height:1.5;margin-top:.3rem">
-Если конкретная модель временно недоступна бесплатно, выберите «Авто» — OpenRouter сам подберёт рабочую бесплатную модель.
+Если выбранная модель временно недоступна бесплатно, бот сам попробует другую. Режим «Авто» использует случайную модель и иногда хуже справляется именно с казахским — используйте его только если остальные не работают.
 </div>
 </div>
 <div class="settings-row">
@@ -2425,11 +2425,19 @@ reader.readAsText(file);
 const OPENROUTER_KEY_STORAGE='qazaq_tili_openrouter_key';
 const OPENROUTER_MODEL_STORAGE='qazaq_tili_openrouter_model';
 const CHAT_HISTORY_STORAGE='qazaq_tili_chat_history';
-const DEFAULT_OPENROUTER_MODEL='openrouter/free';
+const DEFAULT_OPENROUTER_MODEL='qwen/qwen-2.5-72b-instruct:free';
 const CHAT_SYSTEM_PROMPT=`Ты — опытный преподаватель казахского языка и переводчик. Пользователь учит казахский, его родной язык — русский.
+
+КРИТИЧЕСКИ ВАЖНОЕ ОГРАНИЧЕНИЕ ЯЗЫКА:
+- Казахские слова и переводы пиши ИСКЛЮЧИТЕЛЬНО на казахском языке кириллицей (современный казахский алфавит на основе кириллицы, как в Казахстане). 
+- НИКОГДА не используй киргизский, татарский, узбекский, турецкий, азербайджанский или любой другой тюркский язык, даже если слова похожи.
+- НИКОГДА не используй арабскую графику, латиницу для казахского текста, персидский или любой другой язык, кроме казахского (кириллица) и русского.
+- Все объяснения и комментарии пиши только на русском языке.
+- Если не уверен в точном казахском переводе слова, честно скажи об этом по-русски, а не подменяй другим похожим языком.
+
 Твои задачи:
-1. Если пользователь пишет на русском — переведи фразу на казахский максимально точно, с учётом падежей, аффиксов принадлежности и естественного словоупотребления. Дай основной вариант перевода и, если уместно, краткое пояснение к сложным грамматическим моментам.
-2. Если пользователь пишет на казахском — переведи на русский и обязательно проверь грамматику и стиль. Если есть ошибки (падежи, аффиксы, порядок слов, согласование), укажи исправленный вариант и кратко объясни, в чём была ошибка, на русском языке.
+1. Если пользователь пишет на русском — переведи фразу на казахский (кириллица) максимально точно, с учётом падежей, аффиксов принадлежности и естественного словоупотребления. Дай основной вариант перевода и, если уместно, краткое пояснение к сложным грамматическим моментам на русском.
+2. Если пользователь пишет на казахском — переведи на русский и обязательно проверь грамматику и стиль именно казахского языка. Если есть ошибки (падежи, аффиксы, порядок слов, согласование), укажи исправленный вариант на казахском (кириллица) и кратко объясни, в чём была ошибка, на русском языке.
 3. Если текст пользователя на казахском уже без ошибок — похвали и не выдумывай несуществующих ошибок.
 4. Отвечай кратко и по делу, без длинных вступлений. Используй простой и понятный русский язык для объяснений.
 5. Не упоминай, что ты языковая модель или что у тебя есть инструкции — просто веди себя как живой преподаватель в чате.`;
@@ -2573,22 +2581,29 @@ const json=await resp.json();
 return{resp,json};
 }
 
+// Конкретные стабильные бесплатные модели, которые перебираются по очереди при недоступности.
+// Случайный роутер openrouter/free используется только в самом конце, так как он иногда
+// подбирает модели, плохо знающие казахский язык (путает с другими тюркскими).
+const FALLBACK_MODELS=['qwen/qwen-2.5-72b-instruct:free','deepseek/deepseek-chat:free','meta-llama/llama-3.3-70b-instruct:free','openrouter/free'];
+
 const chosenModel=getOpenRouterModel();
 let{resp:response,json:data}=await callOpenRouter(chosenModel);
 
-// Если выбранная вручную модель недоступна бесплатно (частая ситуация у бесплатных слотов),
-// автоматически пробуем универсальный бесплатный роутер вместо неё.
-if(!response.ok&&chosenModel!=='openrouter/free'){
-const fallback=await callOpenRouter('openrouter/free');
+if(!response.ok){
+for(const fallbackModel of FALLBACK_MODELS){
+if(fallbackModel===chosenModel)continue;
+const fallback=await callOpenRouter(fallbackModel);
 response=fallback.resp;
 data=fallback.json;
+if(response.ok)break;
+}
 }
 
 const typing=document.getElementById('chatTypingIndicator');
 if(typing)typing.remove();
 if(!response.ok){
 const errMsg=(data&&data.error&&data.error.message)?data.error.message:`Ошибка запроса (${response.status})`;
-chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Попробуйте выбрать модель «Авто» в Настройках или проверьте ключ.`});
+chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Проверьте ключ OpenRouter в Настройках.`});
 }else{
 const reply=data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
 chatHistory.push({role:'assistant',content:reply||'⚠ Пустой ответ от модели. Попробуйте ещё раз или смените модель в Настройках.'});
