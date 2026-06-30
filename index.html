@@ -130,6 +130,17 @@ select{padding:.35rem .5rem;border:1px solid var(--border);border-radius:var(--r
 .section{display:none}
 .section.active{display:block}
 
+/* === CHAT === */
+.chat-window{height:55vh;min-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding:.25rem .1rem;margin-bottom:.6rem}
+.chat-msg{max-width:85%;padding:.6rem .75rem;border-radius:var(--radius-sm);font-size:.85rem;line-height:1.45;white-space:pre-wrap;word-break:break-word}
+.chat-msg.user{align-self:flex-end;background:var(--blue);color:white;border-bottom-right-radius:3px}
+.chat-msg.assistant{align-self:flex-start;background:var(--card2);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px}
+.chat-msg.system-note{align-self:center;background:transparent;color:var(--text2);font-size:.75rem;text-align:center;max-width:100%}
+.chat-input-row{display:flex;gap:.4rem;align-items:flex-end}
+.chat-input-row textarea{flex:1;min-width:0;padding:.6rem .8rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.88rem;outline:none;background:var(--bg);color:var(--text);resize:none;max-height:6rem;font-family:inherit}
+.chat-input-row textarea:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
+.chat-typing{align-self:flex-start;color:var(--text2);font-size:.8rem;padding:.3rem .75rem}
+
 /* === WEEK GRID === */
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;text-align:center}
 .week-day{padding:.35rem;background:var(--card2);border:1px solid var(--border);border-radius:6px;font-size:.7rem}
@@ -184,13 +195,14 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 </header>
 
 <nav id="mainNav">
-<button class="active" onclick="showSection('train')">Тренажёр</button>
+<button class="active" onclick="showSection('train')" style="position:relative">Тренажёр <span id="dueCount" class="hard-words-badge" style="display:none">0</span></button>
 <button onclick="showSection('topics')">Темы</button>
 <button onclick="showSection('grammar')">Грамматика</button>
 <button onclick="showSection('dialogues')">Диалоги</button>
 <button onclick="showSection('dictionary')">Словарь</button>
 <button onclick="showSection('stats')">Статистика</button>
 <button onclick="showSection('settings')">Настройки</button>
+<button onclick="showSection('chat')">ИИ-чат</button>
 <button onclick="showSection('hard')" style="position:relative">Сложные <span id="hardCount" class="hard-words-badge" style="display:none">0</span></button>
 </nav>
 
@@ -199,6 +211,12 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <!-- TRAIN SECTION -->
 <div id="sec-train" class="section active">
 <div id="sessionReview" style="display:none"></div>
+
+<div class="card">
+<h2>Активность за неделю</h2>
+<div class="week-grid" id="weekGrid"></div>
+</div>
+
 <div class="card">
 <div class="mode-switch">
 <button class="active" id="modeA" onclick="setMode('A')">Русский → Казахский</button>
@@ -272,12 +290,27 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <div class="stats-grid" id="statsGrid"></div>
 </div>
 <div class="card">
-<h2>Активность за неделю</h2>
-<div class="week-grid" id="weekGrid"></div>
-</div>
-<div class="card">
 <h2>Прогресс по темам</h2>
 <div id="topicProgress"></div>
+</div>
+</div>
+
+<!-- AI CHAT SECTION -->
+<div id="sec-chat" class="section">
+<div class="card">
+<h2>ИИ-чат: перевод и проверка ошибок</h2>
+<div id="chatKeyNotice" style="display:none;background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(210,153,34,.25);border-radius:var(--radius-sm);padding:.65rem .75rem;font-size:.8rem;margin-bottom:.6rem;line-height:1.5">
+Чтобы чат заработал, добавьте бесплатный ключ OpenRouter в разделе «Настройки» → «ИИ-чат».
+</div>
+<div class="chat-window" id="chatWindow"></div>
+<div class="chat-input-row">
+<textarea id="chatInput" rows="1" placeholder="Напишите фразу на русском или казахском..." onkeydown="handleChatKeydown(event)" oninput="autoGrowChatInput(this)"></textarea>
+<button class="btn btn-primary" onclick="sendChatMessage()" id="chatSendBtn">Отправить</button>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem">
+<span style="font-size:.7rem;color:var(--text2)">Бот может ошибаться — проверяйте важные переводы.</span>
+<button class="btn btn-secondary" onclick="clearChatHistory()" style="font-size:.7rem;padding:.3rem .6rem">Очистить чат</button>
+</div>
 </div>
 </div>
 
@@ -298,6 +331,34 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <div style="display:flex;align-items:center;gap:.5rem">
 <input type="number" id="dailyGoalInput" value="20" min="5" max="100" style="width:70px;padding:.4rem .5rem;border:1px solid var(--border);border-radius:6px;font-size:.85rem;text-align:center" onchange="saveCustomDailyGoal()">
 <span style="font-size:.8rem;color:var(--muted)">слов</span>
+</div>
+</div>
+
+<div class="settings-row" style="flex-direction:column;align-items:stretch;gap:.4rem">
+<label>ИИ-чат: ключ OpenRouter</label>
+<input type="password" id="openrouterKeyInput" placeholder="sk-or-v1-..." style="width:100%;padding:.5rem .65rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;background:var(--bg);color:var(--text)" onchange="saveOpenRouterKey()">
+<div style="font-size:.72rem;color:var(--text2);line-height:1.5">
+Бесплатный ключ можно получить на <strong>openrouter.ai</strong> (без карты). Ключ хранится только в этом браузере и нигде не отправляется, кроме OpenRouter.
+</div>
+</div>
+<div class="settings-row">
+<label>Модель ИИ-чата</label>
+<select id="openrouterModelSelect" onchange="saveOpenRouterModel()">
+<option value="deepseek/deepseek-r1:free">DeepSeek R1 (бесплатно)</option>
+<option value="deepseek/deepseek-chat:free">DeepSeek V3 (бесплатно)</option>
+<option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (бесплатно)</option>
+<option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (бесплатно)</option>
+</select>
+</div>
+<div class="settings-row">
+<label>Резервная копия прогресса</label>
+<button class="btn btn-secondary" onclick="exportProgress()" style="font-size:.8rem;padding:.4rem .8rem">Скачать файл</button>
+</div>
+<div class="settings-row">
+<label>Восстановить прогресс из файла</label>
+<div>
+<input type="file" id="importFileInput" accept="application/json" style="display:none" onchange="importProgress(event)">
+<button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()" style="font-size:.8rem;padding:.4rem .8rem">Загрузить файл</button>
 </div>
 </div>
 <div class="settings-row">
@@ -1766,14 +1827,22 @@ saveState();
 if(!state.streak)state.streak=0;
 if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
+// Миграция со старой версии: раньше прогресс слова хранился только в level (без streak/lastSeen)
+Object.values(state.words||{}).forEach(ws=>{
+if(ws.streak===undefined)ws.streak=Math.min(ws.level||0,STREAK_TO_LEARN);
+if(ws.lastSeen===undefined)ws.lastSeen=0;
+if(ws.nextReview===undefined)ws.nextReview=0;
+});
 }
 
 function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
 
+const STREAK_TO_LEARN=3; // сколько раз подряд нужно правильно назвать слово, чтобы оно считалось выученным
+
 function getWordStatus(id){
 const w=state.words[id];
 if(!w)return'new';
-if(w.level>=4)return'learned';
+if(w.streak>=STREAK_TO_LEARN)return'learned';
 return'learning';
 }
 
@@ -1802,9 +1871,32 @@ state.queue=shuffleArray([...due]);
 if(state.queue.length===0){
 const hard=getHardWords();
 if(hard.length>0){state.queue=shuffleArray([...hard])}
-else{state.queue=shuffleArray([...WORDS]).slice(0,20)}
+else{
+// Все слова либо ещё спят (ждут своего времени), либо дневная цель новых слов выполнена.
+// Берём только полностью новые слова (никогда не показанные), не трогая "спящие".
+const fresh=WORDS.filter(w=>!state.words[w.id]);
+if(fresh.length>0){state.queue=shuffleArray([...fresh]).slice(0,20)}
+else{
+// Совсем новых слов нет — все слова уже встречались и сейчас спят.
+showSleepingMessage();
+return;
+}
+}
 }
 showNextWord();
+}
+
+function showSleepingMessage(){
+const next=Object.values(state.words).filter(w=>w.nextReview>Date.now()).sort((a,b)=>a.nextReview-b.nextReview)[0];
+const minutesLeft=next?Math.max(1,Math.ceil((next.nextReview-Date.now())/60000)):null;
+document.getElementById('mainWord').textContent='😴';
+document.getElementById('wordTopic').textContent='Все слова сейчас отдыхают';
+document.getElementById('inputRow').style.display='none';
+document.getElementById('feedback').className='feedback correct';
+document.getElementById('feedback').textContent=minutesLeft?`Следующее слово вернётся на проверку примерно через ${minutesLeft} мин. Зайдите чуть позже!`:'Возвращайтесь чуть позже для повторения.';
+document.getElementById('nextBtn').style.display='none';
+const quizEl=document.getElementById('quizOptions');if(quizEl)quizEl.remove();
+const audioEl=document.getElementById('audioOptions');if(audioEl)audioEl.remove();
 }
 
 function getHardWords(){
@@ -1818,6 +1910,7 @@ function showNextWord(){
 if(state.queue.length===0){initQueue();return}
 state.current=state.queue.shift();
 state.answered=false;
+state.hintLevel=0;
 renderWord();
 updateStats();
 showSessionReview();
@@ -1884,8 +1977,8 @@ const input=document.getElementById('answerInput').value.trim().toLowerCase();
 const correct=state.current.kz.toLowerCase();
 const alts=(state.current.alts||[]).map(a=>a.toLowerCase());
 const isCorrect=input===correct||alts.includes(input);
-showFeedback(isCorrect);
 updateWordProgress(state.current.id,isCorrect);
+showFeedback(isCorrect);
 state.answered=true;
 document.getElementById('nextBtn').style.display='inline-block';
 }
@@ -1898,8 +1991,8 @@ document.querySelectorAll('#quizOptions .quiz-option').forEach(b=>{
 if(b.textContent===correct)b.classList.add('correct-opt');
 else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
 });
-showFeedback(isCorrect);
 updateWordProgress(state.current.id,isCorrect);
+showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
 }
 
@@ -1911,46 +2004,58 @@ document.querySelectorAll('#audioOptions .quiz-option').forEach(b=>{
 if(b.textContent===correct)b.classList.add('correct-opt');
 else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
 });
-showFeedback(isCorrect);
 updateWordProgress(state.current.id,isCorrect);
+showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
 }
 
 function showFeedback(correct){
 const fb=document.getElementById('feedback');
+const ws=state.words[state.current.id];
+const streak=ws?ws.streak:0;
 if(correct){
 fb.className='feedback correct';
-fb.textContent='✓ Правильно!';
+if(streak>=STREAK_TO_LEARN){
+fb.textContent=`✓ Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) 🎉`;
+}else{
+fb.textContent=`✓ Правильно! Прогресс: ${streak}/${STREAK_TO_LEARN}. Слово вернётся позже для проверки.`;
+}
 }else{
 fb.className='feedback wrong';
-fb.textContent=`✗ Неправильно. Правильно: ${state.current.kz}`;
+fb.textContent=`✗ Неправильно. Правильно: ${state.current.kz}. Счётчик повторений сброшен.`;
 }
 document.getElementById('wordExample').style.display='block';
 document.getElementById('wordExample').innerHTML=`<strong>Казахский:</strong> ${state.current.example_kz}<br><strong>Русский:</strong> ${state.current.example_ru}`;
 }
 
 function updateWordProgress(id,correct){
-if(!state.words[id])state.words[id]={interval:0,nextReview:0,errors:0,total:0,correct:0,level:0};
+if(!state.words[id])state.words[id]={streak:0,nextReview:0,errors:0,total:0,correct:0,level:0,lastSeen:0};
 const ws=state.words[id];
 ws.total++;
+ws.lastSeen=Date.now();
 state.sessionStats.total++;
 if(correct){
 ws.correct++;
 state.sessionStats.correct++;
-ws.level=(ws.level||0)+1;
-if(ws.level===1)ws.interval=1;
-else if(ws.level===2)ws.interval=3;
-else if(ws.level===3)ws.interval=7;
-else ws.interval=14;
-ws.nextReview=Date.now()+ws.interval*86400000;
+ws.streak=(ws.streak||0)+1;
+ws.level=ws.streak; // level отражает streak для совместимости со старым прогрессом/статистикой
+// Интервалы "сна" между показами растут с каждым верным ответом подряд,
+// чтобы слово не считалось выученным с первого раза и проверялось повторно.
+let intervalMs;
+if(ws.streak===1)intervalMs=10*60000;        // 1-й верный ответ -> вернётся через ~10 минут
+else if(ws.streak===2)intervalMs=4*3600000;  // 2-й верный ответ -> вернётся через ~4 часа
+else if(ws.streak===3)intervalMs=2*86400000; // 3-й верный ответ -> слово "выучено", вернётся через 2 дня для закрепления
+else if(ws.streak===4)intervalMs=7*86400000; // дальше — обычные интервалы повторения
+else intervalMs=21*86400000;
+ws.nextReview=Date.now()+intervalMs;
 if(!state.daily.repeatCount)state.daily.repeatCount=0;
 state.daily.repeatCount++;
 }else{
 ws.errors=(ws.errors||0)+1;
 state.sessionStats.wrong++;
+ws.streak=0; // ошибка обнуляет счётчик — слово снова нужно назвать 3 раза подряд
 ws.level=0;
-ws.interval=0;
-ws.nextReview=Date.now()+3600000;
+ws.nextReview=Date.now()+15*60000; // вернётся через 15 минут на дополнительную тренировку
 if(!state.daily.newCount)state.daily.newCount=0;
 state.daily.newCount++;
 }
@@ -1963,23 +2068,62 @@ updateStreakDisplay();
 
 function showHint(){
 if(!state.current)return;
+const word=state.current.kz;
+if(!state.hintLevel)state.hintLevel=0;
+if(state.hintLevel<word.length)state.hintLevel++;
 const fb=document.getElementById('feedback');
+const masked=word.split('').map((ch,i)=>i<state.hintLevel?ch:'_').join('');
 fb.className='feedback';
 fb.style.background='#fef3c7';
 fb.style.color='#92400e';
-fb.textContent=`Подсказка: ${state.current.kz.substring(0,Math.ceil(state.current.kz.length/2))}...`;
+if(state.hintLevel>=word.length){
+fb.textContent=`Подсказка: ${masked} — это всё слово!`;
+}else{
+fb.textContent=`Подсказка: ${masked} (${word.length} букв). Нажмите ещё раз, чтобы открыть следующую букву.`;
+}
 fb.style.display='block';
+}
+
+let kkVoiceChecked=false;
+let kkVoiceAvailable=false;
+
+function checkKkVoice(){
+if(!('speechSynthesis' in window))return false;
+const voices=window.speechSynthesis.getVoices();
+kkVoiceAvailable=voices.some(v=>v.lang&&v.lang.toLowerCase().startsWith('kk'));
+kkVoiceChecked=true;
+return kkVoiceAvailable;
 }
 
 function playAudio(){
 if(!state.current)return;
-if('speechSynthesis' in window){
+if(!('speechSynthesis' in window)){
+showAudioWarning('Озвучка не поддерживается этим браузером.');
+return;
+}
+if(!kkVoiceChecked)checkKkVoice();
 window.speechSynthesis.cancel();
 const u=new SpeechSynthesisUtterance(state.current.kz);
-u.lang='kk-KZ';
 u.rate=state.settings.speed||1;
+if(kkVoiceAvailable){
+u.lang='kk-KZ';
+}else{
+// Казахский голос недоступен на этом устройстве — предупреждаем и используем
+// ближайший доступный (русский) голос вместо полной тишины.
+u.lang='ru-RU';
+showAudioWarning('Казахский голос недоступен на этом устройстве, использую русское произношение (может звучать неточно).');
+}
 window.speechSynthesis.speak(u);
 }
+
+function showAudioWarning(msg){
+const fb=document.getElementById('feedback');
+if(!fb)return;
+fb.className='feedback';
+fb.style.background='var(--yellow-bg)';
+fb.style.color='var(--yellow)';
+fb.textContent=`⚠ ${msg}`;
+fb.style.display='block';
 }
 
 function setSpeed(s){
@@ -2030,7 +2174,8 @@ if(id==='dialogues')renderDialogues();
 if(id==='dictionary')renderDictionary();
 if(id==='stats')renderStats();
 if(id==='hard')renderHardWords();
-if(id==='train')showSessionReview();
+if(id==='train'){showSessionReview();renderWeekGrid();}
+if(id==='chat')renderChatSection();
 }
 
 function renderTopics(){
@@ -2105,6 +2250,20 @@ document.getElementById('statsGrid').innerHTML=`
 <div class="stat-card"><div class="val">${pct}%</div><div class="label">Точность</div></div>
 <div class="stat-card"><div class="val">${totalAttempts}</div><div class="label">Всего попыток</div></div>
 `;
+renderWeekGrid();
+let tpHtml='';
+TOPICS.forEach(t=>{
+const tw=WORDS.filter(w=>w.topic===t.id);
+const tl=tw.filter(w=>getWordStatus(w.id)==='learned').length;
+const pct=tw.length?Math.round(tl/tw.length*100):0;
+tpHtml+=`<div style="margin-bottom:.5rem"><div style="display:flex;justify-content:space-between;font-size:.85rem"><span>${t.name}</span><span>${tl}/${tw.length}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+});
+document.getElementById('topicProgress').innerHTML=tpHtml;
+}
+
+function renderWeekGrid(){
+const el=document.getElementById('weekGrid');
+if(!el)return;
 const week=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 const today=new Date();
 let weekHtml='';
@@ -2114,15 +2273,7 @@ const dayName=week[d.getDay()];
 const isToday=i===0;
 weekHtml+=`<div class="week-day${isToday?' today':''}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div></div>`;
 }
-document.getElementById('weekGrid').innerHTML=weekHtml;
-let tpHtml='';
-TOPICS.forEach(t=>{
-const tw=WORDS.filter(w=>w.topic===t.id);
-const tl=tw.filter(w=>getWordStatus(w.id)==='learned').length;
-const pct=tw.length?Math.round(tl/tw.length*100):0;
-tpHtml+=`<div style="margin-bottom:.5rem"><div style="display:flex;justify-content:space-between;font-size:.85rem"><span>${t.name}</span><span>${tl}/${tw.length}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
-});
-document.getElementById('topicProgress').innerHTML=tpHtml;
+el.innerHTML=weekHtml;
 }
 
 function renderHardWords(){
@@ -2148,6 +2299,12 @@ document.getElementById('percentWords').textContent=pct+'%';
 const hard=getHardWords().length;
 const hc=document.getElementById('hardCount');
 if(hard>0){hc.textContent=hard;hc.style.display='inline'}else hc.style.display='none';
+const dueNow=WORDS.filter(w=>{
+const ws=state.words[w.id];
+return ws&&ws.nextReview<=Date.now();
+}).length;
+const dc=document.getElementById('dueCount');
+if(dc){if(dueNow>0){dc.textContent=dueNow;dc.style.display='inline'}else dc.style.display='none'}
 updateStreakDisplay();
 }
 
@@ -2214,10 +2371,234 @@ alert('Прогресс сброшен.');
 }
 }
 
+function exportProgress(){
+try{
+const payload={app:'qazaq-tili',exportedAt:new Date().toISOString(),state};
+const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+const url=URL.createObjectURL(blob);
+const a=document.createElement('a');
+const dateStr=new Date().toISOString().slice(0,10);
+a.href=url;
+a.download=`qazaq-tili-progress-${dateStr}.json`;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+}catch(e){
+alert('Не удалось создать файл резервной копии.');
+}
+}
+
+function importProgress(event){
+const file=event.target.files&&event.target.files[0];
+if(!file)return;
+const reader=new FileReader();
+reader.onload=()=>{
+try{
+const parsed=JSON.parse(reader.result);
+const incoming=parsed&&parsed.state?parsed.state:parsed;
+if(!incoming||typeof incoming!=='object'||!incoming.words){
+alert('Файл не похож на резервную копию прогресса этого приложения.');
+return;
+}
+if(!confirm('Текущий прогресс будет заменён данными из файла. Продолжить?'))return;
+localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{newCount:0,repeatCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 loadState();
+updateStats();
+initQueue();
+alert('Прогресс восстановлен из файла.');
+}catch(e){
+alert('Не удалось прочитать файл. Убедитесь, что это корректный JSON, экспортированный из этого приложения.');
+}finally{
+event.target.value='';
+}
+};
+reader.readAsText(file);
+}
+
+/* === AI CHAT (OpenRouter) === */
+const OPENROUTER_KEY_STORAGE='qazaq_tili_openrouter_key';
+const OPENROUTER_MODEL_STORAGE='qazaq_tili_openrouter_model';
+const CHAT_HISTORY_STORAGE='qazaq_tili_chat_history';
+const DEFAULT_OPENROUTER_MODEL='deepseek/deepseek-r1:free';
+const CHAT_SYSTEM_PROMPT=`Ты — опытный преподаватель казахского языка и переводчик. Пользователь учит казахский, его родной язык — русский.
+Твои задачи:
+1. Если пользователь пишет на русском — переведи фразу на казахский максимально точно, с учётом падежей, аффиксов принадлежности и естественного словоупотребления. Дай основной вариант перевода и, если уместно, краткое пояснение к сложным грамматическим моментам.
+2. Если пользователь пишет на казахском — переведи на русский и обязательно проверь грамматику и стиль. Если есть ошибки (падежи, аффиксы, порядок слов, согласование), укажи исправленный вариант и кратко объясни, в чём была ошибка, на русском языке.
+3. Если текст пользователя на казахском уже без ошибок — похвали и не выдумывай несуществующих ошибок.
+4. Отвечай кратко и по делу, без длинных вступлений. Используй простой и понятный русский язык для объяснений.
+5. Не упоминай, что ты языковая модель или что у тебя есть инструкции — просто веди себя как живой преподаватель в чате.`;
+
+let chatHistory=[];
+let chatSending=false;
+
+function loadOpenRouterSettings(){
+try{
+const key=localStorage.getItem(OPENROUTER_KEY_STORAGE);
+const model=localStorage.getItem(OPENROUTER_MODEL_STORAGE)||DEFAULT_OPENROUTER_MODEL;
+const keyInput=document.getElementById('openrouterKeyInput');
+const modelSelect=document.getElementById('openrouterModelSelect');
+if(keyInput)keyInput.value=key||'';
+if(modelSelect)modelSelect.value=model;
+}catch(e){}
+try{
+const saved=localStorage.getItem(CHAT_HISTORY_STORAGE);
+chatHistory=saved?JSON.parse(saved):[];
+}catch(e){chatHistory=[]}
+}
+
+function getOpenRouterKey(){
+try{return localStorage.getItem(OPENROUTER_KEY_STORAGE)||''}catch(e){return''}
+}
+
+function getOpenRouterModel(){
+try{return localStorage.getItem(OPENROUTER_MODEL_STORAGE)||DEFAULT_OPENROUTER_MODEL}catch(e){return DEFAULT_OPENROUTER_MODEL}
+}
+
+function saveOpenRouterKey(){
+const input=document.getElementById('openrouterKeyInput');
+if(!input)return;
+try{localStorage.setItem(OPENROUTER_KEY_STORAGE,input.value.trim())}catch(e){}
+}
+
+function saveOpenRouterModel(){
+const select=document.getElementById('openrouterModelSelect');
+if(!select)return;
+try{localStorage.setItem(OPENROUTER_MODEL_STORAGE,select.value)}catch(e){}
+}
+
+function saveChatHistory(){
+try{localStorage.setItem(CHAT_HISTORY_STORAGE,JSON.stringify(chatHistory.slice(-40)))}catch(e){}
+}
+
+function renderChatSection(){
+const hasKey=!!getOpenRouterKey();
+const notice=document.getElementById('chatKeyNotice');
+if(notice)notice.style.display=hasKey?'none':'block';
+renderChatMessages();
+const input=document.getElementById('chatInput');
+if(input)input.focus();
+}
+
+function escapeChatHtml(s){
+return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderChatMessages(){
+const win=document.getElementById('chatWindow');
+if(!win)return;
+if(chatHistory.length===0){
+win.innerHTML='<div class="chat-msg system-note">Напишите фразу на русском или казахском — бот переведёт и, если нужно, исправит ошибки.</div>';
+return;
+}
+win.innerHTML=chatHistory.map(m=>`<div class="chat-msg ${m.role==='user'?'user':'assistant'}">${escapeChatHtml(m.content)}</div>`).join('');
+win.scrollTop=win.scrollHeight;
+}
+
+function autoGrowChatInput(el){
+el.style.height='auto';
+el.style.height=Math.min(el.scrollHeight,96)+'px';
+}
+
+function handleChatKeydown(event){
+if(event.key==='Enter'&&!event.shiftKey){
+event.preventDefault();
+sendChatMessage();
+}
+}
+
+function clearChatHistory(){
+if(!confirm('Очистить историю переписки с ИИ-чатом?'))return;
+chatHistory=[];
+saveChatHistory();
+renderChatMessages();
+}
+
+async function sendChatMessage(){
+if(chatSending)return;
+const input=document.getElementById('chatInput');
+if(!input)return;
+const text=input.value.trim();
+if(!text)return;
+const apiKey=getOpenRouterKey();
+if(!apiKey){
+showSection('settings');
+document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
+const settingsBtn=Array.from(document.querySelectorAll('#mainNav button')).find(b=>b.textContent.includes('Настройки'));
+if(settingsBtn)settingsBtn.classList.add('active');
+const keyInput=document.getElementById('openrouterKeyInput');
+if(keyInput)keyInput.focus();
+alert('Сначала добавьте бесплатный ключ OpenRouter в Настройках, чтобы пользоваться ИИ-чатом.');
+return;
+}
+
+chatHistory.push({role:'user',content:text});
+saveChatHistory();
+input.value='';
+autoGrowChatInput(input);
+renderChatMessages();
+
+const win=document.getElementById('chatWindow');
+const typingEl=document.createElement('div');
+typingEl.className='chat-typing';
+typingEl.id='chatTypingIndicator';
+typingEl.textContent='Печатает...';
+if(win){win.appendChild(typingEl);win.scrollTop=win.scrollHeight}
+
+chatSending=true;
+const sendBtn=document.getElementById('chatSendBtn');
+if(sendBtn)sendBtn.disabled=true;
+
+try{
+const messages=[
+{role:'system',content:CHAT_SYSTEM_PROMPT},
+...chatHistory.slice(-20).map(m=>({role:m.role,content:m.content}))
+];
+const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+method:'POST',
+headers:{
+'Authorization':'Bearer '+apiKey,
+'Content-Type':'application/json'
+},
+body:JSON.stringify({
+model:getOpenRouterModel(),
+messages:messages
+})
+});
+const data=await response.json();
+const typing=document.getElementById('chatTypingIndicator');
+if(typing)typing.remove();
+if(!response.ok){
+const errMsg=(data&&data.error&&data.error.message)?data.error.message:`Ошибка запроса (${response.status})`;
+chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Проверьте ключ OpenRouter в Настройках.`});
+}else{
+const reply=data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content;
+chatHistory.push({role:'assistant',content:reply||'⚠ Пустой ответ от модели. Попробуйте ещё раз или смените модель в Настройках.'});
+}
+}catch(e){
+const typing=document.getElementById('chatTypingIndicator');
+if(typing)typing.remove();
+chatHistory.push({role:'assistant',content:'⚠ Не удалось связаться с OpenRouter. Проверьте подключение к интернету и ключ в Настройках.'});
+}finally{
+chatSending=false;
+if(sendBtn)sendBtn.disabled=false;
+saveChatHistory();
+renderChatMessages();
+}
+}
+
+loadState();
+if('speechSynthesis' in window){
+checkKkVoice();
+window.speechSynthesis.onvoiceschanged=checkKkVoice;
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadState();updateStats()}});
 document.getElementById('defaultSpeed').value=state.settings.speed;
 document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||20;
+loadOpenRouterSettings();
 updateStats();
+renderWeekGrid();
 initQueue();
 </script>
 </body>
