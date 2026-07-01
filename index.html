@@ -3,447 +3,943 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Qazaq Tili — Қазақ тілін үйрену</title>
+<title>Qazaq Tili — Казахский язык</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-/* MOBILE-FIRST: базовые стили = мобильная версия */
-/* Desktop override: @media(min-width:768px) */
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#14171c;--bg2:#1b1f26;--bg3:#222731;--card:#1b1f26;--card2:#222731;
-  --text:#edf1f3;--text2:#9aa3ad;--text3:#565d68;
-  --blue:#2dd4bf;--blue2:#14b8a6;--blue3:#0d9488;--blue-glow:rgba(45,212,191,.15);
-  --gold:#d4a843;--gold-bg:rgba(212,168,67,.14);
-  --green:#4ade80;--green-bg:rgba(74,222,128,.12);
-  --red:#f87171;--red-bg:rgba(248,113,113,.12);
-  --yellow:#d4a843;--yellow-bg:rgba(212,168,67,.14);
-  --border:#2d333d;--border2:#22272f;
-  --radius:14px;--radius-sm:10px;
-}
-html{touch-action:pan-x pan-y;-ms-touch-action:pan-x pan-y}
-/* iOS Safari автоматически приближает страницу при фокусе на поле ввода, если шрифт меньше 16px.
-   Это правило перекрывает все размеры шрифта в полях ввода, чтобы зум не запускался. */
 input,textarea,select{font-size:16px!important}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;-webkit-tap-highlight-color:transparent;overflow-x:hidden;touch-action:pan-x pan-y}
 
-/* === HEADER === */
-header{background:linear-gradient(160deg,#14171c 0%,#161c20 55%,#13211f 100%);color:var(--text);padding:.75rem .75rem .6rem;position:sticky;top:0;z-index:200;border-bottom:1px solid var(--border)}
-header::after{content:"";display:block;height:3px;margin-top:.6rem;background:repeating-linear-gradient(90deg,var(--blue) 0 8px,var(--gold) 8px 16px,transparent 16px 20px);opacity:.55;border-radius:2px}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
-header h1{font-size:1.15rem;font-weight:800;letter-spacing:.2px;background:linear-gradient(120deg,var(--blue),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-header h1 span{display:block;font-weight:400;font-size:.65rem;margin-top:.1rem;-webkit-text-fill-color:var(--text2)}
-.header-stats{display:flex;gap:0;justify-content:space-around;background:var(--bg2);border-radius:var(--radius);padding:.4rem .25rem;border:1px solid var(--border)}
-.header-stats div{text-align:center;flex:1;padding:.15rem .2rem;border-right:1px solid var(--border)}
-.header-stats div:last-child{border-right:none}
-.header-stats .num{font-size:.9rem;font-weight:700;display:block;line-height:1.2;color:var(--blue)}
-.header-stats .lbl{font-size:.6rem;color:var(--text2);display:block;margin-top:.05rem}
+/* ── THEME TOKENS ──────────────────────────────────────────── */
+:root{
+  /* Light theme (Duolingo-inspired) */
+  --bg:#f7f8fa;
+  --bg2:#ffffff;
+  --bg3:#eef0f4;
+  --card:#ffffff;
+  --card2:#f2f4f8;
+  --text:#1a1d23;
+  --text2:#5c6370;
+  --text3:#adb5bd;
+  --border:#e2e6ec;
+  --border2:#cdd2da;
 
-/* === NAV === */
-nav#mainNav{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:300;display:grid;grid-template-columns:repeat(5,1fr);padding:.3rem .2rem .5rem;gap:.15rem;padding-bottom:max(.5rem,env(safe-area-inset-bottom))}
-nav#mainNav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;padding:.35rem .15rem;background:none;border:none;color:var(--text2);cursor:pointer;border-radius:var(--radius-sm);transition:color .15s,background .15s;font-size:.58rem;font-weight:500;line-height:1.1;position:relative;min-height:48px}
-nav#mainNav button svg{width:20px;height:20px;stroke:currentColor;flex-shrink:0}
-nav#mainNav button span:first-of-type{display:block}
-nav#mainNav button:active{background:var(--bg3);transform:scale(.93)}
-nav#mainNav button.active{color:var(--blue)}
-nav#mainNav button.active svg{filter:drop-shadow(0 0 4px rgba(45,212,191,.4))}
-nav::-webkit-scrollbar{display:none}
-nav button{padding:.35rem .6rem;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:20px;font-size:.7rem;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0;font-weight:500}
-nav button:active{transform:scale(.95)}
-nav button.active{background:var(--blue);color:white;border-color:var(--blue);box-shadow:0 2px 8px rgba(59,130,246,.3)}
+  --green:#58cc02;
+  --green-bg:#e5f9d0;
+  --green-dark:#46a302;
+  --red:#ff4b4b;
+  --red-bg:#ffe0e0;
+  --red-dark:#cc0000;
+  --yellow:#ffc800;
+  --yellow-bg:#fff8d6;
+  --blue:#1cb0f6;
+  --blue-bg:#e5f6ff;
+  --purple:#9c64f7;
+  --orange:#ff9600;
+  --orange-bg:#fff0d6;
 
-/* === CONTAINER & CARDS === */
-.container{padding:.5rem;max-width:100%;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:.85rem;margin-bottom:.6rem}
-.card h2{font-size:.95rem;color:var(--text);margin-bottom:.5rem}
+  --accent:#58cc02;
+  --accent2:#46a302;
+  --accent-glow:rgba(88,204,2,.15);
 
-/* === MODE SWITCH === */
-.mode-switch{display:flex;gap:.3rem;margin-bottom:.6rem}
-.mode-switch button{flex:1;padding:.5rem .25rem;border:1px solid var(--border);background:var(--card2);color:var(--text2);border-radius:var(--radius-sm);font-size:.72rem;cursor:pointer;transition:all .15s;text-align:center;font-weight:500;line-height:1.2}
-.mode-switch button:active{transform:scale(.95)}
-.mode-switch button.active{background:var(--blue);color:white;border-color:var(--blue);font-weight:600;box-shadow:0 2px 8px rgba(59,130,246,.25)}
+  --nav-bg:#ffffff;
+  --nav-border:#e2e6ec;
+  --nav-active:#58cc02;
 
-/* === WORD DISPLAY === */
-.word-display{text-align:center;padding:1.25rem .25rem}
-.word-display .main-word{font-size:1.6rem;font-weight:700;color:white;margin-bottom:.3rem;line-height:1.3;word-break:break-word}
-.word-display .sub{font-size:.78rem;color:var(--text2)}
-.word-display .example{font-size:.8rem;color:var(--text);margin-top:.75rem;padding:.65rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:left;line-height:1.5}
+  --radius:16px;
+  --radius-sm:12px;
+  --radius-xs:8px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-md:0 4px 20px rgba(0,0,0,.12);
+}
 
-/* === INPUT ROW === */
-.input-row{display:flex;gap:.4rem;margin-top:.75rem;align-items:stretch}
-input[type=text]{flex:1;min-width:0;padding:.65rem .85rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.9rem;outline:none;transition:all .2s;background:var(--bg);color:var(--text)}
-input[type=text]:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
-input[type=text]::placeholder{color:var(--text3)}
+[data-theme="dark"]{
+  --bg:#111318;
+  --bg2:#1a1e26;
+  --bg3:#22273a;
+  --card:#1a1e26;
+  --card2:#22273a;
+  --text:#eef0f6;
+  --text2:#8a93a8;
+  --text3:#4a5168;
+  --border:#2a3048;
+  --border2:#343c58;
 
-/* === BUTTONS === */
-button.btn{padding:.6rem 1rem;border:none;border-radius:var(--radius-sm);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
-button.btn:active{transform:scale(.95)}
-.btn-primary{background:var(--blue);color:white}
-.btn-primary:active{background:var(--blue2)}
-.btn-secondary{background:var(--card2);color:var(--text2);border:1px solid var(--border);font-size:.78rem;padding:.6rem .7rem}
-.btn-next{background:var(--blue);color:white;width:100%;padding:.8rem;font-size:.9rem;border-radius:var(--radius-sm);margin-top:.6rem;box-shadow:0 2px 12px rgba(59,130,246,.3)}
-.btn-next:active{background:var(--blue2)}
-.btn-skip{background:transparent;color:var(--text3);border:1px solid var(--border);width:100%;padding:.55rem;font-size:.8rem;border-radius:var(--radius-sm);margin-top:.3rem}
+  --green:#3fc800;
+  --green-bg:rgba(63,200,0,.14);
+  --green-dark:#2ea600;
+  --red:#ff5252;
+  --red-bg:rgba(255,82,82,.14);
+  --red-dark:#cc3333;
+  --yellow:#ffc800;
+  --yellow-bg:rgba(255,200,0,.14);
+  --blue:#29b6f6;
+  --blue-bg:rgba(41,182,246,.14);
+  --purple:#b47aff;
+  --orange:#ff9600;
+  --orange-bg:rgba(255,150,0,.14);
 
-/* === AUDIO BUTTON === */
-.audio-btn{background:var(--card2);color:var(--text2);border:1px solid var(--border);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-.audio-btn:active{transform:scale(.9);background:var(--blue);color:white;border-color:var(--blue)}
+  --accent:#3fc800;
+  --accent2:#2ea600;
+  --accent-glow:rgba(63,200,0,.18);
 
-/* === FEEDBACK === */
-.feedback{padding:.7rem;border-radius:var(--radius-sm);margin-top:.6rem;font-weight:600;text-align:center;display:none;font-size:.85rem}
-.feedback.correct{background:var(--green-bg);color:var(--green);display:block;border:1px solid rgba(63,185,80,.2)}
-.feedback.wrong{background:var(--red-bg);color:var(--red);display:block;border:1px solid rgba(248,81,73,.2)}
+  --nav-bg:#1a1e26;
+  --nav-border:#2a3048;
+  --nav-active:#3fc800;
 
-/* === PROGRESS BAR === */
-.progress-bar{width:100%;height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:.4rem 0}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:3px;transition:width .4s ease}
+  --shadow:0 2px 16px rgba(0,0,0,.4);
+  --shadow-md:0 6px 24px rgba(0,0,0,.5);
+}
 
-/* === TOPICS === */
-.topics-grid{display:grid;grid-template-columns:1fr;gap:.4rem}
-.topic-card{padding:.65rem;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all .15s;text-align:left;display:flex;align-items:center;gap:.6rem;background:var(--card)}
-.topic-card:active{transform:scale(.98);background:var(--card2)}
-.topic-card.active{border-color:var(--blue);background:var(--blue-glow)}
-.topic-card .name{font-weight:600;font-size:.85rem;flex:1;color:var(--text)}
-.topic-card .count{font-size:.7rem;color:var(--text2)}
+/* ── BASE ──────────────────────────────────────────────────── */
+html{touch-action:pan-x pan-y}
+body{
+  font-family:'Nunito',system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--text);
+  line-height:1.5;min-height:100vh;
+  -webkit-tap-highlight-color:transparent;
+  overflow-x:hidden
+}
 
-/* === STATS === */
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.4rem}
-.stat-card{padding:.65rem .4rem;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center}
-.stat-card .val{font-size:1.2rem;font-weight:700;color:var(--blue)}
-.stat-card .label{font-size:.65rem;color:var(--text2);margin-top:.15rem}
+/* ── HEADER ────────────────────────────────────────────────── */
+header{
+  background:var(--bg2);
+  border-bottom:2px solid var(--border);
+  padding:.75rem 1rem .65rem;
+  position:sticky;top:0;z-index:200;
+}
+.header-inner{
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:480px;margin:0 auto;
+}
+.logo{display:flex;align-items:center;gap:.5rem}
+.logo-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;flex-shrink:0;
+  box-shadow:0 2px 8px var(--accent-glow)
+}
+.logo-text{line-height:1}
+.logo-text strong{font-size:1.05rem;font-weight:900;color:var(--text);letter-spacing:-.3px}
+.logo-text span{font-size:.68rem;color:var(--text2);font-weight:600;display:block}
 
-/* === DIALOGUES === */
-.dialogue-item{border:1px solid var(--border);border-radius:var(--radius-sm);padding:.7rem;margin-bottom:.5rem;background:var(--card)}
-.dialogue-item h3{font-size:.85rem;color:var(--text);margin-bottom:.3rem}
-.dialogue-line{padding:.2rem 0;font-size:.8rem;color:var(--text)}
-.dialogue-line .speaker{font-weight:700;color:var(--blue)}
-.dialogue-quiz{margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--border)}
+.header-actions{display:flex;align-items:center;gap:.5rem}
+.streak-badge{
+  display:flex;align-items:center;gap:.3rem;
+  background:var(--orange-bg);border:2px solid var(--orange);
+  padding:.25rem .6rem;border-radius:20px;
+}
+.streak-badge .fire{font-size:1rem}
+.streak-badge .days{font-size:.9rem;font-weight:800;color:var(--orange)}
+.streak-badge .label{font-size:.6rem;color:var(--orange);font-weight:700;display:none}
 
-/* === QUIZ OPTIONS === */
-.quiz-option{display:block;width:100%;padding:.6rem .7rem;margin:.25rem 0;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--card2);cursor:pointer;font-size:.82rem;text-align:left;transition:all .15s;font-weight:500;color:var(--text)}
-.quiz-option:active{transform:scale(.98);border-color:var(--blue);background:var(--blue-glow)}
-.quiz-option.correct-opt{background:var(--green-bg);border-color:var(--green);color:var(--green)}
-.quiz-option.wrong-opt{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.theme-toggle{
+  width:34px;height:34px;border-radius:50%;border:2px solid var(--border);
+  background:var(--card2);cursor:pointer;font-size:.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.theme-toggle:active{transform:scale(.9)}
 
-/* === SEARCH === */
-.search-box{width:100%;padding:.6rem .85rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.85rem;margin-bottom:.6rem;outline:none;background:var(--bg);color:var(--text)}
-.search-box:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
-.search-box::placeholder{color:var(--text3)}
-.search-results{max-height:60vh;overflow-y:auto}
-.search-item{display:flex;justify-content:space-between;align-items:center;padding:.45rem .5rem;border-bottom:1px solid var(--border);font-size:.82rem}
-.search-item .kz{font-weight:600;color:var(--text);flex:1}
-.search-item .ru{color:var(--text2);font-size:.75rem;text-align:right;margin-left:.5rem}
+/* ── NAV ───────────────────────────────────────────────────── */
+nav#mainNav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--nav-bg);
+  border-top:2px solid var(--nav-border);
+  z-index:300;display:grid;
+  grid-template-columns:repeat(5,1fr);
+  padding:.4rem .2rem;
+  padding-bottom:max(.5rem,env(safe-area-inset-bottom));
+  max-width:100%;
+}
+.nav-btn{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:.2rem;padding:.3rem .15rem;
+  background:none;border:none;color:var(--text3);
+  cursor:pointer;border-radius:var(--radius-xs);
+  transition:all .18s;font-size:.62rem;font-weight:700;
+  line-height:1.1;position:relative;min-height:48px;
+  letter-spacing:.2px;
+}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;transition:all .18s}
+.nav-btn:active{transform:scale(.9)}
+.nav-btn.active{color:var(--nav-active)}
+.nav-btn.active svg{filter:drop-shadow(0 0 4px var(--accent-glow))}
+.nav-badge{
+  position:absolute;top:2px;right:8px;
+  background:var(--red);color:white;
+  font-size:.52rem;font-weight:800;
+  padding:1px 4px;border-radius:8px;min-width:16px;text-align:center
+}
 
-/* === SETTINGS === */
-.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--border);gap:.5rem}
-.settings-row:last-child{border-bottom:none}
-.settings-row label{font-size:.83rem;flex:1;color:var(--text)}
-select{padding:.35rem .5rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.8rem;background:var(--bg);color:var(--text)}
-
-/* === SECTIONS === */
+/* ── CONTAINER ─────────────────────────────────────────────── */
+.container{
+  padding:.75rem .75rem;
+  max-width:480px;margin:0 auto;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom))
+}
 .section{display:none}
 .section.active{display:block}
 
-/* === CHAT === */
-.chat-window{height:55vh;min-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding:.25rem .1rem;margin-bottom:.6rem}
-.chat-msg{max-width:85%;padding:.6rem .75rem;border-radius:var(--radius-sm);font-size:.85rem;line-height:1.45;white-space:pre-wrap;word-break:break-word}
-.chat-msg.user{align-self:flex-end;background:var(--blue);color:white;border-bottom-right-radius:3px}
-.chat-msg.assistant{align-self:flex-start;background:var(--card2);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px}
-.chat-msg.system-note{align-self:center;background:transparent;color:var(--text2);font-size:.75rem;text-align:center;max-width:100%}
-.chat-input-row{display:flex;gap:.4rem;align-items:flex-end}
-.chat-input-row textarea{flex:1;min-width:0;padding:.6rem .8rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.88rem;outline:none;background:var(--bg);color:var(--text);resize:none;max-height:6rem;font-family:inherit}
-.chat-input-row textarea:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
-.chat-typing{align-self:flex-start;color:var(--text2);font-size:.8rem;padding:.3rem .75rem}
+/* ── CARDS ─────────────────────────────────────────────────── */
+.card{
+  background:var(--card);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:1rem;margin-bottom:.75rem;
+  box-shadow:var(--shadow);
+}
+.card-title{font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:.65rem}
 
-/* === MORE SHEET === */
-.more-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;padding:.75rem .5rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);cursor:pointer;font-size:.72rem;font-weight:500;transition:all .15s}
+/* ── WEEK GRID ─────────────────────────────────────────────── */
+.week-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;
+  text-align:center;
+}
+.week-day{
+  padding:.45rem .1rem;border-radius:var(--radius-xs);
+  background:var(--bg3);
+  font-size:.62rem;font-weight:700;color:var(--text3);
+}
+.week-day .dn{color:var(--text2);font-size:.6rem;font-weight:600}
+.week-day .dv{font-size:.75rem;font-weight:800;color:var(--text);margin:.1rem 0}
+.week-day .dw{font-size:.6rem;color:var(--accent);font-weight:800}
+.week-day.today{background:var(--accent-glow);border:2px solid var(--accent)}
+.week-day.today .dv{color:var(--accent)}
+.week-day.has-activity{background:var(--accent-glow);border:1.5px solid var(--accent)}
+.week-day.has-activity .dn{color:var(--accent)}
+.week-day.has-activity .dv{color:var(--accent)}
+
+/* ── DAILY GOAL ────────────────────────────────────────────── */
+.goal-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.5rem;font-size:.82rem;font-weight:700;color:var(--text2)
+}
+.goal-row .done{color:var(--accent);font-weight:800}
+.progress-track{
+  width:100%;height:12px;background:var(--bg3);
+  border-radius:6px;overflow:hidden;margin:.5rem 0
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--accent),var(--blue));
+  border-radius:6px;transition:width .4s ease;min-width:0
+}
+
+/* ── MODE SWITCH ───────────────────────────────────────────── */
+.mode-tabs{
+  display:flex;gap:.4rem;margin-bottom:.75rem;
+  background:var(--bg3);border-radius:var(--radius-sm);
+  padding:.3rem;
+}
+.mode-tab{
+  flex:1;padding:.45rem .2rem;
+  background:transparent;color:var(--text2);
+  border:none;border-radius:var(--radius-xs);
+  font-size:.72rem;cursor:pointer;
+  transition:all .18s;font-weight:700;
+  font-family:inherit;line-height:1.2
+}
+.mode-tab:active{transform:scale(.95)}
+.mode-tab.active{
+  background:var(--card);color:var(--text);
+  box-shadow:var(--shadow);
+}
+
+/* ── WORD CARD ─────────────────────────────────────────────── */
+.word-card{
+  text-align:center;padding:1.5rem 1rem 1rem;
+  position:relative;
+}
+.word-topic-chip{
+  display:inline-block;
+  background:var(--blue-bg);color:var(--blue);
+  font-size:.68rem;font-weight:800;
+  padding:.2rem .6rem;border-radius:20px;
+  margin-bottom:.75rem;letter-spacing:.3px;text-transform:uppercase
+}
+[data-theme="dark"] .word-topic-chip{color:var(--blue)}
+.main-word{
+  font-size:2rem;font-weight:900;
+  color:var(--text);line-height:1.2;
+  word-break:break-word;margin-bottom:.4rem;
+}
+.word-example{
+  font-size:.82rem;color:var(--text2);
+  margin-top:.85rem;padding:.75rem;
+  background:var(--bg3);
+  border-radius:var(--radius-xs);
+  text-align:left;line-height:1.6;display:none
+}
+.word-example strong{color:var(--text);font-weight:700}
+
+/* ── INPUT AREA ────────────────────────────────────────────── */
+.answer-area{margin-top:.5rem}
+.answer-input-row{display:flex;gap:.5rem;align-items:center}
+.answer-input{
+  flex:1;min-width:0;
+  padding:.7rem .9rem;
+  border:2px solid var(--border);
+  border-radius:var(--radius-sm);
+  font-size:.95rem;outline:none;
+  background:var(--bg2);color:var(--text);
+  font-family:inherit;font-weight:600;
+  transition:border-color .2s,box-shadow .2s;
+}
+.answer-input:focus{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px var(--blue-bg)
+}
+.answer-input::placeholder{color:var(--text3);font-weight:400}
+
+.audio-btn{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--bg3);border:2px solid var(--border);
+  color:var(--text2);cursor:pointer;
+  font-size:1.1rem;display:flex;
+  align-items:center;justify-content:center;
+  transition:all .18s;flex-shrink:0
+}
+.audio-btn:active{transform:scale(.88);background:var(--blue-bg);border-color:var(--blue)}
+
+/* ── QUIZ OPTIONS ──────────────────────────────────────────── */
+.quiz-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:.5rem;margin-top:.65rem
+}
+.quiz-opt{
+  padding:.7rem .6rem;
+  border:2px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--card);
+  cursor:pointer;font-size:.85rem;
+  font-weight:700;text-align:center;
+  transition:all .18s;color:var(--text);
+  font-family:inherit;line-height:1.3;
+  box-shadow:0 2px 4px rgba(0,0,0,.05);
+}
+.quiz-opt:active{transform:scale(.96)}
+.quiz-opt:hover{border-color:var(--blue-bg);background:var(--blue-bg)}
+.quiz-opt.correct-opt{
+  background:var(--green-bg);border-color:var(--green);
+  color:var(--green-dark);
+}
+.quiz-opt.wrong-opt{
+  background:var(--red-bg);border-color:var(--red);
+  color:var(--red-dark);
+}
+
+/* ── BUTTONS ───────────────────────────────────────────────── */
+.btn{
+  padding:.7rem 1rem;border:none;
+  border-radius:var(--radius-sm);
+  font-size:.88rem;font-weight:800;
+  cursor:pointer;transition:all .18s;
+  font-family:inherit;letter-spacing:.2px;
+}
+.btn:active{transform:scale(.96)}
+
+.btn-check{
+  background:var(--blue);color:white;
+  border-bottom:3px solid #0d8bc4;
+}
+.btn-check:active{border-bottom-width:1px;margin-top:2px}
+
+.btn-next{
+  background:var(--accent);color:white;
+  width:100%;padding:.8rem;font-size:.95rem;
+  margin-top:.6rem;
+  border-bottom:3px solid var(--accent2);
+  border-radius:var(--radius-sm);
+}
+.btn-next:active{border-bottom-width:1px;margin-top:calc(.6rem + 2px)}
+.btn-next:not([style*="inline"]){display:none}
+
+.btn-skip{
+  background:transparent;color:var(--text3);
+  border:2px solid var(--border);
+  width:100%;padding:.55rem;font-size:.82rem;
+  margin-top:.4rem;border-radius:var(--radius-sm);
+}
+
+.btn-hint{
+  background:transparent;color:var(--yellow);
+  border:2px solid var(--yellow);
+  padding:.35rem .65rem;font-size:.75rem;
+  border-radius:var(--radius-xs);
+}
+
+/* ── SPEED CONTROL ─────────────────────────────────────────── */
+.speed-row{
+  display:flex;align-items:center;gap:.4rem;
+  justify-content:center;margin-top:.5rem;flex-wrap:wrap
+}
+.speed-btn{
+  padding:.3rem .6rem;
+  border:2px solid var(--border);
+  background:transparent;border-radius:20px;
+  font-size:.7rem;cursor:pointer;
+  transition:all .15s;color:var(--text2);
+  font-weight:700;font-family:inherit;
+}
+.speed-btn.active{background:var(--purple);color:white;border-color:var(--purple)}
+.speed-btn:active{transform:scale(.93)}
+
+/* ── FEEDBACK ──────────────────────────────────────────────── */
+.feedback{
+  padding:.75rem;border-radius:var(--radius-sm);
+  margin-top:.6rem;font-weight:700;
+  text-align:center;display:none;font-size:.88rem;
+  line-height:1.45;
+}
+.feedback.correct{
+  background:var(--green-bg);color:var(--green-dark);
+  border:2px solid var(--green);display:block;
+}
+.feedback.wrong{
+  background:var(--red-bg);color:var(--red-dark);
+  border:2px solid var(--red);display:block;
+}
+.feedback.hint{
+  background:var(--yellow-bg);color:#92600e;
+  border:2px solid var(--yellow);display:block;
+}
+
+/* ── STATS SECTION ─────────────────────────────────────────── */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;margin-bottom:.75rem
+}
+.stat-card{
+  padding:.75rem .5rem;
+  background:var(--card2);border:1.5px solid var(--border);
+  border-radius:var(--radius-sm);text-align:center
+}
+.stat-val{font-size:1.4rem;font-weight:900;color:var(--accent)}
+.stat-lbl{font-size:.68rem;color:var(--text2);margin-top:.1rem;font-weight:600}
+.topic-progress-item{margin-bottom:.55rem}
+.topic-progress-row{
+  display:flex;justify-content:space-between;
+  font-size:.82rem;font-weight:700;margin-bottom:.25rem
+}
+.topic-progress-row span:last-child{color:var(--text2);font-weight:600}
+
+/* ── TOPICS ────────────────────────────────────────────────── */
+.topics-grid{display:grid;grid-template-columns:1fr;gap:.4rem}
+.topic-card{
+  padding:.7rem .85rem;border:2px solid var(--border);
+  border-radius:var(--radius-sm);cursor:pointer;
+  transition:all .18s;display:flex;align-items:center;
+  gap:.65rem;background:var(--card);
+  box-shadow:0 1px 4px rgba(0,0,0,.05)
+}
+.topic-card:active{transform:scale(.98)}
+.topic-card.active{border-color:var(--accent);background:var(--accent-glow)}
+.topic-card .tc-name{font-weight:800;font-size:.88rem;flex:1;color:var(--text)}
+.topic-card .tc-count{font-size:.72rem;color:var(--text2);white-space:nowrap}
+
+/* ── DICTIONARY ────────────────────────────────────────────── */
+.search-wrap{position:relative;margin-bottom:.65rem}
+.search-icon{
+  position:absolute;left:.75rem;top:50%;transform:translateY(-50%);
+  color:var(--text3);width:16px;height:16px;
+}
+.search-input{
+  width:100%;padding:.65rem .75rem .65rem 2.2rem;
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  font-size:.9rem;outline:none;background:var(--bg2);
+  color:var(--text);font-family:inherit;font-weight:600;
+  transition:border-color .2s;
+}
+.search-input:focus{border-color:var(--blue)}
+.search-input::placeholder{color:var(--text3);font-weight:400}
+.search-results{max-height:62vh;overflow-y:auto}
+.search-item{
+  display:flex;justify-content:space-between;
+  align-items:center;padding:.5rem .25rem;
+  border-bottom:1px solid var(--border);font-size:.85rem
+}
+.search-item:last-child{border-bottom:none}
+.search-item .kz{font-weight:700;color:var(--text);flex:1}
+.search-item .ru{color:var(--text2);font-size:.78rem;text-align:right;margin-left:.5rem}
+
+/* ── DIALOGUES ─────────────────────────────────────────────── */
+.dialogue-card{
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  padding:.85rem;margin-bottom:.6rem;background:var(--card);
+  box-shadow:var(--shadow);
+}
+.dialogue-card h3{
+  font-size:.88rem;font-weight:800;color:var(--text);
+  margin-bottom:.5rem;padding-bottom:.4rem;
+  border-bottom:1.5px solid var(--border)
+}
+.dialogue-line{padding:.2rem 0;font-size:.82rem;color:var(--text);line-height:1.5}
+.dialogue-speaker{font-weight:800;color:var(--blue);margin-right:.35rem}
+.dialogue-quiz{margin-top:.6rem;padding-top:.6rem;border-top:1.5px solid var(--border)}
+.dialogue-quiz p{font-weight:700;margin-bottom:.4rem;font-size:.82rem;color:var(--text)}
+.dialogue-opts{display:flex;flex-direction:column;gap:.3rem}
+.dopt{
+  padding:.5rem .7rem;border:2px solid var(--border);
+  border-radius:var(--radius-xs);background:var(--card2);
+  cursor:pointer;font-size:.82rem;font-weight:700;
+  text-align:left;color:var(--text);font-family:inherit;
+  transition:all .15s;
+}
+.dopt:active{transform:scale(.98)}
+.dopt.correct-opt{background:var(--green-bg);border-color:var(--green);color:var(--green-dark)}
+.dopt.wrong-opt{background:var(--red-bg);border-color:var(--red);color:var(--red-dark)}
+
+/* ── CHAT ──────────────────────────────────────────────────── */
+.chat-notice{
+  background:var(--yellow-bg);color:#7a5800;
+  border:2px solid var(--yellow);
+  border-radius:var(--radius-sm);padding:.65rem .75rem;
+  font-size:.8rem;margin-bottom:.65rem;line-height:1.5;
+  font-weight:600;display:none
+}
+.chat-window{
+  height:52vh;min-height:300px;
+  overflow-y:auto;display:flex;flex-direction:column;
+  gap:.5rem;padding:.1rem;margin-bottom:.6rem
+}
+.chat-msg{
+  max-width:88%;padding:.65rem .8rem;
+  border-radius:var(--radius-sm);font-size:.85rem;
+  line-height:1.5;white-space:pre-wrap;word-break:break-word;
+  font-weight:600;
+}
+.chat-msg.user{
+  align-self:flex-end;
+  background:var(--accent);color:white;
+  border-bottom-right-radius:4px;
+}
+.chat-msg.assistant{
+  align-self:flex-start;
+  background:var(--card2);color:var(--text);
+  border:1.5px solid var(--border);
+  border-bottom-left-radius:4px;
+}
+.chat-msg.system-note{
+  align-self:center;background:transparent;
+  color:var(--text2);font-size:.78rem;text-align:center;
+  max-width:100%;border:none;
+}
+.chat-input-row{display:flex;gap:.5rem;align-items:flex-end}
+.chat-textarea{
+  flex:1;min-width:0;padding:.65rem .8rem;
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  font-size:.88rem;outline:none;background:var(--bg2);
+  color:var(--text);resize:none;max-height:6rem;
+  font-family:inherit;font-weight:600;
+  transition:border-color .2s;
+}
+.chat-textarea:focus{border-color:var(--blue)}
+.chat-typing{align-self:flex-start;color:var(--text3);font-size:.8rem;padding:.3rem .75rem;font-weight:600}
+
+/* ── HARD WORDS ────────────────────────────────────────────── */
+.hard-item{
+  display:flex;justify-content:space-between;
+  align-items:center;padding:.5rem .25rem;
+  border-bottom:1px solid var(--border);font-size:.85rem
+}
+.hard-item .hw{font-weight:700;color:var(--text)}
+.hard-item .err{color:var(--red);font-size:.75rem;font-weight:700}
+
+/* ── SETTINGS ──────────────────────────────────────────────── */
+.settings-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.65rem 0;border-bottom:1.5px solid var(--border);gap:.5rem
+}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:.86rem;font-weight:700;flex:1;color:var(--text)}
+.settings-sub{font-size:.72rem;color:var(--text2);margin-top:.2rem;line-height:1.4;font-weight:400}
+.settings-col{flex-direction:column;align-items:stretch !important;gap:.45rem}
+select.s-select{
+  padding:.4rem .55rem;border:2px solid var(--border);
+  border-radius:var(--radius-xs);font-size:.82rem;
+  background:var(--bg2);color:var(--text);
+  font-family:inherit;font-weight:700;outline:none;
+  cursor:pointer;
+}
+select.s-select:focus{border-color:var(--blue)}
+input.s-num{
+  width:70px;padding:.4rem .5rem;
+  border:2px solid var(--border);border-radius:var(--radius-xs);
+  font-size:.88rem;text-align:center;background:var(--bg2);
+  color:var(--text);font-family:inherit;font-weight:700;outline:none;
+}
+input.s-num:focus{border-color:var(--blue)}
+input.s-pass{
+  width:100%;padding:.55rem .7rem;
+  border:2px solid var(--border);border-radius:var(--radius-xs);
+  font-size:.85rem;background:var(--bg2);color:var(--text);
+  font-family:inherit;font-weight:600;outline:none;transition:border-color .2s;
+}
+input.s-pass:focus{border-color:var(--blue)}
+.btn-sm{
+  padding:.4rem .8rem;border-radius:var(--radius-xs);
+  font-size:.8rem;font-weight:700;border:2px solid var(--border);
+  background:var(--card2);color:var(--text2);cursor:pointer;
+  font-family:inherit;transition:all .15s;
+}
+.btn-sm:active{transform:scale(.95)}
+.btn-danger{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+
+/* ── GRAMMAR ───────────────────────────────────────────────── */
+#sec-grammar .card{margin-bottom:.65rem}
+#sec-grammar h2{font-size:.95rem;font-weight:800;margin-bottom:.4rem;color:var(--text)}
+#sec-grammar p{margin-bottom:.35rem;font-size:.84rem;line-height:1.55;color:var(--text)}
+.grammar-table{width:100%;border-collapse:collapse;font-size:.8rem;border-radius:var(--radius-xs);overflow:hidden}
+.grammar-table th{background:var(--accent);color:white;padding:.4rem .5rem;text-align:left;font-size:.78rem;font-weight:800}
+.grammar-table td{padding:.35rem .5rem;border-bottom:1px solid var(--border);color:var(--text)}
+.grammar-table tr:nth-child(even) td{background:var(--bg3)}
+
+/* ── MORE SHEET ────────────────────────────────────────────── */
+#moreSheetOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;backdrop-filter:blur(2px)}
+#moreSheet{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--bg2);border-radius:24px 24px 0 0;
+  border-top:2px solid var(--border);z-index:401;
+  padding:1rem .75rem;
+  padding-bottom:max(1.5rem,env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.22,.61,.36,1);
+  max-width:480px;margin:0 auto;
+}
+.sheet-handle{
+  width:40px;height:4px;background:var(--border2);
+  border-radius:2px;margin:0 auto .9rem
+}
+.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.more-item{
+  display:flex;flex-direction:column;align-items:center;gap:.4rem;
+  padding:.8rem .5rem;background:var(--bg3);
+  border:2px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text2);cursor:pointer;font-size:.72rem;
+  font-weight:700;transition:all .15s;font-family:inherit;
+  letter-spacing:.2px;
+}
 .more-item svg{width:22px;height:22px;stroke:currentColor}
-.more-item:active{background:var(--card2);transform:scale(.95);color:var(--blue)}
-.more-item.active-more{color:var(--blue);border-color:var(--blue);background:var(--blue-glow)}
-.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;text-align:center}
-.week-day{padding:.35rem .2rem;background:var(--card2);border:1px solid var(--border);border-radius:6px;font-size:.7rem;text-align:center}
-.week-day .day-name{font-weight:600;color:var(--text);font-size:.65rem}
-.week-day .day-val{color:var(--text2);font-size:.6rem;margin-top:.05rem}
-.week-day .day-words{font-size:.55rem;color:var(--blue);font-weight:700;margin-top:.1rem}
-.week-day.today{border-color:var(--blue);background:var(--blue-glow)}
-.week-day.has-activity{border-color:var(--blue);background:var(--blue-glow)}
-.week-day.has-activity .day-name{color:var(--blue)}
-.week-day.has-activity .day-val{color:var(--blue)}
+.more-item:active{transform:scale(.93)}
+.more-item.active-more{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
 
-/* === FOOTER === */
-footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text2);text-align:center;padding:.75rem;margin-top:1rem;font-size:.75rem}
+/* ── SESSION REVIEW ────────────────────────────────────────── */
+.session-review{
+  background:linear-gradient(135deg,var(--accent),var(--blue));
+  color:white;border-radius:var(--radius);
+  padding:1rem;text-align:center;margin-bottom:.65rem;
+  box-shadow:0 4px 16px var(--accent-glow);
+}
+.session-review h3{font-size:1rem;font-weight:900;margin-bottom:.4rem}
 
-/* === SPEED CONTROL === */
-.speed-control{display:flex;gap:.25rem;align-items:center;margin-top:.35rem;justify-content:center;flex-wrap:wrap}
-.speed-btn{padding:.25rem .5rem;border:1px solid var(--border);background:transparent;border-radius:5px;font-size:.68rem;cursor:pointer;transition:all .15s;color:var(--text2)}
-.speed-btn.active{background:var(--blue);color:white;border-color:var(--blue)}
+/* ── SCROLLBAR ─────────────────────────────────────────────── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
-/* === BADGE === */
-.hard-words-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:white;font-size:.55rem;padding:1px 4px;border-radius:8px}
+/* ── RIPPLE ANIMATION ──────────────────────────────────────── */
+@keyframes pop{0%{transform:scale(.9);opacity:.7}100%{transform:scale(1);opacity:1}}
+.quiz-opt.correct-opt,.quiz-opt.wrong-opt,.dopt.correct-opt,.dopt.wrong-opt{
+  animation:pop .2s ease-out
+}
 
-/* === GRAMMAR === */
-.grammar-table{width:100%;border-collapse:collapse;font-size:.78rem}
-.grammar-table th{background:var(--blue);color:white;padding:.35rem .3rem;text-align:left;font-size:.75rem}
-.grammar-table td{padding:.3rem .3rem;border-bottom:1px solid var(--border);color:var(--text)}
-.grammar-table tr:nth-child(even){background:var(--card2)}
-#sec-grammar .card{margin-bottom:.6rem}
-#sec-grammar h2{color:var(--text);font-size:.9rem;margin-bottom:.35rem}
-#sec-grammar p{margin-bottom:.35rem;font-size:.82rem;line-height:1.5;color:var(--text)}
-
-/* === SESSION REVIEW === */
-.session-review{background:linear-gradient(135deg,#0d9488,#1e40af);color:white;border-radius:var(--radius);padding:1rem;text-align:center;margin-bottom:.6rem}
-
-/* === BOTTOM BAR === */
-.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:.5rem .75rem;display:flex;gap:.4rem;z-index:150}
-.bottom-bar .btn{flex:1}
-
-/* =========================================================
-   DESKTOP: @media(min-width:768px) — позже доработаем
-   ========================================================= */
+/* ── CORRECT CELEBRATION ───────────────────────────────────── */
+@keyframes bounceIn{
+  0%{transform:scale(.8) translateY(4px);opacity:0}
+  60%{transform:scale(1.04) translateY(-2px);opacity:1}
+  100%{transform:scale(1) translateY(0)}
+}
+.feedback.correct{animation:bounceIn .3s ease-out}
 </style>
 </head>
 <body>
 
-<header>
-<div class="header-top">
-<h1>Qazaq Tili<span>Қазақ тілі</span></h1>
-<div id="streakDisplay" style="display:none;align-items:center;gap:.25rem;background:var(--blue-glow);border:1px solid var(--blue);padding:.2rem .5rem;border-radius:14px;font-size:.75rem;color:var(--blue)"></div>
-</div>
-</header>
-<!-- Скрытые элементы для совместимости с JS (updateStats обращается к ним) -->
+<!-- Hidden stats elements for JS compatibility -->
 <span id="totalWords" style="display:none">0</span>
 <span id="learnedWords" style="display:none">0</span>
 <span id="percentWords" style="display:none">0%</span>
 
+<!-- ── HEADER ────────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🏔️</div>
+      <div class="logo-text">
+        <strong>Qazaq Tili</strong>
+        <span>Казахский язык</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div id="streakDisplay" class="streak-badge" style="display:none">
+        <span class="fire">🔥</span>
+        <span class="days" id="streakDays">0</span>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Сменить тему">🌙</button>
+    </div>
+  </div>
+</header>
+
+<!-- ── BOTTOM NAV ─────────────────────────────── -->
 <nav id="mainNav">
-<button class="active" onclick="showSection('train')" data-section="train" style="position:relative">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-<span>Тренажёр</span><span id="dueCount" class="hard-words-badge" style="display:none">0</span>
-</button>
-<button onclick="showSection('chat')" data-section="chat">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
-<span>ИИ-чат</span>
-</button>
-<button onclick="showSection('dictionary')" data-section="dictionary">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-<span>Словарь</span>
-</button>
-<button onclick="showSection('stats')" data-section="stats">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-<span>Прогресс</span>
-</button>
-<button onclick="toggleMoreSheet()" id="moreNavBtn">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
-<span>Ещё</span>
-</button>
+  <button class="nav-btn active" onclick="showSection('train')" data-section="train" style="position:relative">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    <span>Тренажёр</span>
+    <span id="dueCount" class="nav-badge" style="display:none">0</span>
+  </button>
+  <button class="nav-btn" onclick="showSection('chat')" data-section="chat">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
+    <span>ИИ-чат</span>
+  </button>
+  <button class="nav-btn" onclick="showSection('dictionary')" data-section="dictionary">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+    <span>Словарь</span>
+  </button>
+  <button class="nav-btn" onclick="showSection('stats')" data-section="stats">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    <span>Прогресс</span>
+  </button>
+  <button class="nav-btn" onclick="toggleMoreSheet()" id="moreNavBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+    <span>Ещё</span>
+  </button>
 </nav>
 
-<div id="moreSheetOverlay" onclick="closeMoreSheet()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400"></div>
-<div id="moreSheet" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-radius:20px 20px 0 0;border-top:1px solid var(--border);z-index:401;padding:1rem .75rem;padding-bottom:max(1.5rem,env(safe-area-inset-bottom))">
-<div style="width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto .9rem"></div>
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem">
-<button class="more-item" onclick="showSectionFromMore('topics')">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-Темы
-</button>
-<button class="more-item" onclick="showSectionFromMore('grammar')">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
-Грамматика
-</button>
-<button class="more-item" onclick="showSectionFromMore('dialogues')">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1"/><circle cx="13" cy="10" r="1"/><circle cx="17" cy="10" r="1"/></svg>
-Диалоги
-</button>
-<button class="more-item" onclick="showSectionFromMore('hard')" style="position:relative">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-Сложные<span id="hardCount" class="hard-words-badge" style="display:none">0</span>
-</button>
-<button class="more-item" onclick="showSectionFromMore('settings')">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-Настройки
-</button>
-</div>
+<!-- ── MORE SHEET ─────────────────────────────── -->
+<div id="moreSheetOverlay" onclick="closeMoreSheet()"></div>
+<div id="moreSheet">
+  <div class="sheet-handle"></div>
+  <div class="more-grid">
+    <button class="more-item" onclick="showSectionFromMore('topics')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Темы
+    </button>
+    <button class="more-item" onclick="showSectionFromMore('grammar')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+      Грамматика
+    </button>
+    <button class="more-item" onclick="showSectionFromMore('dialogues')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1"/><circle cx="13" cy="10" r="1"/><circle cx="17" cy="10" r="1"/></svg>
+      Диалоги
+    </button>
+    <button class="more-item" onclick="showSectionFromMore('hard')" style="position:relative">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Сложные<span id="hardCount" class="nav-badge" style="display:none;top:-2px;right:-2px">0</span>
+    </button>
+    <button class="more-item" onclick="showSectionFromMore('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Настройки
+    </button>
+  </div>
 </div>
 
+<!-- ── MAIN CONTENT ───────────────────────────── -->
 <div class="container">
 
 <!-- TRAIN SECTION -->
 <div id="sec-train" class="section active">
+  <div class="card">
+    <p class="card-title">Активность за неделю</p>
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
 
-<div class="card">
-<h2>Активность за неделю</h2>
-<div class="week-grid" id="weekGrid"></div>
-</div>
+  <div class="card">
+    <div class="mode-tabs">
+      <button class="mode-tab active" id="modeA" onclick="setMode('A')">Рус → Каз</button>
+      <button class="mode-tab" id="modeB" onclick="setMode('B')">Каз → Рус</button>
+      <button class="mode-tab" id="modeC" onclick="setMode('C')">🔊 Аудио</button>
+    </div>
 
-<div class="card">
-<div class="mode-switch">
-<button class="active" id="modeA" onclick="setMode('A')">Русский → Казахский</button>
-<button id="modeB" onclick="setMode('B')">Казахский → Русский</button>
-<button id="modeC" onclick="setMode('C')">Аудио-вызов</button>
-</div>
-<div class="progress-bar"><div class="progress-fill" id="dailyProgress" style="width:0%"></div></div>
-<div style="text-align:center;font-size:.8rem;color:var(--muted);margin-bottom:.75rem" id="dailyLabel">Дневная цель: 0 / 20 новых слов</div>
+    <div class="goal-row">
+      <span>Дневная цель</span>
+      <span id="dailyLabel" class="done">0 / 5 слов</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="dailyProgress" style="width:0%"></div>
+    </div>
 
-<div class="word-display" id="wordDisplay">
-<div class="sub" id="wordTopic"></div>
-<div class="main-word" id="mainWord">Загрузка...</div>
-<div class="example" id="wordExample" style="display:none"></div>
-</div>
+    <div class="word-card" id="wordDisplay">
+      <div class="word-topic-chip" id="wordTopic">Загрузка...</div>
+      <div class="main-word" id="mainWord">...</div>
+      <div class="word-example" id="wordExample"></div>
+    </div>
 
-<div class="input-row" id="inputRow">
-<input type="text" id="answerInput" placeholder="Введите перевод..." autocomplete="off" style="font-size:.9rem">
-<button class="btn btn-primary" onclick="checkAnswer()">Проверить</button>
-<button class="audio-btn" onclick="playAudio()" title="Прослушать">🔊</button>
-</div>
+    <div class="answer-area">
+      <div class="answer-input-row" id="inputRow">
+        <input type="text" class="answer-input" id="answerInput"
+          placeholder="Введите перевод..." autocomplete="off"
+          onkeydown="if(event.key==='Enter')checkAnswer()">
+        <button class="btn btn-check" onclick="checkAnswer()">✓</button>
+        <button class="audio-btn" onclick="playAudio()" title="Прослушать">🔊</button>
+      </div>
 
-<div style="display:flex;gap:.3rem;margin-top:.4rem;align-items:center;justify-content:center;flex-wrap:wrap">
-<button class="btn btn-secondary" onclick="showHint()" style="font-size:.75rem;padding:.4rem .6rem">Подсказка</button>
-<div class="speed-control" style="margin:0">
-<button class="speed-btn" onclick="setSpeed(0.5)">медленно</button>
-<button class="speed-btn active" onclick="setSpeed(1)">нормально</button>
-<button class="speed-btn" onclick="setSpeed(1.5)">быстро</button>
-</div>
-</div>
+      <div class="speed-row">
+        <button class="btn-hint btn" onclick="showHint()">Подсказка</button>
+        <button class="speed-btn" onclick="setSpeed(0.5)">медленно</button>
+        <button class="speed-btn active" onclick="setSpeed(1)">нормально</button>
+        <button class="speed-btn" onclick="setSpeed(1.5)">быстро</button>
+      </div>
+    </div>
 
-<div class="feedback" id="feedback"></div>
-
-<button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
-<button class="btn btn-skip" onclick="skipWord()">Пропустить</button>
-</div>
+    <div class="feedback" id="feedback"></div>
+    <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
+    <button class="btn btn-skip" onclick="skipWord()">Пропустить</button>
+  </div>
 </div>
 
 <!-- TOPICS SECTION -->
 <div id="sec-topics" class="section">
-<div class="card">
-<h2>Выберите тему для тренировки</h2>
-<div class="topics-grid" id="topicsGrid"></div>
-<div style="margin-top:1rem;text-align:center">
-<button class="btn btn-primary" onclick="startTopicTraining()">Начать тренировку по теме</button>
-</div>
-</div>
+  <div class="card">
+    <p class="card-title">Выберите тему</p>
+    <div class="topics-grid" id="topicsGrid"></div>
+    <div style="margin-top:1rem;text-align:center">
+      <button class="btn btn-next" style="display:inline-block;width:100%" onclick="startTopicTraining()">Начать тренировку →</button>
+    </div>
+  </div>
 </div>
 
 <!-- DIALOGUES SECTION -->
 <div id="sec-dialogues" class="section">
-<div class="card">
-<h2>Диалоги — тренировка восприятия на слух</h2>
-<p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Прослушайте диалог и ответьте на вопрос. Все диалоги на казахском языке.</p>
-<div id="dialoguesList"></div>
-</div>
+  <div class="card">
+    <p class="card-title">Диалоги</p>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem;font-weight:600">Прочитайте диалог и ответьте на вопрос</p>
+    <div id="dialoguesList"></div>
+  </div>
 </div>
 
 <!-- DICTIONARY SECTION -->
 <div id="sec-dictionary" class="section">
-<div class="card">
-<h2>Словарь</h2>
-<input type="text" class="search-box" id="searchInput" placeholder="Поиск слова на казахском или русском..." oninput="searchWords()">
-<div class="search-results" id="searchResults"></div>
-</div>
+  <div class="card">
+    <p class="card-title">Словарь</p>
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" class="search-input" id="searchInput"
+        placeholder="Поиск на казахском или русском..."
+        oninput="searchWords()">
+    </div>
+    <div class="search-results" id="searchResults">
+      <p style="color:var(--text3);font-size:.85rem;font-weight:600">Введите слово для поиска...</p>
+    </div>
+  </div>
 </div>
 
 <!-- STATS SECTION -->
 <div id="sec-stats" class="section">
-<div class="card">
-<h2>Статистика</h2>
-<div class="stats-grid" id="statsGrid"></div>
-</div>
-<div class="card">
-<h2>Прогресс по темам</h2>
-<div id="topicProgress"></div>
-</div>
+  <div class="card">
+    <p class="card-title">Статистика</p>
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+  <div class="card">
+    <p class="card-title">Прогресс по темам</p>
+    <div id="topicProgress"></div>
+  </div>
 </div>
 
 <!-- AI CHAT SECTION -->
 <div id="sec-chat" class="section">
-<div class="card">
-<h2>ИИ-чат: перевод и проверка ошибок</h2>
-<div id="chatKeyNotice" style="display:none;background:var(--yellow-bg);color:var(--yellow);border:1px solid rgba(210,153,34,.25);border-radius:var(--radius-sm);padding:.65rem .75rem;font-size:.8rem;margin-bottom:.6rem;line-height:1.5">
-Чтобы чат заработал, добавьте бесплатный ключ OpenRouter в разделе «Настройки» → «ИИ-чат».
-</div>
-<div class="chat-window" id="chatWindow"></div>
-<div class="chat-input-row">
-<textarea id="chatInput" rows="1" placeholder="Напишите фразу на русском или казахском..." onkeydown="handleChatKeydown(event)" oninput="autoGrowChatInput(this)"></textarea>
-<button class="btn btn-primary" onclick="sendChatMessage()" id="chatSendBtn">Отправить</button>
-</div>
-<div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem">
-<span style="font-size:.7rem;color:var(--text2)">Бот может ошибаться — проверяйте важные переводы.</span>
-<button class="btn btn-secondary" onclick="clearChatHistory()" style="font-size:.7rem;padding:.3rem .6rem">Очистить чат</button>
-</div>
-</div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem">
+      <p class="card-title" style="margin:0">ИИ-чат: перевод и исправление</p>
+      <button class="btn-sm" onclick="clearChatHistory()" style="font-size:.72rem">Очистить</button>
+    </div>
+    <div id="chatKeyNotice" class="chat-notice">
+      Добавьте бесплатный ключ OpenRouter в разделе «Ещё → Настройки» для работы чата.
+    </div>
+    <div class="chat-window" id="chatWindow"></div>
+    <div class="chat-input-row">
+      <textarea class="chat-textarea" id="chatInput" rows="1"
+        placeholder="Напишите на русском или казахском..."
+        onkeydown="handleChatKeydown(event)"
+        oninput="autoGrowChatInput(this)"></textarea>
+      <button class="btn btn-check" onclick="sendChatMessage()" id="chatSendBtn">↑</button>
+    </div>
+  </div>
 </div>
 
 <!-- SETTINGS SECTION -->
 <div id="sec-settings" class="section">
-<div class="card">
-<h2>Настройки</h2>
-<div class="settings-row">
-<label>Скорость озвучки по умолчанию</label>
-<select id="defaultSpeed" onchange="saveSettings()">
-<option value="0.5">Медленно</option>
-<option value="1" selected>Нормально</option>
-<option value="1.5">Быстро</option>
-</select>
-</div>
-<div class="settings-row">
-<label>Новых слов в день</label>
-<div style="display:flex;align-items:center;gap:.5rem">
-<input type="number" id="dailyGoalInput" value="20" min="5" max="100" style="width:70px;padding:.4rem .5rem;border:1px solid var(--border);border-radius:6px;font-size:.85rem;text-align:center" onchange="saveCustomDailyGoal()">
-<span style="font-size:.8rem;color:var(--muted)">слов</span>
-</div>
+  <div class="card">
+    <p class="card-title">Настройки</p>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Скорость озвучки</div>
+      </div>
+      <select id="defaultSpeed" class="s-select" onchange="saveSettings()">
+        <option value="0.5">Медленно</option>
+        <option value="1" selected>Нормально</option>
+        <option value="1.5">Быстро</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Слов в день</div>
+      <div style="display:flex;align-items:center;gap:.4rem">
+        <input type="number" id="dailyGoalInput" value="5" min="5" max="100"
+          class="s-num" onchange="saveCustomDailyGoal()">
+        <span style="font-size:.8rem;color:var(--text2);font-weight:700">слов</span>
+      </div>
+    </div>
+    <div class="settings-row settings-col">
+      <div>
+        <div class="settings-label">Ключ OpenRouter</div>
+        <div class="settings-sub">Бесплатный ключ — openrouter.ai (без карты). Хранится только в браузере.</div>
+      </div>
+      <input type="password" id="openrouterKeyInput" placeholder="sk-or-v1-..."
+        class="s-pass" onchange="saveOpenRouterKey()">
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Модель ИИ-чата</div>
+      <select id="openrouterModelSelect" class="s-select" onchange="saveOpenRouterModel()">
+        <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (рек.)</option>
+        <option value="deepseek/deepseek-chat:free">DeepSeek V3</option>
+        <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+        <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B</option>
+        <option value="openrouter/free">Авто</option>
+      </select>
+    </div>
+    <div class="settings-row settings-col">
+      <div>
+        <div class="settings-label">Ключ ElevenLabs</div>
+        <div class="settings-sub">Бесплатно 10 000 символов/мес. — elevenlabs.io. Без ключа — голос браузера.</div>
+      </div>
+      <input type="password" id="elevenlabsKeyInput" placeholder="sk_..."
+        class="s-pass" onchange="saveElevenLabsKey()">
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Голос озвучки</div>
+      <select id="elevenlabsVoiceSelect" class="s-select" onchange="saveElevenLabsVoice()">
+        <option value="EXAVITQu4vr4xnSDxMaL">Женский (Sarah)</option>
+        <option value="onwK4e9ZLuTAKqWW03F9">Мужской (Daniel)</option>
+        <option value="">Голос браузера</option>
+      </select>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Резервная копия</div>
+      <button class="btn-sm" onclick="exportProgress()">📥 Скачать</button>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Восстановить</div>
+      <div>
+        <input type="file" id="importFileInput" accept="application/json"
+          style="display:none" onchange="importProgress(event)">
+        <button class="btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Загрузить</button>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div class="settings-label">Сбросить прогресс</div>
+      <button class="btn-sm btn-danger" onclick="resetProgress()">Сбросить</button>
+    </div>
+  </div>
 </div>
 
-<div class="settings-row" style="flex-direction:column;align-items:stretch;gap:.4rem">
-<label>ИИ-чат: ключ OpenRouter</label>
-<input type="password" id="openrouterKeyInput" placeholder="sk-or-v1-..." style="width:100%;padding:.5rem .65rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;background:var(--bg);color:var(--text)" onchange="saveOpenRouterKey()">
-<div style="font-size:.72rem;color:var(--text2);line-height:1.5">
-Бесплатный ключ можно получить на <strong>openrouter.ai</strong> (без карты). Ключ хранится только в этом браузере и нигде не отправляется, кроме OpenRouter.
-</div>
-</div>
-<div class="settings-row">
-<label>Модель ИИ-чата</label>
-<select id="openrouterModelSelect" onchange="saveOpenRouterModel()">
-<option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (бесплатно, рекомендуется)</option>
-<option value="deepseek/deepseek-chat:free">DeepSeek V3 (бесплатно)</option>
-<option value="deepseek/deepseek-r1:free">DeepSeek R1 (бесплатно)</option>
-<option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (бесплатно)</option>
-<option value="openrouter/free">Авто (случайная модель — может хуже знать казахский)</option>
-</select>
-<div style="font-size:.72rem;color:var(--text2);line-height:1.5;margin-top:.3rem">
-Если выбранная модель временно недоступна бесплатно, бот сам попробует другую. Режим «Авто» использует случайную модель и иногда хуже справляется именно с казахским — используйте его только если остальные не работают.
-</div>
+<!-- HARD WORDS SECTION -->
+<div id="sec-hard" class="section">
+  <div class="card">
+    <p class="card-title">Сложные слова</p>
+    <div id="hardWordsList"></div>
+  </div>
 </div>
 
-<div class="settings-row" style="flex-direction:column;align-items:stretch;gap:.4rem">
-<label>Озвучка: ключ ElevenLabs</label>
-<input type="password" id="elevenlabsKeyInput" placeholder="sk_..." style="width:100%;padding:.5rem .65rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;background:var(--bg);color:var(--text)" onchange="saveElevenLabsKey()">
-<div style="font-size:.72rem;color:var(--text2);line-height:1.5">
-Бесплатный ключ (10 000 символов в месяц) можно получить на <strong>elevenlabs.io</strong> в разделе Developers → API Keys (доступ только к Text to Speech). Без ключа используется голос браузера, который может звучать с акцентом другого языка. Ключ хранится только в этом браузере.
-</div>
-</div>
-<div class="settings-row">
-<label>Голос озвучки</label>
-<select id="elevenlabsVoiceSelect" onchange="saveElevenLabsVoice()">
-<option value="EXAVITQu4vr4xnSDxMaL">Женский голос (Sarah)</option>
-<option value="onwK4e9ZLuTAKqWW03F9">Мужской голос (Daniel)</option>
-<option value="">Голос браузера (без ElevenLabs)</option>
-</select>
-</div>
-<div class="settings-row">
-<label>Резервная копия прогресса</label>
-<button class="btn btn-secondary" onclick="exportProgress()" style="font-size:.8rem;padding:.4rem .8rem">Скачать файл</button>
-</div>
-<div class="settings-row">
-<label>Восстановить прогресс из файла</label>
-<div>
-<input type="file" id="importFileInput" accept="application/json" style="display:none" onchange="importProgress(event)">
-<button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()" style="font-size:.8rem;padding:.4rem .8rem">Загрузить файл</button>
-</div>
-</div>
-<div class="settings-row">
-<label>Сбросить весь прогресс</label>
-<button class="btn btn-secondary" onclick="resetProgress()" style="font-size:.8rem;padding:.4rem .8rem">Сбросить</button>
-</div>
-</div>
-</div>
-
+<!-- GRAMMAR SECTION -->
+<div id="sec-grammar" class="section">
 <!-- GRAMMAR SECTION -->
 <div id="sec-grammar" class="section">
 <div class="card" style="background:linear-gradient(135deg,var(--blue3),#7c3aed);border:none">
@@ -467,7 +963,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <p style="font-size:.88rem;margin:.4rem 0">🏠 Біз үйге <strong>бардық</strong>. — Мы домой пошли.</p>
 <p style="font-size:.88rem;margin:.4rem 0">🛒 Олар дүкенге <strong>кірді</strong>. — Они зашли в магазин.</p>
 </div>
-<p style="font-size:.85rem;color:var(--muted)"><strong>Запомните:</strong> Русский — СВО- порядок (сказуемое в середине). Казахский — ПОД-ДОП-СВО (глагол в конце). Просто переверните порядок слов.</p>
+<p style="font-size:.85rem;color:var(--text2)"><strong>Запомните:</strong> Русский — СВО- порядок (сказуемое в середине). Казахский — ПОД-ДОП-СВО (глагол в конце). Просто переверните порядок слов.</p>
 </div>
 
 <div class="card" style="border-left:3px solid var(--green)">
@@ -479,7 +975,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:30%"><strong>ГДЕ? (в чём?)</strong></td><td style="padding:.5rem"><strong>-да/-де/-та/-те</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem;width:30%"><strong>ГДЕ? (в чём?)</strong></td><td style="padding:.5rem"><strong>-да/-де/-та/-те</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">үйде</td><td style="padding:.5rem">в доме (үй = дом)</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">мектепте</td><td style="padding:.5rem">в школе (мектеп = школа)</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">дүкенде</td><td style="padding:.5rem">в магазине (дүкен = магазин)</td></tr>
@@ -490,7 +986,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:30%"><strong>КУДА? (в что?)</strong></td><td style="padding:.5rem"><strong>-ға/-ге/-қа/-ке</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem;width:30%"><strong>КУДА? (в что?)</strong></td><td style="padding:.5rem"><strong>-ға/-ге/-қа/-ке</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">үйге</td><td style="padding:.5rem">домой</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">мектепке</td><td style="padding:.5rem">в школу</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">дүкенге</td><td style="padding:.5rem">в магазин</td></tr>
@@ -501,7 +997,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:30%"><strong>ОТКУДА? (из чего?)</strong></td><td style="padding:.5rem"><strong>-дан/-ден/-тан/-тен/-нан/-нен</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem;width:30%"><strong>ОТКУДА? (из чего?)</strong></td><td style="padding:.5rem"><strong>-дан/-ден/-тан/-тен/-нан/-нен</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">үйден</td><td style="padding:.5rem">из дома</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">мектептен</td><td style="padding:.5rem">из школы</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">дүкенден</td><td style="padding:.5rem">из магазина</td></tr>
@@ -512,7 +1008,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <p style="font-size:.88rem;margin-top:.75rem"><strong>Как выбрать суффикс?</strong> Посмотри на последнюю гласную слова:</p>
 <p style="font-size:.88rem">Если буква «передняя» (ә, е, і, ө, ү) → суффикс с <strong>е</strong>: үй<strong>де</strong>, үй<strong>ге</strong>, үй<strong>ден</strong></p>
 <p style="font-size:.88rem">Если буква «задняя» (а, о, ұ, ы) → суффикс с <strong>а</strong>: мектеп<strong>те</strong> (нет — «е», потому что «п» — не гласная, смотри на предпоследнюю)</p>
-<p style="font-size:.85rem;color:var(--muted)"><strong>Проще говоря:</strong> Посмотри на последний ГЛАСНЫЙ звук слова. Үй → ү → «передний» → үйде. Мектеп → е → «передний» → мектепте. Дүкен → е → «передний» → дүкенде. Жұмыс → ы → «задний» → жұмыста.</p>
+<p style="font-size:.85rem;color:var(--text2)"><strong>Проще говоря:</strong> Посмотри на последний ГЛАСНЫЙ звук слова. Үй → ү → «передний» → үйде. Мектеп → е → «передний» → мектепте. Дүкен → е → «передний» → дүкенде. Жұмыс → ы → «задний» → жұмыста.</p>
 </div>
 
 <div class="card" style="border-left:3px solid var(--blue)">
@@ -523,7 +1019,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <p style="font-size:.9rem;margin-bottom:.5rem"><strong>Запомни 3 суффикса:</strong></p>
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>МОЙ</strong></td><td style="padding:.5rem"><strong>-ым/-ім/-ам/-ем</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem"><strong>МОЙ</strong></td><td style="padding:.5rem"><strong>-ым/-ім/-ам/-ем</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй<strong>ім</strong></td><td style="padding:.5rem">Мой дом</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дәрігер<strong>ім</strong></td><td style="padding:.5rem">Мой врач</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дос<strong>ым</strong></td><td style="padding:.5rem">Мой друг</td></tr>
@@ -534,7 +1030,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px;margin-top:.75rem">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>ТВОЙ</strong></td><td style="padding:.5rem"><strong>-ың/-ің/-аң/-ең</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem"><strong>ТВОЙ</strong></td><td style="padding:.5rem"><strong>-ың/-ің/-аң/-ең</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй<strong>ің</strong></td><td style="padding:.5rem">Твой дом</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дәрігер<strong>ің</strong></td><td style="padding:.5rem">Твой врач</td></tr>
 <tr><td style="padding:.5rem">Дос<strong>ың</strong></td><td style="padding:.5rem">Твой друг</td></tr>
@@ -543,7 +1039,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px;margin-top:.75rem">
 <table style="width:100%;font-size:.9rem;border-collapse:freeze">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>ЕГО/ЕЁ</strong></td><td style="padding:.5rem"><strong>-ы/-і/-а/-е</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem"><strong>ЕГО/ЕЁ</strong></td><td style="padding:.5rem"><strong>-ы/-і/-а/-е</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй<strong>і</strong></td><td style="padding:.5rem">Его дом</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дәрігер<strong>і</strong></td><td style="padding:.5rem">Его врач</td></tr>
 <tr><td style="padding:.5rem">Дос<strong>ы</strong></td><td style="padding:.5rem">Его друг</td></tr>
@@ -564,7 +1060,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 <p style="font-size:.9rem;margin-bottom:.5rem"><strong>Как это работает:</strong></p>
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:35%"><strong>ПОЛОЖИТЕЛЬНО</strong></td><td style="padding:.5rem;width:35%"><strong>ОТРИЦАНИЕ</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem;width:35%"><strong>ПОЛОЖИТЕЛЬНО</strong></td><td style="padding:.5rem;width:35%"><strong>ОТРИЦАНИЕ</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бар<strong>амын</strong></td><td style="padding:.5rem">Бар<strong>ма</strong>ймын</td><td style="padding:.5rem">Я не иду</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Кел<strong>емін</strong></td><td style="padding:.5rem">Кел<strong>ме</strong>ймін</td><td style="padding:.5rem">Я не прихожу</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Жас<strong>аймын</strong></td><td style="padding:.5rem">Жас<strong>а</strong>й<strong>ма</strong>ймын</td><td style="padding:.5rem">Я не делаю</td></tr>
@@ -588,7 +1084,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:40%"><strong>УТВЕРЖДЕНИЕ</strong></td><td style="padding:.5rem;width:40%"><strong>ВОПРОС</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem;width:40%"><strong>УТВЕРЖДЕНИЕ</strong></td><td style="padding:.5rem;width:40%"><strong>ВОПРОС</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Сен келдің.</td><td style="padding:.5rem">Сен келдің <strong>бе</strong>?</td><td style="padding:.5rem">Ты пришёл?</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бұл дәмді.</td><td style="padding:.5rem">Бұл дәмді <strong>ме</strong>?</td><td style="padding:.5rem">Это вкусно?</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Ол айтты.</td><td style="padding:.5rem">Ол айтты <strong>ма</strong>?</td><td style="padding:.5rem">Он сказал?</td></tr>
@@ -611,7 +1107,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.88rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem"><strong>Слово</strong></td><td style="padding:.5rem"><strong>Мой + где?</strong></td><td style="padding:.5rem"><strong>Мой + куда?</strong></td><td style="padding:.5rem"><strong>Мой + откуда?</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem"><strong>Слово</strong></td><td style="padding:.5rem"><strong>Мой + где?</strong></td><td style="padding:.5rem"><strong>Мой + куда?</strong></td><td style="padding:.5rem"><strong>Мой + откуда?</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Үй (дом)</td><td style="padding:.4rem">үйімде</td><td style="padding:.4rem">үйімге</td><td style="padding:.4rem">үйімнен</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Дәрігер (врач)</td><td style="padding:.4rem">дәрігерімде</td><td style="padding:.4rem">дәрігерімге</td><td style="padding:.4rem">дәрігерімнен</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Дүкен (магазин)</td><td style="padding:.4rem">дүкенімде</td><td style="padding:.4rem">дүкенімге</td><td style="padding:.4rem">дүкенімнен</td></tr>
@@ -633,7 +1129,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
-<tr style="border-bottom:2px solid var(--teal)"><td style="padding:.5rem;width:35%"><strong>ЕДИНИЧНОЕ</strong></td><td style="padding:.5rem;width:35%"><strong>МНОЖЕСТВЕННОЕ</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem;width:35%"><strong>ЕДИНИЧНОЕ</strong></td><td style="padding:.5rem;width:35%"><strong>МНОЖЕСТВЕННОЕ</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дос</td><td style="padding:.5rem">Дос<strong>тар</strong></td><td style="padding:.5rem">Друзья</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Кітап</td><td style="padding:.5rem">Кітап<strong>тар</strong></td><td style="padding:.5rem">Книги</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бала</td><td style="padding:.5rem">Бала<strong>лар</strong></td><td style="padding:.5rem">Дети</td></tr>
@@ -666,137 +1162,27 @@ footer{background:var(--bg2);border-top:1px solid var(--border);color:var(--text
 </div>
 </div>
 
-<div class="card">
-<h2>1. Сингармонизм (гармония гласных)</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Самое важное правило казахского языка. Суффиксы меняются в зависимости от гласных в корне слова.</p>
-<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
-<p style="font-weight:700;margin-bottom:.5rem">Передний ряд: ә, е, і, ө, ү</p>
-<p style="font-size:.88rem">Дом → <strong>үй</strong> → үй<strong>де</strong> (в доме), үй<strong>дің</strong> (дома — род. падеж)</p>
-<p style="font-weight:700;margin-bottom:.5rem;margin-top:.75rem">Задний ряд: а, о, ұ, ы</p>
-<p style="font-size:.88rem">Школа → <strong>мектеп</strong> → мектеп<strong>те</strong> (в школе), мектеп<strong>тің</strong> (школы — род. падеж)</p>
-</div>
-<p style="font-size:.85rem;color:var(--muted)"><strong>Запомните:</strong> Суффикс <em>-де/-да</em> (в), <em>-нің/-дың/-тің/-нің</em> (род. падеж) — всегда подстраивается под гласные корня.</p>
-</div>
+</div><!-- end sec-grammar -->
 
-<div class="card">
-<h2>2. Падежные суффиксы (7 основных)</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Казахский — агглютинативный язык. Падеж выражается суффиксами.</p>
-
-<table style="width:100%;border-collapse:collapse;font-size:.88rem">
-<tr style="background:var(--teal);color:white"><th style="padding:.5rem;text-align:left">Падеж</th><th style="padding:.5rem;text-align:left">Суффикс</th><th style="padding:.5rem;text-align:left">Значение</th><th style="padding:.5rem;text-align:left">Пример</th></tr>
-<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem"><strong>Атау</strong> (именит.)</td><td style="padding:.4rem .5rem">—</td><td style="padding:.4rem .5rem">Кто? Что?</td><td style="padding:.4rem .5rem"><em>Мектеп</em> (школа)</td></tr>
-<tr style="border-bottom:1px solid var(--border);background:#f9fafb"><td style="padding:.4rem .5rem"><strong>Ілік</strong> (родит.)</td><td style="padding:.4rem .5rem">-ның/-дың/-тің/-нің</td><td style="padding:.4rem .5rem">Кого? Чего?</td><td style="padding:.4rem .5rem"><em>Мектептің</em> (школы)</td></tr>
-<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem"><strong>Барыс</strong> (направ.)</td><td style="padding:.4rem .5rem">-ға/-ге/-қа/-ке</td><td style="padding:.4rem .5rem">Куда?</td><td style="padding:.4rem .5rem"><em>Мектепке</em> (в школу)</td></tr>
-<tr style="border-bottom:1px solid var(--border);background:#f9fafb"><td style="padding:.4rem .5rem"><strong>Тұрғы</strong> (местный)</td><td style="padding:.4rem .5rem">-да/-де/-та/-те</td><td style="padding:.4rem .5rem">Где?</td><td style="padding:.4rem .5rem"><em>Мектепте</em> (в школе)</td></tr>
-<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem .5rem"><strong>Шығыс</strong> (отделит.)</td><td style="padding:.4rem .5rem">-дан/-ден/-тан/-тен/-нан/-нен</td><td style="padding:.4rem .5rem">Откуда?</td><td style="padding:.4rem .5rem"><em>Мектептен</em> (из школы)</td></tr>
-<tr style="border-bottom:1px solid var(--border);background:#f9fafb"><td style="padding:.4rem .5rem"><strong>Табыс</strong> (винит.)</td><td style="padding:.4rem .5rem">-ны/-ды/-ті/-ні</td><td style="padding:.4rem .5rem">Кого? Что?</td><td style="padding:.4rem .5rem"><em>Мектепті</em> (школу)</td></tr>
-<tr><td style="padding:.4rem .5rem"><strong>Жатыс</strong> (instrument.)</td><td style="padding:.4rem .5rem">-мен/-бен/-пен</td><td style="padding:.4rem .5rem">Чем? С чем?</td><td style="padding:.4rem .5rem"><em>Мектеппен</em> (со школой)</td></tr>
-</table>
-<p style="font-size:.85rem;color:var(--muted);margin-top:.75rem"><strong>Совет:</strong> Падежи Барыс (куда?) и Тұрғы (где?) — самые частотные. Начните с них.</p>
-</div>
-
-<div class="card">
-<h2>3. Притяжательные суффиксы</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Казахский не использует слова «мой», «твой» — притяжательность выражается суффиксом.</p>
-<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
-<table style="width:100%;font-size:.88rem;border-collapse:collapse">
-<tr><td style="padding:.3rem 0"><strong>1-е лицо</strong> (мой)</td><td style="padding:.3rem 0">-ым/-ім/-ам/-ем</td><td style="padding:.3rem 0">Үй<strong>ім</strong> — мой дом</td></tr>
-<tr><td style="padding:.3rem 0"><strong>2-е лицо</strong> (твой)</td><td style="padding:.3rem 0">-ың/-ің/-аң/-ең</td><td style="padding:.3rem 0">Үй<strong>ің</strong> — твой дом</td></tr>
-<tr><td style="padding:.3rem 0"><strong>3-е лицо</strong> (его/её)</td><td style="padding:.3rem 0">-ы/-і/-а/-е</td><td style="padding:.3rem 0">Үй<strong>і</strong> — его дом</td></tr>
-</table>
-</div>
-<p style="font-size:.88rem">Пример: <strong>Дәрігер</strong> (врач) → Дәрігер<strong>ім</strong> (мой врач), Дәрігер<strong>ің</strong> (твой врач), Дәрігер<strong>і</strong> (его врач)</p>
-</div>
-
-<div class="card">
-<h2>4. Множественное число</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Суффикс <strong>-лар/-лер</strong> добавляется к корню:</p>
-<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
-<p style="font-size:.88rem">Кітап → Кітап<strong>тар</strong> (книги) | Дос → Дос<strong>тар</strong> (друзья) | Қала → Қала<strong>лар</strong> (города)</p>
-<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Ряд гласных: а/о → лар/лор, ә/ө → лер, ұ → лар, ү → лер, ы/і → лар/лер</p>
-</div>
-</div>
-
-<div class="card">
-<h2>5. Порядок слов (SOV)</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Казахский — язык с порядком слов <strong>Подлежащее → Дополнение → Сказуемое</strong>.</p>
-<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
-<p style="font-size:.88rem"><strong>Мен</strong> (подл.) <strong>кітапты</strong> (доп.) <strong>оқыдым</strong> (сказ.) — Я книгу прочитал.</p>
-<p style="font-size:.88rem;margin-top:.3rem"><strong>Ол</strong> (подл.) <strong>мектепке</strong> (доп.) <strong>барды</strong> (сказ.) — Он в школу пошёл.</p>
-<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Глагол ВСЕГДА в конце предложения. Это главное отличие от русского.</p>
-</div>
-</div>
-
-<div class="card">
-<h2>6. Отрицание</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Суффикс отрицания зависит от типа глагола:</p>
-<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
-<table style="width:100%;font-size:.88rem;border-collapse:collapse">
-<tr><td style="padding:.3rem 0"><strong>Барыс етістік</strong> (глагол движения)</td><td style="padding:.3rem 0">-ма/-ме/-ба/-бе/-па/-пе</td><td style="padding:.3rem 0">Бар<strong>ма</strong>дым (не пошёл)</td></tr>
-<tr><td style="padding:.3rem 0"><strong>Тұру етістік</strong> (стоячий глагол)</td><td style="padding:.3rem 0">-ма/-ме/-ба/-бе/-па/-пе</td><td style="padding:.3rem 0">Тұр<strong>ма</strong> (не стой)</td></tr>
-<tr><td style="padding:.3rem 0"><strong>Жасау етістік</strong> (деятельный)</td><td style="padding:.3rem 0">-ма/-ме/-ба/-бе/-па/-пе</td><td style="padding:.3rem 0">Жаса<strong>ма</strong>ңыз (не делайте)</td></tr>
-</table>
-</div>
-<p style="font-size:.85rem;color:var(--muted)"><strong>Пример:</strong> Мен бар<strong>ма</strong>ймын (Я не иду), Ол кел<strong>ме</strongйді (Он не приходит)</p>
-</div>
-
-<div class="card">
-<h2>7. Вопросительные слова</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">Основные вопросительные слова казахского языка:</p>
-<div style="background:var(--bg);padding:1rem;border-radius:8px">
-<table style="width:100%;font-size:.88rem;border-collapse:collapse">
-<tr><td style="padding:.3rem 0"><strong>Кім?</strong> — Кто?</td><td style="padding:.3rem 0"><strong>Не?</strong> — Что?</td><td style="padding:.3rem 0"><strong>Қайда?</strong> — Где?</td></tr>
-<tr><td style="padding:.3rem 0"><strong>Қашан?</strong> — Когда?</td><td style="padding:.3rem 0"><strong>Қалай?</strong> — Как?</td><td style="padding:.3rem 0"><strong>Неге?</strong> — Почему?</td></tr>
-<tr><td style="padding:.3rem 0"><strong>Неше?</strong> — Сколько?</td><td style="padding:.3rem 0"><strong>Қайсы?</strong> — Какой?</td><td style="padding:.3rem 0"><strong>Ма?</strong> — Вопрос. частица</td></tr>
-</table>
-</div>
-<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Да/Нет: <strong>Иә</strong> (да), <strong>Жоқ</strong> (нет). Частица <strong>-ма/-ме/-ба/-бе/-па/-пе</strong> ставится в конец: Барасың <strong>ба</strong>? (Ты идёшь?)</p>
-</div>
-
-<div class="card">
-<h2>8. Послелоги (постпозиции)</h2>
-<p style="font-size:.9rem;line-height:1.7;margin-bottom:.75rem">В казахском предлогов нет — они ставятся ПОСЛЕ слова:</p>
-<div style="background:var(--bg);padding:1rem;border-radius:8px">
-<table style="width:100%;font-size:.88rem;border-collapse:collapse">
-<tr><td style="padding:.3rem 0"><strong>Үстінде</strong> — на (чём-то)</td><td style="padding:.3rem 0"><strong>Астында</strong> — под</td><td style="padding:.3rem 0"><strong>Арасында</strong> — между</td></tr>
-<tr><td style="padding:.3rem 0"><strong>Артынан</strong> — после</td><td style="padding:.3rem 0"><strong>Алдында</strong> — перед</td><td style="padding:.3rem 0"><strong>Бойымен</strong> — вдоль</td></tr>
-<tr><td style="padding:.3rem 0"><strong>Туралы</strong> — о</td><td style="padding:.3rem 0"><strong>Үшін</strong> — для</td><td style="padding:.3rem 0"><strong>Бойынша</strong> — по</td></tr>
-<tr><td style="padding:.3rem 0"><strong>Сәйкес</strong> — согласно</td><td style="padding:.3rem 0"><strong>Қарамастан</strong> — несмотря на</td><td style="padding:.3rem 0"><strong>Дейін</strong> — до</td></tr>
-</table>
-</div>
-<p style="font-size:.85rem;color:var(--muted);margin-top:.5rem">Пример: Мектеп<strong>тің</strong> алдын<strong>да</strong> (перед школой), Жұмыс<strong>тан</strong> кейін (после работы)</p>
-</div>
-
-<div class="card" style="border-left:4px solid var(--teal)">
-<h2>Практический шпаргалка</h2>
-<p style="font-size:.9rem;line-height:1.7">Как быстро построить предложение:</p>
-<div style="font-size:.88rem;line-height:1.8">
-<p><strong>Шаг 1:</strong> Подлежащее: <em>Мен / Ол / Біз / Олар</em></p>
-<p><strong>Шаг 2:</strong> Дополнение + падеж: <em>мектепке / кітапты / достармен</em></p>
-<p><strong>Шаг 3:</strong> Глагол в конце: <em>бардым / оқыдым / айттым</em></p>
-<p style="margin-top:.75rem"><strong>Пример:</strong> <em>Мен</em> (1) <em>мектепке</em> (2) <em>бардым</em> (3) — Я в школу пошёл.</p>
-<p style="margin-top:.3rem"><strong>Пример:</strong> <em>Біз</em> (1) <em>кітапты</em> (2) <em>оқыдық</em> (3) — Мы книгу прочитали.</p>
-</div>
-</div>
-</div>
-
-<!-- HARD WORDS SECTION -->
-<div id="sec-hard" class="section">
-<div class="card">
-<h2>Сложные слова</h2>
-<p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Слова, в которых вы чаще всего ошибаетесь. Повторяйте их чаще!</p>
-<div id="hardWordsList"></div>
-</div>
-</div>
-
-</div>
-
-<footer>
-<p style="color:var(--text)">Qazaq Tili — Қазақ тілін үйрену платформасы</p>
-<p style="margin-top:.3rem;color:var(--text2);font-size:.7rem">Разработано для этнических казахов с пассивным знанием языка | Уровень B1-B2</p>
-</footer>
+</div><!-- end container -->
 
 <script>
+// ── THEME TOGGLE ──────────────────────────────────────────────
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const newTheme=isDark?'light':'dark';
+  document.documentElement.setAttribute('data-theme',newTheme);
+  document.getElementById('themeToggle').textContent=isDark?'🌙':'☀️';
+  try{localStorage.setItem('qazaq_theme',newTheme)}catch(e){}
+}
+(function(){
+  try{
+    const t=localStorage.getItem('qazaq_theme');
+    if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('themeToggle').textContent='☀️'}
+    else{document.getElementById('themeToggle').textContent='🌙'}
+  }catch(e){}
+})();
+
 const TOPICS=[
 {id:'work',name:'Работа и бизнес',nameKz:'Жұмыс және бизнес',count:150},
 {id:'city',name:'Город и транспорт',nameKz:'Қала және көлік',count:120},
@@ -1894,7 +2280,7 @@ document.getElementById('feedback').className='feedback';
 document.getElementById('feedback').textContent='';
 document.getElementById('nextBtn').style.display='none';
 document.getElementById('answerInput').value='';
-document.getElementById('answerInput').focus();
+try{document.getElementById('answerInput').focus();}catch(e){}
 
 if(state.mode==='A'){
 document.getElementById('mainWord').textContent=w.ru;
@@ -1921,20 +2307,20 @@ const extra=WORDS.filter(x=>x.id!==w.id&&!others.find(o=>o.id===x.id)).sort(()=>
 others.push(...extra);
 }
 const options=shuffleArray([correct,...others.map(o=>o.ru)].slice(0,4));
-const html=options.map(o=>`<button class="quiz-option" onclick="checkQuiz(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
-document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="quizOptions" style="margin-top:.75rem">${html}</div>`);
-const existing=document.getElementById('quizOptions');
-if(existing.previousElementSibling!==document.getElementById('inputRow'))existing.remove();
+const html=options.map(o=>`<button class="quiz-opt" onclick="checkQuiz(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
+document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="quizOptions" class="quiz-grid" style="margin-top:.65rem">${html}</div>`);
+let elQ=document.getElementById('quizOptions');
+if(elQ)elQ.remove();
 }
 
 function renderAudioOptions(w){
 const correct=w.kz;
 const others=WORDS.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3);
 const options=shuffleArray([correct,...others.map(o=>o.kz)].slice(0,4));
-const html=options.map(o=>`<button class="quiz-option" onclick="checkAudio(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
+const html=options.map(o=>`<button class="quiz-opt" onclick="checkAudio(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
 let el=document.getElementById('audioOptions');
 if(el)el.remove();
-document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="audioOptions" style="margin-top:.75rem">${html}</div>`);
+document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="audioOptions" class="quiz-grid" style="margin-top:.65rem">${html}</div>`);
 }
 
 function escHtml(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;')}
@@ -1955,7 +2341,7 @@ function checkQuiz(el,correct){
 if(state.answered)return;
 state.answered=true;
 const isCorrect=el.textContent===correct;
-document.querySelectorAll('#quizOptions .quiz-option').forEach(b=>{
+document.querySelectorAll('#quizOptions .quiz-opt').forEach(b=>{
 if(b.textContent===correct)b.classList.add('correct-opt');
 else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
 });
@@ -1968,7 +2354,7 @@ function checkAudio(el,correct){
 if(state.answered)return;
 state.answered=true;
 const isCorrect=el.textContent===correct;
-document.querySelectorAll('#audioOptions .quiz-option').forEach(b=>{
+document.querySelectorAll('#audioOptions .quiz-opt').forEach(b=>{
 if(b.textContent===correct)b.classList.add('correct-opt');
 else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
 });
@@ -2306,7 +2692,7 @@ function renderDialogues(){
 const list=document.getElementById('dialoguesList');
 list.innerHTML=DIALOGUES.map(d=>{
 const lines=d.lines.map(l=>`<div class="dialogue-line"><span class="speaker">${l.s}:</span> ${l.t}</div>`).join('');
-const opts=d.a.map((o,i)=>`<button class="quiz-option" onclick="checkDialogue(${d.id},${i},this)">${o}</button>`).join('');
+const opts=d.a.map((o,i)=>`<button class="dopt" onclick="checkDialogue(${d.id},${i},this)">${o}</button>`).join('');
 return`<div class="dialogue-item"><h3>${d.id}. ${d.title}</h3>${lines}<div class="dialogue-quiz"><p style="font-weight:600;margin-bottom:.3rem">Вопрос: ${d.q}</p><div id="dq${d.id}">${opts}</div></div></div>`;
 }).join('');
 }
@@ -2316,7 +2702,7 @@ if(state.dialogueState[id])return;
 state.dialogueState[id]=true;
 const d=DIALOGUES.find(x=>x.id===id);
 const correct=d.c;
-document.querySelectorAll(`#dq${id} .quiz-option`).forEach((b,i)=>{
+document.querySelectorAll(`#dq${id} .dopt`).forEach((b,i)=>{
 if(i===correct)b.classList.add('correct-opt');
 else if(b===el&&i!==correct)b.classList.add('wrong-opt');
 });
@@ -2765,6 +3151,7 @@ loadElevenLabsSettings();
 updateStats();
 renderWeekGrid();
 initQueue();
+
 </script>
 </body>
 </html>
