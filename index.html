@@ -9,10 +9,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Qazaq Tili">
 <meta name="theme-color" content="#1a8c2e">
-<!-- PWA иконки — SVG сгенерирован встроенно для корректной работы без сервера -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%231a8c2e'/%3E%3Crect width='512' height='512' rx='96' fill='url(%23g1)'/%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2322c55e'/%3E%3Cstop offset='1' stop-color='%230f6623'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='256' cy='190' r='90' fill='none' stroke='%23fbbf24' stroke-width='22'/%3E%3Cpath d='M256 130 L270 170 H312 L278 194 L292 235 L256 212 L220 235 L234 194 L200 170 H242 Z' fill='%23fbbf24'/%3E%3Crect x='120' y='318' width='272' height='28' rx='14' fill='%23ffffff' opacity='.85'/%3E%3Crect x='160' y='364' width='192' height='22' rx='11' fill='%23ffffff' opacity='.55'/%3E%3C/svg%3E">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%231a8c2e'/%3E%3Crect width='512' height='512' rx='96' fill='url(%23g1)'/%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2322c55e'/%3E%3Cstop offset='1' stop-color='%230f6623'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='256' cy='190' r='90' fill='none' stroke='%23fbbf24' stroke-width='22'/%3E%3Cpath d='M256 130 L270 170 H312 L278 194 L292 235 L256 212 L220 235 L234 194 L200 170 H242 Z' fill='%23fbbf24'/%3E%3Crect x='120' y='318' width='272' height='28' rx='14' fill='%23ffffff' opacity='.85'/%3E%3Crect x='160' y='364' width='192' height='22' rx='11' fill='%23ffffff' opacity='.55'/%3E%3C/svg%3E">
-<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Qazaq%20Tili%20%E2%80%94%20%D0%9A%D0%B0%D0%B7%D0%B0%D1%85%D1%81%D0%BA%D0%B8%D0%B9%20%D1%8F%D0%B7%D1%8B%D0%BA%22%2C%22short_name%22%3A%22Qazaq%20Tili%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a8c2e%22%2C%22theme_color%22%3A%22%231a8c2e%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%2520viewBox%3D'0%25200%2520512%2520512'%253E%253Crect%2520width%3D'512'%2520height%3D'512'%2520rx%3D'96'%2520fill%3D'%25231a8c2e'%2F%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<!-- PWA иконка генерируется через canvas (iOS не поддерживает data:SVG в apple-touch-icon) -->
+<link rel="apple-touch-icon" id="appleTouchIcon">
+<link rel="icon" id="faviconLink">
+<link rel="manifest" id="pwaManifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -219,6 +219,7 @@ nav#mainNav{
 .week-day.has-activity{background:var(--accent-glow);border:1.5px solid var(--accent)}
 .week-day.has-activity .dn{color:var(--accent)}
 .week-day.has-activity .dv{color:var(--accent)}
+.day-words{font-size:.58rem;color:var(--accent);font-weight:800;margin-top:.1rem;letter-spacing:-.2px}
 
 /* ── DAILY GOAL ────────────────────────────────────────────── */
 .goal-row{
@@ -2782,7 +2783,7 @@ const hasActivity=wordsCount>0;
 let cls='week-day';
 if(isToday)cls+=' today';
 if(hasActivity)cls+=' has-activity';
-weekHtml+=`<div class="${cls}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div>${hasActivity?`<div class="day-words">${wordsCount}</div>`:'<div class="day-words" style="opacity:0">0</div>'}</div>`;
+weekHtml+=`<div class="${cls}" title="${hasActivity?wordsCount+' слов':''}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div>${hasActivity?`<div class="day-words">${wordsCount}сл</div>`:'<div class="day-words" style="opacity:0">·</div>'}</div>`;
 }
 el.innerHTML=weekHtml;
 }
@@ -3125,6 +3126,22 @@ if(attempt.resp.ok&&!response.ok){response=attempt.resp;data=attempt.json;reply=
 
 const typing=document.getElementById('chatTypingIndicator');
 if(typing)typing.remove();
+// Очищаем артефакты бесплатных моделей: технические токены, странные вставки, лишние пробелы
+function cleanReply(text){
+if(!text)return text;
+return text
+// Убираем токен-артефакты вида "баTmp", "▁слово", "##слово" — признак плохого tokenizer
+.replace(/\b([а-яёА-ЯЁa-zA-Z]+Tmp\b)/g,'')
+.replace(/▁/g,'')
+.replace(/##/g,'')
+// Убираем управляющие символы и нулевые байты
+.replace(/[\u0000-\u001F\u007F\u200B\u200C\u200D\uFEFF]/g,'')
+// Схлопываем множественные пробелы и переводы строк
+.replace(/ {2,}/g,' ')
+.replace(/\n{3,}/g,'\n\n')
+.trim();
+}
+if(reply)reply=cleanReply(reply);
 if(!response.ok){
 const errMsg=(data&&data.error&&data.error.message)?data.error.message:`Ошибка запроса (${response.status})`;
 chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Проверьте ключ OpenRouter в Настройках.`});
@@ -3142,6 +3159,72 @@ saveChatHistory();
 renderChatMessages();
 }
 }
+
+// ── PWA ИКОНКА (PNG через canvas, iOS требует именно PNG а не SVG data-URI) ──
+(function generatePwaIcon(){
+try{
+const c=document.createElement('canvas');
+c.width=512;c.height=512;
+const ctx=c.getContext('2d');
+// Фон с закруглёнными углами — градиент зелёный (цвета казахского флага)
+const grad=ctx.createLinearGradient(0,0,512,512);
+grad.addColorStop(0,'#1db954');
+grad.addColorStop(1,'#0a6622');
+ctx.beginPath();
+const r=96;
+ctx.moveTo(r,0);ctx.lineTo(512-r,0);ctx.quadraticCurveTo(512,0,512,r);
+ctx.lineTo(512,512-r);ctx.quadraticCurveTo(512,512,512-r,512);
+ctx.lineTo(r,512);ctx.quadraticCurveTo(0,512,0,512-r);
+ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);
+ctx.closePath();
+ctx.fillStyle=grad;ctx.fill();
+// Тонкая полоса Солнца (горизонтальная лазурная полоса вверху — реф на флаг)
+ctx.fillStyle='rgba(100,200,255,0.18)';
+ctx.fillRect(0,0,512,90);
+// Солнце (круг с лучами)
+ctx.strokeStyle='#fbbf24';ctx.lineWidth=0;
+ctx.fillStyle='#fbbf24';
+// Лучи вокруг солнца
+const cx=256,cy=185,sunR=62;
+for(let i=0;i<32;i++){
+const ang=Math.PI*2/32*i;
+const inner=sunR+10,outer=sunR+28;
+ctx.beginPath();
+ctx.moveTo(cx+Math.cos(ang)*inner,cy+Math.sin(ang)*inner);
+ctx.lineTo(cx+Math.cos(ang)*outer,cy+Math.sin(ang)*outer);
+ctx.lineWidth=6;ctx.strokeStyle='#fbbf24';ctx.stroke();
+}
+// Диск солнца
+ctx.beginPath();ctx.arc(cx,cy,sunR,0,Math.PI*2);
+ctx.fillStyle='#fbbf24';ctx.fill();
+// Степной орёл (упрощённо — силуэт птицы в полёте)
+ctx.fillStyle='#fbbf24';
+// Тело
+ctx.beginPath();ctx.ellipse(256,308,28,14,0,0,Math.PI*2);ctx.fill();
+// Левое крыло
+ctx.beginPath();ctx.moveTo(228,308);ctx.bezierCurveTo(170,270,120,285,90,275);ctx.bezierCurveTo(130,300,180,312,228,316);ctx.fill();
+// Правое крыло
+ctx.beginPath();ctx.moveTo(284,308);ctx.bezierCurveTo(342,270,392,285,422,275);ctx.bezierCurveTo(382,300,332,312,284,316);ctx.fill();
+// Хвост
+ctx.beginPath();ctx.moveTo(240,320);ctx.lineTo(256,360);ctx.lineTo(272,320);ctx.fill();
+// Текст "ҚТ" снизу
+ctx.fillStyle='rgba(255,255,255,0.92)';
+ctx.font='bold 90px sans-serif';
+ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillText('ҚТ',256,430);
+const png=c.toDataURL('image/png');
+const ti=document.getElementById('appleTouchIcon');
+if(ti)ti.href=png;
+const fi=document.getElementById('faviconLink');
+if(fi){fi.type='image/png';fi.href=png;}
+// manifest с иконкой
+const manifest={name:'Qazaq Tili — Казахский язык',short_name:'Qazaq Tili',start_url:'./',display:'standalone',background_color:'#1db954',theme_color:'#1db954',icons:[{src:png,sizes:'512x512',type:'image/png'}]};
+const mblob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+const murl=URL.createObjectURL(mblob);
+const ml=document.getElementById('pwaManifest');
+if(ml)ml.href=murl;
+}catch(e){}
+})();
 
 loadState();
 // Блокировка зума по двойному тапу (iOS Safari игнорирует CSS touch-action для этого жеста)
