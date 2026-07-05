@@ -445,8 +445,10 @@ nav#mainNav{
 }
 .topic-card:active{transform:scale(.98)}
 .topic-card.active{border-color:var(--accent);background:var(--accent-glow)}
-.topic-card .tc-name{font-weight:800;font-size:.88rem;flex:1;color:var(--text)}
-.topic-card .tc-count{font-size:.72rem;color:var(--text2);white-space:nowrap}
+.topic-card .tc-name,.topic-card .name{font-weight:800;font-size:.88rem;flex:1;color:var(--text)}
+.topic-card .tc-count,.topic-card .count{font-size:.72rem;color:var(--text2);white-space:nowrap}
+.topic-card .progress-bar{width:100%;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;flex:none;margin-top:.3rem;min-width:60px}
+.topic-card .progress-fill{height:100%;background:var(--accent);border-radius:3px}
 
 /* ── DICTIONARY ────────────────────────────────────────────── */
 .search-wrap{position:relative;margin-bottom:.65rem}
@@ -472,6 +474,8 @@ nav#mainNav{
 .search-item:last-child{border-bottom:none}
 .search-item .kz{font-weight:700;color:var(--text);flex:1}
 .search-item .ru{color:var(--text2);font-size:.78rem;text-align:right;margin-left:.5rem}
+.search-item button{background:none;border:none;cursor:pointer;font-size:.9rem;padding:.15rem .3rem;border-radius:6px;transition:background .15s;flex-shrink:0}
+.search-item button:hover{background:var(--bg3)}
 
 /* ── DIALOGUES ─────────────────────────────────────────────── */
 .dialogue-card{
@@ -901,9 +905,9 @@ input.s-pass:focus{border-color:var(--blue)}
     <div class="settings-row">
       <div class="settings-label">Модель ИИ-чата</div>
       <select id="openrouterModelSelect" class="s-select" onchange="saveOpenRouterModel()">
-        <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B (рек.)</option>
-        <option value="deepseek/deepseek-chat:free">DeepSeek V3</option>
-        <option value="deepseek/deepseek-r1:free">DeepSeek R1</option>
+        <option value="google/gemini-flash-1.5:free">Gemini Flash 1.5 (рек.)</option>
+        <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash</option>
+        <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B</option>
         <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B</option>
         <option value="openrouter/free">Авто</option>
       </select>
@@ -1336,7 +1340,7 @@ const WORDS=[
 {id:124,kz:"Несие",ru:"Кредит",topic:"work",example_kz:"Несиені рәсімдедім.",example_ru:"Оформил кредит."},
 {id:125,kz:"Қарыз",ru:"Долг",topic:"work",example_kz:"Қарызды өтеу керек.",example_ru:"Нужно погасить долг."},
 {id:126,kz:"Пайда",ru:"Прибыль",topic:"work",example_kz:"Пайда көбейді.",example_ru:"Прибыль выросла."},
-{id:127,z:"Зиян",ru:"Убыток",topic:"work",example_kz:"Компания зиянға ұшырады.",example_ru:"Компания понесла убыток."},
+{id:127,kz:"Зиян",ru:"Убыток",topic:"work",example_kz:"Компания зиянға ұшырады.",example_ru:"Компания понесла убыток."},
 {id:128,kz:"Салық",ru:"Налог",topic:"work",example_kz:"Салықты уақытында төлеу керек.",example_ru:"Налог нужно платить вовремя."},
 {id:129,kz:"Мүлік",ru:"Имущество",topic:"work",example_kz:"Мүлікті тіркеу керек.",example_ru:"Нужно зарегистрировать имущество."},
 {id:134,kz:"Іскерлік кездесу",ru:"Деловая встреча",topic:"work",example_kz:"Іскерлік кездесу сәтті өтті.",example_ru:"Деловая встреча прошла успешно."},
@@ -2701,9 +2705,10 @@ others.push(...extra);
 }
 const options=shuffleArray([correct,...others.map(o=>o.ru)].slice(0,4));
 const html=options.map(o=>`<button class="quiz-opt" onclick="checkQuiz(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
-document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="quizOptions" class="quiz-grid" style="margin-top:.65rem">${html}</div>`);
+// Remove old quiz options if any before inserting new
 let elQ=document.getElementById('quizOptions');
 if(elQ)elQ.remove();
+document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="quizOptions" class="quiz-grid" style="margin-top:.65rem">${html}</div>`);
 }
 
 function renderAudioOptions(w){
@@ -2760,19 +2765,22 @@ function showFeedback(correct){
 const fb=document.getElementById('feedback');
 const ws=state.words[state.current.id];
 const streak=ws?ws.streak:0;
+const w=state.current;
+// Show translation line for audio and Kazan→Russian modes
+const translationLine=(state.mode==='C'||state.mode==='B')?`<br><small style="opacity:.85">📖 ${w.kz} — ${w.ru}</small>`:'';
 if(correct){
 fb.className='feedback correct';
 if(streak>=STREAK_TO_LEARN){
-fb.textContent=`✓ Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) 🎉`;
+fb.innerHTML=`✓ Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) 🎉${translationLine}`;
 }else{
-fb.textContent=`✓ Правильно! Прогресс: ${streak}/${STREAK_TO_LEARN}. Слово вернётся позже для проверки.`;
+fb.innerHTML=`✓ Правильно! Прогресс: ${streak}/${STREAK_TO_LEARN}. Слово вернётся позже для проверки.${translationLine}`;
 }
 }else{
 fb.className='feedback wrong';
-fb.textContent=`✗ Неправильно. Правильно: ${state.current.kz}. Счётчик повторений сброшен.`;
+fb.innerHTML=`✗ Неправильно. Правильно: <strong>${w.kz}</strong> — ${w.ru}. Счётчик сброшен.`;
 }
 document.getElementById('wordExample').style.display='block';
-document.getElementById('wordExample').innerHTML=`<strong>Казахский:</strong> ${state.current.example_kz}<br><strong>Русский:</strong> ${state.current.example_ru}`;
+document.getElementById('wordExample').innerHTML=`<strong>Казахский:</strong> ${w.example_kz}<br><strong>Русский:</strong> ${w.example_ru}`;
 }
 
 function updateWordProgress(id,correct){
@@ -3059,7 +3067,11 @@ showSection(id);
 
 function renderTopics(){
 const grid=document.getElementById('topicsGrid');
-grid.innerHTML=TOPICS.map(t=>{
+const allLearned=WORDS.filter(w=>getWordStatus(w.id)==='learned').length;
+const allTotal=WORDS.length;
+const allPct=allTotal?Math.round(allLearned/allTotal*100):0;
+const allCard=`<div class="topic-card${state.currentTopic==='__all__'?' active':''}" onclick="selectTopic('__all__')" style="grid-column:1/-1;border-color:var(--accent);background:${state.currentTopic==='__all__'?'var(--accent-glow)':'var(--card)'}"><div class="name">⭐ Все темы</div><div class="count">${allLearned}/${allTotal} выучено</div><div class="progress-bar" style="margin-top:.3rem"><div class="progress-fill" style="width:${allPct}%"></div></div></div>`;
+grid.innerHTML=allCard+TOPICS.map(t=>{
 const learned=WORDS.filter(w=>w.topic===t.id&&getWordStatus(w.id)==='learned').length;
 const total=WORDS.filter(w=>w.topic===t.id).length;
 return`<div class="topic-card${state.currentTopic===t.id?' active':''}" onclick="selectTopic('${t.id}')"><div class="name">${t.name}</div><div class="count">${learned}/${total} выучено</div><div class="progress-bar" style="margin-top:.3rem"><div class="progress-fill" style="width:${total?Math.round(learned/total*100):0}%"></div></div></div>`;
@@ -3073,7 +3085,7 @@ renderTopics();
 
 function startTopicTraining(){
 if(!state.currentTopic){alert('Выберите тему');return}
-const topicWords=WORDS.filter(w=>w.topic===state.currentTopic);
+const topicWords=state.currentTopic==='__all__'?[...WORDS]:WORDS.filter(w=>w.topic===state.currentTopic);
 state.queue=shuffleArray([...topicWords]);
 showSection('train');
 document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
@@ -3106,9 +3118,60 @@ function renderDictionary(){
 const input=document.getElementById('searchInput');
 const results=document.getElementById('searchResults');
 const query=input.value.trim().toLowerCase();
-if(!query){results.innerHTML='<p style="color:var(--muted);font-size:.85rem">Введите слово для поиска...</p>';return}
+if(!query){results.innerHTML='<p style="color:var(--text3);font-size:.85rem;font-weight:600">Введите слово для поиска...</p>';return}
 const found=WORDS.filter(w=>w.kz.toLowerCase().includes(query)||w.ru.toLowerCase().includes(query)).slice(0,50);
-results.innerHTML=found.map(w=>`<div class="search-item"><span class="kz">${w.kz} — ${w.ru}</span><span class="ru">${TOPICS.find(t=>t.id===w.topic)?.name||''}</span></div>`).join('')||'<p style="color:var(--muted)">Ничего не найдено</p>';
+let localHtml='';
+if(found.length>0){
+localHtml=`<div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">📚 Ваша база (${found.length})</div>`+
+found.map(w=>{
+const status=getWordStatus(w.id);
+const badge=status==='learned'?'<span style="font-size:.65rem;background:var(--green-bg);color:var(--green-dark);padding:.1rem .4rem;border-radius:8px;font-weight:800">✓ выучено</span>':status==='learning'?'<span style="font-size:.65rem;background:var(--blue-bg);color:var(--blue);padding:.1rem .4rem;border-radius:8px;font-weight:800">в процессе</span>':'';
+return`<div class="search-item"><span class="kz">${w.kz} — ${w.ru} ${badge}</span><span class="ru">${TOPICS.find(t=>t.id===w.topic)?.name||''}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">🔊</button></div>`;
+}).join('');
+}else{
+localHtml='<p style="color:var(--text3);font-size:.85rem">Не найдено в вашей базе</p>';
+}
+results.innerHTML=localHtml+`<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" style="color:var(--text3);font-size:.83rem">Поиск...</div></div>`;
+fetchExternalDict(query);
+}
+
+async function fetchExternalDict(query){
+const el=document.getElementById('extDictLoading');
+if(!el)return;
+try{
+// Определяем язык запроса: если содержит кириллицу казахскую/специфичную — казахский, иначе русский
+const hasKazakh=/[ әғқңөұүһі]/i.test(query);
+// Используем Glosbe API — бесплатный многоязычный словарь
+let fromLang,toLang;
+if(hasKazakh){fromLang='kk';toLang='ru';}
+else if(/[а-яёА-ЯЁ]/.test(query)){fromLang='ru';toLang='kk';}
+else{fromLang='kk';toLang='ru';}
+const url=`https://glosbe.com/gapi/translate?from=${fromLang}&dest=${toLang}&format=json&phrase=${encodeURIComponent(query)}&tm=0`;
+const resp=await fetch(url,{signal:AbortSignal.timeout(6000)});
+if(!resp.ok)throw new Error('Ошибка сети');
+const data=await resp.json();
+const tuc=data.tuc||[];
+const meanings=[];
+tuc.forEach(t=>{
+if(t.phrase&&t.phrase.text)meanings.push(t.phrase.text);
+});
+const uniqueMeanings=[...new Set(meanings)].slice(0,8);
+if(uniqueMeanings.length>0){
+el.outerHTML=`<div style="display:flex;flex-wrap:wrap;gap:.35rem">${uniqueMeanings.map(m=>`<span style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.25rem .6rem;font-size:.83rem;font-weight:700;color:var(--text)">${m}</span>`).join('')}</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: Glosbe.com (${fromLang}→${toLang})</div>`;
+}else{
+el.textContent='Переводов не найдено во внешнем словаре.';
+}
+}catch(e){
+if(el)el.textContent='Внешний словарь недоступен (нет интернета или ограничение запросов).';
+}
+}
+
+function playWordAudio(text){
+if(!text)return;
+const apiKey=getElevenLabsKey();
+const voiceId=getElevenLabsVoice();
+if(apiKey&&voiceId){playWithElevenLabs(text,apiKey,voiceId).then(ok=>{if(!ok)playWithBrowserVoice(text)});return}
+playWithBrowserVoice(text);
 }
 
 function searchWords(){renderDictionary()}
@@ -3287,25 +3350,27 @@ reader.readAsText(file);
 const OPENROUTER_KEY_STORAGE='qazaq_tili_openrouter_key';
 const OPENROUTER_MODEL_STORAGE='qazaq_tili_openrouter_model';
 const CHAT_HISTORY_STORAGE='qazaq_tili_chat_history';
-const DEFAULT_OPENROUTER_MODEL='qwen/qwen-2.5-72b-instruct:free';
-const CHAT_SYSTEM_PROMPT=`Ты — опытный преподаватель государственного языка Республики Казахстан (қазақ тілі) и переводчик. Пользователь учит именно казахский язык Казахстана, его родной язык — русский.
+const DEFAULT_OPENROUTER_MODEL='google/gemini-flash-1.5:free';
+const CHAT_SYSTEM_PROMPT=`Ты — точный переводчик и преподаватель казахского языка Казахстана. Пользователь изучает казахский, его родной язык — русский.
 
-КРИТИЧЕСКИ ВАЖНОЕ ОГРАНИЧЕНИЕ ЯЗЫКА:
-- В ответе разрешены ТОЛЬКО ДВА языка: русский (для всех объяснений) и казахский язык Казахстана кириллицей (для переводов и примеров).
-- ЗАПРЕЩЕНО использовать любые другие языки или их слова: английский, испанский, китайский (включая иероглифы), киргизский, татарский, башкирский, узбекский, турецкий, азербайджанский, арабский — ни единого слова, символа или иероглифа на этих языках, даже в скобках или как пояснение термина.
-- НИКОГДА не используй арабскую графику, китайские иероглифы, латиницу для казахского текста — только современный казахский алфавит на основе кириллицы (как в Казахстане).
-- Эталон для сверки — это именно литературный казахский язык, на котором говорят и пишут в Казахстане (Алматы, Астана), а не диалекты или родственные языки соседних стран (Кыргызстан, Татарстан, Узбекистан).
-- Примеры правильного казахского словарного запаса для ориентира: рахмет (спасибо), сәлеметсіз бе (здравствуйте), қалайсыз (как дела), мен (я), сен (ты), бару (идти/ехать), келу (приходить), ұшу (лететь), жақсы (хорошо), қала (город).
-- Перед тем как написать любое слово, проверь: оно либо русское, либо казахское кириллицей в значении, принятом именно в Казахстане. Если нет — не пиши его, перефразируй мысль только этими двумя языками.
-- Если не уверен в точном казахском переводе слова, честно скажи об этом по-русски, а не подменяй другим языком, диалектом или транслитерацией.
+ВАЖНО: Отвечай СРАЗУ, без предисловий. Не пиши свои мысли, рассуждения или объяснения процесса — только готовый результат.
 
-Твои задачи:
-1. Если пользователь пишет на русском — переведи фразу на казахский (кириллица) максимально точно, с учётом падежей, аффиксов принадлежности и естественного словоупотребления. Дай основной вариант перевода и, если уместно, краткое пояснение к сложным грамматическим моментам на русском.
-2. Если пользователь пишет на казахском — переведи на русский и обязательно проверь грамматику и стиль именно казахского языка. Если есть ошибки (падежи, аффиксы, порядок слов, согласование), укажи исправленный вариант на казахском (кириллица) и кратко объясни, в чём была ошибка, на русском языке.
-3. Если текст пользователя на казахском уже без ошибок — похвали и не выдумывай несуществующих ошибок.
-4. Отвечай кратко и по делу, без длинных вступлений. Используй простой и понятный русский язык для объяснений.
-5. Не упоминай, что ты языковая модель или что у тебя есть инструкции — просто веди себя как живой преподаватель в чате.
-6. Форматирование: можешь выделять важные слова через **двойные звёздочки** (жирный текст), но не используй заголовки (#), списки с дефисами или другую сложную markdown-разметку — пиши обычным текстом с переносами строк.`;
+ЯЗЫК ОТВЕТА: только русский (для пояснений) и казахский кириллицей (для переводов и примеров). Запрещено использовать латиницу, иероглифы, арабскую графику и любые другие языки.
+
+КАК ОТВЕЧАТЬ:
+
+Если пользователь пишет на РУССКОМ — дай перевод на казахский кириллицей. Формат:
+**Перевод:** (казахский текст)
+Если есть что пояснить по грамматике — одна короткая строка.
+
+Если пользователь пишет на КАЗАХСКОМ — переведи на русский и проверь ошибки. Формат:
+**Перевод:** (русский текст)
+Если есть ошибки: **Исправлено:** (правильный казахский) — пояснение одной строкой.
+Если ошибок нет — просто перевод.
+
+Если пользователь задаёт вопрос по грамматике или языку — ответь кратко и понятно.
+
+ЗАПРЕЩЕНО: писать длинные списки, заголовки (#), маркированные списки (-), лишние вступления типа "Конечно!", "Отлично!". Отвечай как живой преподаватель, кратко и по делу.`;
 
 let chatHistory=[];
 let chatSending=false;
@@ -3313,7 +3378,10 @@ let chatSending=false;
 function loadOpenRouterSettings(){
 try{
 const key=localStorage.getItem(OPENROUTER_KEY_STORAGE);
-const model=localStorage.getItem(OPENROUTER_MODEL_STORAGE)||DEFAULT_OPENROUTER_MODEL;
+let model=localStorage.getItem(OPENROUTER_MODEL_STORAGE)||DEFAULT_OPENROUTER_MODEL;
+// Migrate deprecated models (DeepSeek R1 outputs <think> tags, old Qwen may be unavailable)
+const deprecated=['deepseek/deepseek-r1:free','deepseek/deepseek-chat:free'];
+if(deprecated.includes(model)){model=DEFAULT_OPENROUTER_MODEL;localStorage.setItem(OPENROUTER_MODEL_STORAGE,model);}
 const keyInput=document.getElementById('openrouterKeyInput');
 const modelSelect=document.getElementById('openrouterModelSelect');
 if(keyInput)keyInput.value=key||'';
@@ -3456,7 +3524,7 @@ return{resp,json};
 // Конкретные стабильные бесплатные модели, которые перебираются по очереди при недоступности
 // или при загрязнении ответа посторонним языком (латиницей, арабской графикой и т.п.).
 // Случайный роутер openrouter/free используется только в самом конце.
-const FALLBACK_MODELS=['qwen/qwen-2.5-72b-instruct:free','deepseek/deepseek-chat:free','meta-llama/llama-3.3-70b-instruct:free','openrouter/free'];
+const FALLBACK_MODELS=['google/gemini-flash-1.5:free','google/gemini-2.0-flash-exp:free','qwen/qwen-2.5-72b-instruct:free','meta-llama/llama-3.3-70b-instruct:free','openrouter/free'];
 
 // Проверяет, что в ответе нет посторонних алфавитов: латиницы (кроме отдельных аббревиатур типа ИИ),
 // арабской графики, или специфических букв других тюркских языков (киргизский/татарский используют
@@ -3517,6 +3585,18 @@ return text
 .trim();
 }
 if(reply)reply=cleanReply(reply);
+// Strip <think>...</think> blocks produced by reasoning models (DeepSeek R1, o1, etc.)
+function stripThinkBlocks(text){
+if(!text)return text;
+// Remove full <think>...</think> blocks (can be multiline)
+text=text.replace(/<think>[\s\S]*?<\/think>/gi,'');
+// Remove orphaned opening tag if closing tag is missing
+text=text.replace(/<think>[\s\S]*/gi,'');
+// Remove /think artifact that some models output
+text=text.replace(/^\s*\/think\s*/,'').replace(/\n\s*\/think\s*/g,'');
+return text.trim();
+}
+if(reply)reply=stripThinkBlocks(reply);
 if(!response.ok){
 const errMsg=(data&&data.error&&data.error.message)?data.error.message:`Ошибка запроса (${response.status})`;
 chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Проверьте ключ OpenRouter в Настройках.`});
