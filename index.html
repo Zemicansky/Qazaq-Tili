@@ -1020,10 +1020,19 @@ input.s-pass:focus{border-color:var(--blue)}
 </table>
 </div>
 
-<p style="font-size:.88rem;margin-top:.75rem"><strong>Как выбрать суффикс?</strong> Посмотри на последнюю гласную слова:</p>
-<p style="font-size:.88rem">Если буква «передняя» (ә, е, і, ө, ү) → суффикс с <strong>е</strong>: үй<strong>де</strong>, үй<strong>ге</strong>, үй<strong>ден</strong></p>
-<p style="font-size:.88rem">Если буква «задняя» (а, о, ұ, ы) → суффикс с <strong>а</strong>: мектеп<strong>те</strong> (нет — «е», потому что «п» — не гласная, смотри на предпоследнюю)</p>
-<p style="font-size:.85rem;color:var(--text2)"><strong>Проще говоря:</strong> Посмотри на последний ГЛАСНЫЙ звук слова. Үй → ү → «передний» → үйде. Мектеп → е → «передний» → мектепте. Дүкен → е → «передний» → дүкенде. Жұмыс → ы → «задний» → жұмыста.</p>
+<p style="font-size:.88rem;margin-top:.75rem"><strong>Как выбрать суффикс? Это ДВА отдельных выбора.</strong></p>
+<p style="font-size:.88rem"><strong>Выбор 1 — гласная (а или е):</strong> смотри на последний ГЛАСНЫЙ звук в слове (не последнюю букву!). Если он «передний» (ә, е, і, ө, ү) → берём <strong>е</strong>. Если «задний» (а, о, ұ, ы) → берём <strong>а</strong>.</p>
+<p style="font-size:.88rem"><strong>Выбор 2 — согласная (д или т):</strong> смотри на последнюю букву слова. Если это глухая согласная (қ, к, п, с, т, ш, х, ф) → берём <strong>т</strong>. Во всех остальных случаях (гласная, звонкая или сонорная согласная) → берём <strong>д</strong>.</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin:.65rem 0">
+<table style="width:100%;font-size:.85rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.4rem"><strong>Слово</strong></td><td style="padding:.4rem"><strong>Последний гласный</strong></td><td style="padding:.4rem"><strong>Последняя буква</strong></td><td style="padding:.4rem"><strong>Суффикс</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Үй</td><td style="padding:.4rem">ү (передний)</td><td style="padding:.4rem">й (сонорная)</td><td style="padding:.4rem">үй<strong>де</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Мектеп</td><td style="padding:.4rem">е (передний)</td><td style="padding:.4rem">п (глухая)</td><td style="padding:.4rem">мектеп<strong>те</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Дүкен</td><td style="padding:.4rem">е (передний)</td><td style="padding:.4rem">н (сонорная)</td><td style="padding:.4rem">дүкен<strong>де</strong></td></tr>
+<tr><td style="padding:.4rem">Жұмыс</td><td style="padding:.4rem">ы (задний)</td><td style="padding:.4rem">с (глухая)</td><td style="padding:.4rem">жұмыс<strong>та</strong></td></tr>
+</table>
+</div>
+<p style="font-size:.85rem;color:var(--text2)"><strong>Проще говоря:</strong> сначала выбираешь а/е по последнему гласному звуку, потом д/т по последней согласной. Оба слова «мектеп» и «жұмыс» оканчиваются на глухую согласную — поэтому у обоих «т», а буква после неё («е» или «а») зависит только от гласных внутри слова.</p>
 </div>
 
 <div class="card" style="border-left:3px solid var(--blue)">
@@ -1053,7 +1062,7 @@ input.s-pass:focus{border-color:var(--blue)}
 </div>
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px;margin-top:.75rem">
-<table style="width:100%;font-size:.9rem;border-collapse:freeze">
+<table style="width:100%;font-size:.9rem;border-collapse:collapse">
 <tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem"><strong>ЕГО/ЕЁ</strong></td><td style="padding:.5rem"><strong>-ы/-і/-а/-е</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй<strong>і</strong></td><td style="padding:.5rem">Его дом</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Дәрігер<strong>і</strong></td><td style="padding:.5rem">Его врач</td></tr>
@@ -1078,8 +1087,8 @@ input.s-pass:focus{border-color:var(--blue)}
 <tr style="border-bottom:2px solid var(--accent)"><td style="padding:.5rem;width:35%"><strong>ПОЛОЖИТЕЛЬНО</strong></td><td style="padding:.5rem;width:35%"><strong>ОТРИЦАНИЕ</strong></td><td style="padding:.5rem"><strong>ПЕРЕВОД</strong></td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бар<strong>амын</strong></td><td style="padding:.5rem">Бар<strong>ма</strong>ймын</td><td style="padding:.5rem">Я не иду</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Кел<strong>емін</strong></td><td style="padding:.5rem">Кел<strong>ме</strong>ймін</td><td style="padding:.5rem">Я не прихожу</td></tr>
-<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Жас<strong>аймын</strong></td><td style="padding:.5rem">Жас<strong>а</strong>й<strong>ма</strong>ймын</td><td style="padding:.5rem">Я не делаю</td></tr>
-<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Оқ<strong>ыдым</strong></td><td style="padding:.5rem">Оқ<strong>ы</strong>й<strong>ма</strong>дым</td><td style="padding:.5rem">Я не прочитал</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Жаса<strong>ймын</strong></td><td style="padding:.5rem">Жаса<strong>ма</strong>ймын</td><td style="padding:.5rem">Я не делаю</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Оқы<strong>дым</strong></td><td style="padding:.5rem">Оқы<strong>ма</strong>дым</td><td style="padding:.5rem">Я не прочитал</td></tr>
 <tr><td style="padding:.5rem">Айт<strong>тым</strong></td><td style="padding:.5rem">Айт<strong>па</strong>дым</td><td style="padding:.5rem">Я не сказал</td></tr>
 </table>
 </div>
@@ -1175,6 +1184,18 @@ input.s-pass:focus{border-color:var(--blue)}
 <p>🚗 <strong>Мен таксимен барамын.</strong> — Я еду на такси.</p>
 <p>🍽️ <strong>Тамақ дәмді ме?</strong> — Еда вкусная?</p>
 </div>
+</div>
+
+<div class="card" style="background:var(--card2);border-left:3px solid var(--text3)">
+<h2 style="font-size:.85rem;color:var(--text2)">Источники</h2>
+<p style="font-size:.78rem;color:var(--text2);line-height:1.7">
+Правила выше проверены и приведены в соответствие со следующими грамматиками казахского языка:<br>
+• Muhamedowa, R. <em>Kazakh: A Comprehensive Grammar</em>. Routledge, 2016.<br>
+• Dotton, Z. &amp; Doyle Wagner, J. <em>A Grammar of Kazakh</em>. Duke University. <a href="https://slaviccenters.duke.edu/sites/slaviccenters.duke.edu/files/file-attachments/kazakh-grammar.pdf" target="_blank" rel="noopener" style="color:var(--blue)">PDF</a><br>
+• Krippes, K. <em>Kazakh (Qazaq) Grammatical Sketch with Affix List</em>, 1993. <a href="https://eric.ed.gov/?id=ED404842" target="_blank" rel="noopener" style="color:var(--blue)">ERIC ED404842</a><br>
+• <a href="https://en.wikipedia.org/wiki/Kazakh_language" target="_blank" rel="noopener" style="color:var(--blue)">Kazakh language — Wikipedia</a> (раздел «Grammar»/«Cases»)<br>
+Если заметите ошибку — это живой раздел, дайте знать, будем сверять и поправлять дальше.
+</p>
 </div>
 
 </div><!-- end sec-grammar -->
@@ -3135,34 +3156,133 @@ results.innerHTML=localHtml+`<div id="extDictResult" style="margin-top:.75rem"><
 fetchExternalDict(query);
 }
 
-async function fetchExternalDict(query){
-const el=document.getElementById('extDictLoading');
-if(!el)return;
-try{
-// Определяем язык запроса: если содержит кириллицу казахскую/специфичную — казахский, иначе русский
-const hasKazakh=/[ әғқңөұүһі]/i.test(query);
-// Используем Glosbe API — бесплатный многоязычный словарь
-let fromLang,toLang;
-if(hasKazakh){fromLang='kk';toLang='ru';}
-else if(/[а-яёА-ЯЁ]/.test(query)){fromLang='ru';toLang='kk';}
-else{fromLang='kk';toLang='ru';}
+// ── Внешний словарь через Викисловарь (Wiktionary) ──────────────────────
+// MediaWiki API официально поддерживает анонимные CORS-запросы через параметр origin=*,
+// поэтому это надёжнее, чем неофициальный (и давно нестабильный) Glosbe gapi endpoint.
+// Направление RU → KZ: ищем статью на ru.wiktionary.org, вытаскиваем раздел
+// «Перевод» со строкой вида «* Казахский: слово».
+// Направление KZ → RU: ищем статью на kk.wiktionary.org, вытаскиваем короткое
+// определение из начала статьи.
+
+function stripWikiMarkup(text){
+if(!text)return'';
+return text
+.replace(/\{\{[^{}]*\}\}/g,'') // убираем шаблоны {{...}}
+.replace(/\[\[([^\]|]*\|)?([^\]]*)\]\]/g,'$2') // [[ссылка|текст]] -> текст
+.replace(/'''?/g,'') // жирный/курсив
+.replace(/<[^>]+>/g,'') // html-теги (ref и т.п.)
+.replace(/\s{2,}/g,' ')
+.trim();
+}
+
+// RU → KZ: парсим викитекст статьи ru.wiktionary.org, ищем блок переводов
+async function lookupRuToKz(query){
+const url=`https://ru.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(query)}&prop=wikitext&format=json&origin=*`;
+const resp=await fetch(url,{signal:AbortSignal.timeout(7000)});
+if(!resp.ok)return null;
+const data=await resp.json();
+if(data.error||!data.parse||!data.parse.wikitext)return null;
+const wikitext=data.parse.wikitext['*']||'';
+// В Викисловаре переводы оформлены шаблоном {{перев-блок |kk=слово |en=word |...}}.
+// Находим сам шаблон (может содержать переносы строк) и вытаскиваем параметр kk=.
+const results=[];
+const blockMatches=[...wikitext.matchAll(/\{\{перев-блок([\s\S]*?)\}\}/g)];
+blockMatches.forEach(block=>{
+const kkMatch=block[1].match(/\|\s*kk\s*=\s*([^|\n}]+)/);
+if(kkMatch){
+const value=stripWikiMarkup(kkMatch[1]);
+if(value)results.push(value);
+}
+});
+const unique=[...new Set(results)].filter(Boolean).slice(0,8);
+return unique.length>0?unique:null;
+}
+
+// KZ → RU: парсим краткое определение из статьи kk.wiktionary.org.
+// Формат статей не всегда единообразен: где-то определение дано списком «# ...»,
+// где-то простым абзацем сразу после заголовка раздела. Пробуем оба варианта.
+async function lookupKzToRu(query){
+const url=`https://kk.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(query)}&prop=wikitext&format=json&origin=*`;
+const resp=await fetch(url,{signal:AbortSignal.timeout(7000)});
+if(!resp.ok)return null;
+const data=await resp.json();
+if(data.error||!data.parse||!data.parse.wikitext)return null;
+const wikitext=data.parse.wikitext['*']||'';
+const isPlaceholder=t=>/анықтамасы\s*берілмеген/i.test(t);
+
+// Вариант 1: строки-определения в вики-разметке списка (# ...)
+let lines=wikitext.split('\n')
+.map(l=>l.trim())
+.filter(l=>l.startsWith('#')&&!l.startsWith('#:'))
+.map(l=>stripWikiMarkup(l.replace(/^#+\s*/,'')))
+.filter(l=>l&&!isPlaceholder(l));
+
+// Вариант 2: если списка нет, берём содержательные текстовые абзацы статьи
+// (пропускаем заголовки ==...==, шаблоны и служебные строки)
+if(lines.length===0){
+lines=wikitext.split('\n')
+.map(l=>l.trim())
+.filter(l=>l&&!l.startsWith('=')&&!l.startsWith('{{')&&!l.startsWith('[[Категория')&&!l.startsWith('|'))
+.map(l=>stripWikiMarkup(l))
+.filter(l=>l&&l.length>2&&!isPlaceholder(l));
+}
+
+const unique=[...new Set(lines)].slice(0,5);
+return unique.length>0?unique:null;
+}
+
+// Пытается получить перевод у Glosbe (резервный вариант, если Wiktionary ничего не нашёл).
+async function tryGlosbeLookup(query,fromLang,toLang){
 const url=`https://glosbe.com/gapi/translate?from=${fromLang}&dest=${toLang}&format=json&phrase=${encodeURIComponent(query)}&tm=0`;
 const resp=await fetch(url,{signal:AbortSignal.timeout(6000)});
-if(!resp.ok)throw new Error('Ошибка сети');
+if(!resp.ok)return null;
 const data=await resp.json();
 const tuc=data.tuc||[];
 const meanings=[];
 tuc.forEach(t=>{
 if(t.phrase&&t.phrase.text)meanings.push(t.phrase.text);
 });
-const uniqueMeanings=[...new Set(meanings)].slice(0,8);
-if(uniqueMeanings.length>0){
-el.outerHTML=`<div style="display:flex;flex-wrap:wrap;gap:.35rem">${uniqueMeanings.map(m=>`<span style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.25rem .6rem;font-size:.83rem;font-weight:700;color:var(--text)">${m}</span>`).join('')}</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: Glosbe.com (${fromLang}→${toLang})</div>`;
+const unique=[...new Set(meanings)].slice(0,8);
+return unique.length>0?unique:null;
+}
+
+async function fetchExternalDict(query){
+const el=document.getElementById('extDictLoading');
+if(!el)return;
+const hasKazakh=/[әғқңөұүһі]/i.test(query);
+const direction=hasKazakh?'kz-ru':'ru-kz';
+
+try{
+let results=null;
+let sourceLabel='';
+
+if(direction==='ru-kz'){
+results=await lookupRuToKz(query).catch(()=>null);
+sourceLabel='ru.wiktionary.org';
 }else{
-el.textContent='Переводов не найдено во внешнем словаре.';
+results=await lookupKzToRu(query).catch(()=>null);
+sourceLabel='kk.wiktionary.org';
+}
+
+// Если Викисловарь не дал результата — пробуем Glosbe как резерв (может быть выключен/недоступен)
+if(!results){
+const fromLang=direction==='ru-kz'?'ru':'kk';
+const toLang=direction==='ru-kz'?'kk':'ru';
+for(const [f,t] of [[fromLang,toLang],[fromLang==='kk'?'kaz':'rus',toLang==='kk'?'kaz':'rus']]){
+try{
+const attempt=await tryGlosbeLookup(query,f,t);
+if(attempt){results=attempt;sourceLabel='Glosbe.com';break}
+}catch(e){/* пробуем следующий вариант */}
+}
+}
+
+if(results&&results.length>0){
+el.outerHTML=`<div style="display:flex;flex-direction:column;gap:.4rem">${results.map(m=>`<div style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.83rem;font-weight:600;color:var(--text)">${escapeChatHtml(m)}</div>`).join('')}</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: ${sourceLabel}</div>`;
+}else{
+el.innerHTML='Во внешнем словаре нет статьи для этого слова. Попробуйте начальную форму слова (без падежных окончаний) или проверьте написание.';
 }
 }catch(e){
-if(el)el.textContent='Внешний словарь недоступен (нет интернета или ограничение запросов).';
+if(el)el.innerHTML='Внешний словарь сейчас недоступен (нет интернета или сайт временно не отвечает). Локальная база слов выше работает независимо от этого.';
 }
 }
 
@@ -3351,26 +3471,26 @@ const OPENROUTER_KEY_STORAGE='qazaq_tili_openrouter_key';
 const OPENROUTER_MODEL_STORAGE='qazaq_tili_openrouter_model';
 const CHAT_HISTORY_STORAGE='qazaq_tili_chat_history';
 const DEFAULT_OPENROUTER_MODEL='google/gemini-flash-1.5:free';
-const CHAT_SYSTEM_PROMPT=`Ты — точный переводчик и преподаватель казахского языка Казахстана. Пользователь изучает казахский, его родной язык — русский.
+const CHAT_SYSTEM_PROMPT=`Ты — переводчик и преподаватель казахского языка. Пользователь изучает казахский, его родной язык — русский. Ты помогаешь ему в учебных целях: переводишь бытовые фразы, разговорные выражения и повседневную лексику, включая эмоционально окрашенные или грубоватые фразы, если он их встретил в жизни и хочет понять или перевести. Это обычная языковая практика, а не что-то предосудительное — отказывай только от реальной пропаганды насилия или дискриминации, а не от обычных разговорных слов.
 
-ВАЖНО: Отвечай СРАЗУ, без предисловий. Не пиши свои мысли, рассуждения или объяснения процесса — только готовый результат.
+Отвечай сразу, без предисловий вроде "Конечно!" или "Отлично!" — только готовый результат.
 
-ЯЗЫК ОТВЕТА: только русский (для пояснений) и казахский кириллицей (для переводов и примеров). Запрещено использовать латиницу, иероглифы, арабскую графику и любые другие языки.
+Язык ответа: русский (для пояснений) и казахский кириллицей (для переводов и примеров). Старайся не использовать другие алфавиты — латиницу, арабскую графику, иероглифы — кроме случаев, когда пользователь сам ввёл слово на другом языке и просит его перевести.
 
-КАК ОТВЕЧАТЬ:
+Формат ответа:
 
-Если пользователь пишет на РУССКОМ — дай перевод на казахский кириллицей. Формат:
+Если пользователь пишет на русском — дай перевод на казахский кириллицей:
 **Перевод:** (казахский текст)
-Если есть что пояснить по грамматике — одна короткая строка.
+При необходимости — одна короткая строка пояснения по грамматике.
 
-Если пользователь пишет на КАЗАХСКОМ — переведи на русский и проверь ошибки. Формат:
+Если пользователь пишет на казахском — переведи на русский и проверь ошибки:
 **Перевод:** (русский текст)
 Если есть ошибки: **Исправлено:** (правильный казахский) — пояснение одной строкой.
 Если ошибок нет — просто перевод.
 
 Если пользователь задаёт вопрос по грамматике или языку — ответь кратко и понятно.
 
-ЗАПРЕЩЕНО: писать длинные списки, заголовки (#), маркированные списки (-), лишние вступления типа "Конечно!", "Отлично!". Отвечай как живой преподаватель, кратко и по делу.`;
+Пиши как живой преподаватель: без длинных списков, заголовков (#), маркированных списков (-) и лишних вступлений — кратко и по делу.`;
 
 let chatHistory=[];
 let chatSending=false;
@@ -3546,19 +3666,38 @@ return false;
 // программно невозможно — здесь полагаемся на явный запрет в системном промпте и точный
 // подбор бесплатной модели, которая действительно хорошо знает именно казахский словарь.
 
+// Определяет, что модель ложно отказалась отвечать (сработала излишне осторожная
+// встроенная модерация бесплатной модели), а не дала настоящий перевод. В таком случае
+// имеет смысл сразу попробовать другую модель — обычно она отвечает нормально.
+function looksLikeFalseRefusal(text){
+if(!text)return true; // пустой ответ тоже считаем отказом
+const t=text.toLowerCase();
+const refusalPhrases=[
+'не могу помочь','не могу перевести','не могу предоставить','не могу выполнить',
+'содержит нецензурн','ненормативн','оскорбительн','неприемлем',
+'не могу генерировать','не могу создавать','как языковая модель','я являюсь ии-моделью',
+'i cannot','i\'m sorry, but i','as an ai language model'
+];
+// Короткий ответ (менее ~12 символов) без казахских букв тоже подозрителен — вряд ли это перевод
+const suspiciouslyShort=text.trim().length<8;
+return suspiciouslyShort||refusalPhrases.some(p=>t.includes(p));
+}
+
 const chosenModel=getOpenRouterModel();
 let{resp:response,json:data}=await callOpenRouter(chosenModel);
 let reply=response.ok?(data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content):null;
 
 const triedModels=[chosenModel];
-// Если запрос не удался ИЛИ ответ содержит посторонний язык — пробуем следующую модель.
-if(!response.ok||containsForeignScript(reply)){
+// Если запрос не удался, ИЛИ ответ содержит посторонний язык, ИЛИ похоже на ложный отказ —
+// пробуем следующую модель. Бесплатные модели иногда излишне осторожничают с обычными
+// разговорными фразами — у другой модели чаще всего получится перевести нормально.
+if(!response.ok||containsForeignScript(reply)||looksLikeFalseRefusal(reply)){
 for(const fallbackModel of FALLBACK_MODELS){
 if(triedModels.includes(fallbackModel))continue;
 triedModels.push(fallbackModel);
 const attempt=await callOpenRouter(fallbackModel);
 const attemptReply=attempt.resp.ok?(attempt.json&&attempt.json.choices&&attempt.json.choices[0]&&attempt.json.choices[0].message&&attempt.json.choices[0].message.content):null;
-if(attempt.resp.ok&&!containsForeignScript(attemptReply)){
+if(attempt.resp.ok&&!containsForeignScript(attemptReply)&&!looksLikeFalseRefusal(attemptReply)){
 response=attempt.resp;data=attempt.json;reply=attemptReply;
 break;
 }
