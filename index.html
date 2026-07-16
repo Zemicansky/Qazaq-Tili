@@ -1,3 +1,30 @@
+<!--
+  CHANGELOG (см. также комментарии рядом с конкретным кодом):
+  1. ИИ-чат: убрана логика "взять хоть какой-то ответ, даже грязный", если ни одна
+     fallback-модель не дала чистый текст на казахском — теперь в этом случае
+     показывается понятная ошибка вместо смеси языков/иероглифов.
+     См. sendChatMessage() → переменная cleanReplyFound.
+  2. Тренировка режима "Рус → Каз" (mode A): добавлена толерантность к опечаткам
+     через расстояние Левенштейна (levenshteinDistance). Небольшая опечатка теперь
+     засчитывается как верный ответ, но показывается отдельным жёлтым статусом
+     "Почти!" с правильным написанием — см. checkAnswer() и showFeedback().
+  3. Тренировка: исправлен баг с переключением вкладок режима (Рус→Каз / Каз→Рус /
+     Аудио) — код искал кнопки по классу .mode-switch, а в разметке контейнер
+     называется .mode-tabs, поэтому старая подсветка не снималась и было неясно,
+     какой режим активен. Также сделан явный синий цвет активной вкладки вместо
+     едва отличимого серого фона. См. setMode() и CSS .mode-tab.active.
+  4. Внешний словарь: обёрнутые в try/catch сетевые запросы к Wiktionary/Glosbe
+     раньше "проглатывали" причину сбоя — в интерфейсе везде было одинаковое
+     "статья не найдена", даже если реальная причина — недоступность источника
+     (сеть, CORS, блокировка расширением). Теперь fetchExternalDict() отдельно
+     считает сетевые сбои и печатает причину каждого в консоль браузера (F12),
+     а если ВСЕ запросы физически не прошли — показывает отдельное сообщение
+     про недоступность источников, а не "слова нет в словаре". Если сообщение
+     "не удалось связаться" появляется стабильно для любых слов — открой
+     консоль браузера и посмотри на текст ошибки рядом с пометкой
+     "[Внешний словарь] сетевой запрос не удался" — там будет видно, это CORS,
+     таймаут, или сайт-источник действительно недоступен.
+-->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -253,7 +280,7 @@ nav#mainNav{
 }
 .mode-tab:active{transform:scale(.95)}
 .mode-tab.active{
-  background:var(--card);color:var(--text);
+  background:var(--blue);color:#fff;
   box-shadow:var(--shadow);
 }
 
@@ -2653,14 +2680,47 @@ document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="audi
 
 function escHtml(s){return s.replace(/'/g,"\\'").replace(/"/g,'&quot;')}
 
+// Расстояние Левенштейна — минимальное число вставок/удалений/замен символов,
+// чтобы превратить одну строку в другую. Используем его, чтобы отличить
+// "опечатался в одной букве" от "не знает слово вообще".
+function levenshteinDistance(a,b){
+if(a===b)return 0;
+if(a.length===0)return b.length;
+if(b.length===0)return a.length;
+const prev=new Array(b.length+1);
+const curr=new Array(b.length+1);
+for(let j=0;j<=b.length;j++)prev[j]=j;
+for(let i=1;i<=a.length;i++){
+curr[0]=i;
+for(let j=1;j<=b.length;j++){
+const cost=a[i-1]===b[j-1]?0:1;
+curr[j]=Math.min(prev[j]+1,curr[j-1]+1,prev[j-1]+cost);
+}
+for(let j=0;j<=b.length;j++)prev[j]=curr[j];
+}
+return prev[b.length];
+}
+
 function checkAnswer(){
 if(state.answered||!state.current)return;
 const input=document.getElementById('answerInput').value.trim().toLowerCase();
 const correct=state.current.kz.toLowerCase();
 const alts=(state.current.alts||[]).map(a=>a.toLowerCase());
-const isCorrect=input===correct||alts.includes(input);
-updateWordProgress(state.current.id,isCorrect);
-showFeedback(isCorrect);
+const candidates=[correct,...alts];
+const isCorrect=candidates.includes(input);
+// Если ответ не совпал в точности — проверяем, не опечатка ли это (1-2 символа
+// разницы в зависимости от длины слова). В таком случае засчитываем ответ
+// как верный по существу, но предупреждаем об опечатке, не выдавая идеальный
+// стрик — это поощряет учить именно правильное написание.
+let isTypo=false;
+if(!isCorrect&&input.length>0){
+const maxAllowedDistance=correct.length<=4?1:2;
+const bestDistance=Math.min(...candidates.map(c=>levenshteinDistance(input,c)));
+if(bestDistance>0&&bestDistance<=maxAllowedDistance)isTypo=true;
+}
+const countsAsCorrect=isCorrect||isTypo;
+updateWordProgress(state.current.id,countsAsCorrect);
+showFeedback(countsAsCorrect,isTypo);
 state.answered=true;
 document.getElementById('nextBtn').style.display='inline-block';
 }
@@ -2691,14 +2751,22 @@ showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
 }
 
-function showFeedback(correct){
+function showFeedback(correct,isTypo){
 const fb=document.getElementById('feedback');
 const ws=state.words[state.current.id];
 const streak=ws?ws.streak:0;
 const w=state.current;
 // Show translation line for audio and Kazan→Russian modes
 const translationLine=(state.mode==='C'||state.mode==='B')?`<br><small style="opacity:.85">📖 ${w.kz} — ${w.ru}</small>`:'';
-if(correct){
+if(correct&&isTypo){
+// Ответ засчитан (смысл верный), но в написании была опечатка/мелкая неточность —
+// отдельный жёлтый статус, чтобы пользователь видел разницу с полностью верным ответом
+// и запомнил точное написание, а не порадовался идеальному ответу по ошибке.
+fb.className='feedback';
+fb.style.background='#fef3c7';
+fb.style.color='#92400e';
+fb.innerHTML=`〜 Почти! Небольшая опечатка. Правильное написание: <strong>${w.kz}</strong>. Прогресс: ${streak}/${STREAK_TO_LEARN}.${translationLine}`;
+}else if(correct){
 fb.className='feedback correct';
 if(streak>=STREAK_TO_LEARN){
 fb.innerHTML=`✓ Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) 🎉${translationLine}`;
@@ -2938,7 +3006,7 @@ showNextWord();
 
 function setMode(m){
 state.mode=m;
-document.querySelectorAll('.mode-switch button').forEach(b=>b.classList.remove('active'));
+document.querySelectorAll('.mode-tabs button').forEach(b=>b.classList.remove('active'));
 document.getElementById('mode'+m).classList.add('active');
 const quizEl=document.getElementById('quizOptions');
 if(quizEl)quizEl.remove();
@@ -3219,39 +3287,52 @@ if(!el)return;
 const hasKazakh=/[әғқңөұүһі]/i.test(query);
 const direction=hasKazakh?'kz-ru':'ru-kz';
 
+// Диагностика: считаем, сколько сетевых запросов реально прошли (fetch не упал
+// с ошибкой сети/CORS), а сколько провалились технически. Если ВСЕ запросы
+// провалились технически — проблема не "слова нет в словаре", а недоступность
+// источников (нет интернета, блокировка CORS хостинга/браузера, сайт лежит).
+// Раньше это не отличалось от обычного "не найдено" и было невозможно
+// диагностировать со стороны пользователя.
+let networkAttempts=0;
+let networkFailures=0;
+function trackedCall(promiseFactory){
+networkAttempts++;
+return promiseFactory().then(r=>r).catch(e=>{networkFailures++;console.warn('[Внешний словарь] сетевой запрос не удался:',e&&e.message?e.message:e);return null});
+}
+
 try{
 let results=null;
 let sourceLabel='';
 
 if(direction==='ru-kz'){
 // 1) Точная статья на ru.wiktionary.org, ищем блок переводов |kk=
-results=await lookupRuToKz(query).catch(()=>null);
+results=await trackedCall(()=>lookupRuToKz(query));
 if(results)sourceLabel='ru.wiktionary.org';
 
 // 2) У русского Викисловаря казахский перевод указан далеко не всегда —
 // ищем русское слово прямо в казахском разделе (там оно может встречаться
 // в определении статьи как перевод)
 if(!results){
-results=await searchKzArticlesForRuWord(query).catch(()=>null);
+results=await trackedCall(()=>searchKzArticlesForRuWord(query));
 if(results)sourceLabel='kk.wiktionary.org (поиск)';
 }
 }else{
 // 1) Точная статья на kk.wiktionary.org для введённой формы слова
-results=await lookupKzToRu(query).catch(()=>null);
+results=await trackedCall(()=>lookupKzToRu(query));
 if(results)sourceLabel='kk.wiktionary.org';
 
 // 2) Слово может быть словоформой (падеж/спряжение) — ищем лемму и пробуем её
 if(!results){
-results=await lookupKzToRuViaLemma(query).catch(()=>null);
+results=await trackedCall(()=>lookupKzToRuViaLemma(query));
 if(results)sourceLabel='kk.wiktionary.org';
 }
 
 // 3) Если статьи по-прежнему нет — пробуем полнотекстовый поиск и берём
 // определение первой найденной релевантной статьи
 if(!results){
-const lemma=await resolveLemma(query,'kk.wiktionary.org').catch(()=>null);
+const lemma=await trackedCall(()=>resolveLemma(query,'kk.wiktionary.org'));
 if(lemma){
-results=await lookupKzToRu(lemma).catch(()=>null);
+results=await trackedCall(()=>lookupKzToRu(lemma));
 if(results)sourceLabel='kk.wiktionary.org';
 }
 }
@@ -3262,19 +3343,24 @@ if(!results){
 const fromLang=direction==='ru-kz'?'ru':'kk';
 const toLang=direction==='ru-kz'?'kk':'ru';
 for(const [f,t] of [[fromLang,toLang],[fromLang==='kk'?'kaz':'rus',toLang==='kk'?'kaz':'rus']]){
-try{
-const attempt=await tryGlosbeLookup(query,f,t);
+const attempt=await trackedCall(()=>tryGlosbeLookup(query,f,t));
 if(attempt){results=attempt;sourceLabel='Glosbe.com';break}
-}catch(e){/* пробуем следующий вариант */}
 }
 }
 
 if(results&&results.length>0){
 el.outerHTML=`<div style="display:flex;flex-direction:column;gap:.4rem">${results.map(m=>`<div style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.83rem;font-weight:600;color:var(--text)">${escapeChatHtml(m)}</div>`).join('')}</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: ${sourceLabel}</div>`;
+}else if(networkAttempts>0&&networkFailures===networkAttempts){
+// Все запросы упали технически (не дошли до сервера/не прошли CORS) —
+// значит проблема в доступе к источникам, а не в том, что слова нет.
+// Открой консоль браузера (F12 → Console) — там будет напечатана точная
+// причина каждого сбоя (пометка "[Внешний словарь] сетевой запрос не удался").
+el.innerHTML='Не удалось связаться ни с одним внешним источником (Wiktionary/Glosbe). Похоже на проблему сети или блокировку запросов браузером/расширением — подробности в консоли разработчика (F12). Локальная база слов выше работает независимо от этого.';
 }else{
 el.innerHTML='Во внешнем словаре нет статьи для этого слова. Попробуйте начальную форму слова (без падежных окончаний) или проверьте написание.';
 }
 }catch(e){
+console.warn('[Внешний словарь] непредвиденная ошибка:',e);
 if(el)el.innerHTML='Внешний словарь сейчас недоступен (нет интернета или сайт временно не отвечает). Локальная база слов выше работает независимо от этого.';
 }
 }
@@ -3681,10 +3767,14 @@ let{resp:response,json:data}=await callOpenRouter(chosenModel);
 let reply=response.ok?(data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content):null;
 
 const triedModels=[chosenModel];
+// cleanReplyFound=true означает, что хотя бы одна из перебранных моделей дала
+// ответ БЕЗ постороннего языка и без признаков ложного отказа — то есть reply
+// в этот момент действительно годен для показа пользователю.
+let cleanReplyFound=response.ok&&!containsForeignScript(reply)&&!looksLikeFalseRefusal(reply);
 // Если запрос не удался, ИЛИ ответ содержит посторонний язык, ИЛИ похоже на ложный отказ —
 // пробуем следующую модель. Бесплатные модели иногда излишне осторожничают с обычными
 // разговорными фразами — у другой модели чаще всего получится перевести нормально.
-if(!response.ok||containsForeignScript(reply)||looksLikeFalseRefusal(reply)){
+if(!cleanReplyFound){
 for(const fallbackModel of FALLBACK_MODELS){
 if(triedModels.includes(fallbackModel))continue;
 triedModels.push(fallbackModel);
@@ -3692,11 +3782,24 @@ const attempt=await callOpenRouter(fallbackModel);
 const attemptReply=attempt.resp.ok?(attempt.json&&attempt.json.choices&&attempt.json.choices[0]&&attempt.json.choices[0].message&&attempt.json.choices[0].message.content):null;
 if(attempt.resp.ok&&!containsForeignScript(attemptReply)&&!looksLikeFalseRefusal(attemptReply)){
 response=attempt.resp;data=attempt.json;reply=attemptReply;
+cleanReplyFound=true;
 break;
 }
-// Запоминаем хоть какой-то успешный ответ на случай, если ни одна модель не даст чистый текст
-if(attempt.resp.ok&&!response.ok){response=attempt.resp;data=attempt.json;reply=attemptReply}
+// ВАЖНО: раньше здесь "на всякий случай" запоминался хоть какой-то успешный,
+// но не обязательно чистый ответ — из-за этого пользователю иногда прилетал
+// мусор (смесь языков/иероглифов), даже если ни одна модель не справилась.
+// Теперь мы НЕ подставляем такой ответ как основной: если ни одна модель
+// не дала чистый текст, ниже сработает единая понятная ошибка вместо мусора.
 }
+}
+// Если после перебора всех моделей чистого ответа так и не нашлось — показываем
+// явную, понятную ошибку вместо того, чтобы выводить "грязный" текст с чужим
+// алфавитом. Пользователь увидит предложение попробовать ещё раз или сменить
+// модель в Настройках, а не набор нечитаемых символов.
+if(!cleanReplyFound){
+response={ok:false,status:0};
+data={error:{message:'Свободные модели сейчас не смогли дать чистый ответ на казахском (в ответе проскочили посторонние символы/язык). Попробуйте отправить сообщение ещё раз или выбрать другую модель в Настройках.'}};
+reply=null;
 }
 
 const typing=document.getElementById('chatTypingIndicator');
