@@ -52,6 +52,48 @@
      (state.answered), а поле ввода и варианты ответов блокируются физически
      (disabled/pointer-events) сразу после ответа, чтобы исключить повторные
      клики/Enter поверх уже показанного результата.
+  9. Тренировка (Каз → Рус, режим B): раньше был выбор из 4 вариантов —
+     слово можно было угадать методом исключения, даже не зная перевода
+     (например явно неподходящий вариант вроде "Многоэтажный" среди
+     "Опаздывать/Адрес/Очередь" угадывался с первого взгляда). Теперь режим B
+     тоже требует свободного ввода перевода на русском, как и режим "Рус → Каз".
+     Проверка направления вынесена в checkAnswer() (переменная isModeB).
+     Старые renderQuizOptions()/checkQuiz() оставлены в коде неиспользуемыми —
+     на случай, если понадобится вернуть режим с вариантами.
+  10. Тренировка (режимы B и C — quiz с вариантами): обманки в
+     renderAudioOptions() (и в оставленной renderQuizOptions()) теперь
+     подбираются не случайно из всей базы/темы, а по похожести на правильный
+     ответ — совпадение первой буквы и близкая длина слова получают более
+     высокий приоритет. Из-за этого вариант нельзя больше угадать "на глаз"
+     по длине текста или явной несвязанности по смыслу — нужно действительно
+     знать слово. См. pickSmartDistractors().
+  11. Подсказка (кнопка "Подсказка"): раньше showHint() всегда маскировала
+     казахское слово (state.current.kz), даже в режиме "Каз → Рус" (B), где
+     вводить нужно русский перевод — то есть подсказка показывала буквы не
+     того слова, которое печатает пользователь. Теперь showHint() берёт
+     state.current.ru в режиме B и state.current.kz в остальных режимах.
+  12. Дневная цель: исправлен баг, из-за которого нажатие "Не знаю /
+     Пропустить" продвигало счётчик "Дневная цель: X/5 новых слов", как будто
+     слово было пройдено. Причина: skipWord() сбрасывал streak слова через
+     updateWordProgress(id,false), а эта функция всегда увеличивает
+     state.daily.newCount (тот самый счётчик цели) при любом неверном ответе —
+     функция не различала "пользователь ответил неправильно" и "пользователь
+     нажал Пропустить". Теперь skipWord() сбрасывает streak слова напрямую,
+     не затрагивая счётчики дневной цели и статистику сессии.
+  13. Внешний словарь: устранены две причины "странных" переводов.
+     (а) lookupKzToRu() в резервном режиме (когда в статье нет явного списка
+     "# определение") раньше брала любой текстовый абзац статьи подряд —
+     могла случайно захватить этимологию или грамматическую помету вместо
+     реального значения слова. Теперь ищет конкретно раздел "Мағынасы"/
+     "Анықтамасы" и отфильтровывает служебные пометки (Этимология, Синоним
+     и т.п.). (б) searchKzArticlesForRuWord() (резерв для Рус→Каз) раньше
+     возвращала заголовки любых статей, где введённое русское слово просто
+     встретилось в тексте — без проверки, что это действительно перевод, а
+     не случайное упоминание в примере. Теперь для каждой найденной статьи
+     отдельно проверяется, что слово фигурирует именно в строке-определении.
+     Также добавлена ссылка "проверить статью" рядом с результатом из
+     Wiktionary — по ней можно в один клик открыть исходную статью и
+     убедиться в переводе самостоятельно. См. fetchExternalDict().
 -->
 <!DOCTYPE html>
 <html lang="ru">
@@ -2694,10 +2736,14 @@ document.getElementById('inputRow').style.display='flex';
 document.getElementById('answerInput').placeholder='Введите перевод на казахском...';
 if(replayRow)replayRow.style.display='none';
 }else if(state.mode==='B'){
+// Раньше здесь был выбор из 4 вариантов (renderQuizOptions), из-за чего слово
+// можно было угадать методом исключения, даже не зная перевода. Теперь, как и
+// в режиме "Рус → Каз", нужно самому вспомнить и написать перевод —
+// это заставляет реально знать слово, а не узнавать его среди подсказок.
 document.getElementById('mainWord').textContent=w.kz;
-document.getElementById('inputRow').style.display='none';
+document.getElementById('inputRow').style.display='flex';
+document.getElementById('answerInput').placeholder='Введите перевод на русском...';
 if(replayRow)replayRow.style.display='block';
-renderQuizOptions(w);
 }else if(state.mode==='C'){
 document.getElementById('mainWord').textContent='🔊';
 document.getElementById('inputRow').style.display='none';
@@ -2708,13 +2754,56 @@ playAudio();
 updateDailyProgress();
 }
 
+// Подбирает "умные" неправильные варианты для quiz-режимов: вместо чисто
+// случайных слов из темы берём слова, похожие по длине и/или первой букве на
+// правильный ответ — с ними реально нужно знать перевод, а не отличать
+// правильный вариант "на глаз" по длине текста или явной несвязанности по
+// смыслу (например слово "Многоэтажный" рядом с "Опаздывать"/"Адрес"/"Очередь"
+// угадывается сразу, даже не зная казахского).
+// text — поле, по которому сравниваем похожесть (w.ru для mode B, w.kz для mode C).
+function pickSmartDistractors(w,count,text){
+const correctVal=w[text];
+const pool=WORDS.filter(x=>x.id!==w.id);
+
+function similarityScore(candidateVal){
+let score=0;
+// Совпадение первой буквы — самый сильный сигнал "легко перепутать"
+if(candidateVal[0]&&correctVal[0]&&candidateVal[0].toLowerCase()===correctVal[0].toLowerCase())score+=3;
+// Похожая длина слова (в пределах 2 символов) — тоже сбивает с толку на глаз
+const lenDiff=Math.abs(candidateVal.length-correctVal.length);
+if(lenDiff<=2)score+=2;
+else if(lenDiff<=4)score+=1;
+return score;
+}
+
+// Сортируем весь пул по "похожести" и добавляем немного случайности внутри
+// групп с одинаковым score, чтобы варианты не были предсказуемо одинаковыми
+// при каждом повторе одного и того же слова
+const scored=pool.map(x=>({w:x,score:similarityScore(x[text])}));
+scored.sort((a,b)=>b.score-a.score||Math.random()-0.5);
+
+// Берём сначала темовых слов (тот же topic) среди самых похожих — это ещё и
+// сохраняет полезность старого поведения (обманки по смыслу из той же темы),
+// но комбинирует с похожестью по форме слова
+const sameTopic=scored.filter(s=>s.w.topic===w.topic);
+const otherTopic=scored.filter(s=>s.w.topic!==w.topic);
+const ordered=[...sameTopic,...otherTopic];
+
+const seen=new Set();
+const result=[];
+for(const s of ordered){
+const val=s.w[text];
+if(val===correctVal||seen.has(val))continue;
+seen.add(val);
+result.push(s.w);
+if(result.length>=count)break;
+}
+return result;
+}
+
 function renderQuizOptions(w){
 const correct=w.ru;
-const others=WORDS.filter(x=>x.id!==w.id&&x.topic===w.topic).sort(()=>Math.random()-.5).slice(0,3);
-if(others.length<3){
-const extra=WORDS.filter(x=>x.id!==w.id&&!others.find(o=>o.id===x.id)).sort(()=>Math.random()-.5).slice(0,3-others.length);
-others.push(...extra);
-}
+const others=pickSmartDistractors(w,3,'ru');
 const options=shuffleArray([correct,...others.map(o=>o.ru)].slice(0,4));
 const html=options.map(o=>`<button class="quiz-opt" onclick="checkQuiz(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
 // Remove old quiz options if any before inserting new
@@ -2725,7 +2814,7 @@ document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="quiz
 
 function renderAudioOptions(w){
 const correct=w.kz;
-const others=WORDS.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3);
+const others=pickSmartDistractors(w,3,'kz');
 const options=shuffleArray([correct,...others.map(o=>o.kz)].slice(0,4));
 const html=options.map(o=>`<button class="quiz-opt" onclick="checkAudio(this,'${escHtml(correct)}')">${escHtml(o)}</button>`).join('');
 let el=document.getElementById('audioOptions');
@@ -2759,8 +2848,13 @@ return prev[b.length];
 function checkAnswer(){
 if(state.answered||!state.current)return;
 const input=document.getElementById('answerInput').value.trim().toLowerCase();
-const correct=state.current.kz.toLowerCase();
-const alts=(state.current.alts||[]).map(a=>a.toLowerCase());
+// Направление проверки зависит от режима: "Рус → Каз" (A) — вводим казахское
+// слово, "Каз → Рус" (B) — вводим русское. Раньше режим B был только с выбором
+// из вариантов, теперь тоже свободный ввод, поэтому проверяем по нужному полю.
+const isModeB=state.mode==='B';
+const correct=(isModeB?state.current.ru:state.current.kz).toLowerCase();
+const altsSource=isModeB?(state.current.ru_alts||[]):(state.current.alts||[]);
+const alts=altsSource.map(a=>a.toLowerCase());
 const candidates=[correct,...alts];
 const isCorrect=candidates.includes(input);
 // Если ответ не совпал в точности — проверяем, не опечатка ли это (1-2 символа
@@ -2894,7 +2988,11 @@ updateStreakDisplay();
 
 function showHint(){
 if(!state.current)return;
-const word=state.current.kz;
+// Слово для подсказки зависит от направления перевода: в режиме "Рус → Каз" (A)
+// угадываем казахское слово, а в режиме "Каз → Рус" (B) — русский перевод.
+// Раньше здесь всегда бралось state.current.kz, поэтому в режиме B подсказка
+// показывала буквы казахского слова, хотя вводить нужно было русское.
+const word=state.mode==='B'?state.current.ru:state.current.kz;
 if(!state.hintLevel)state.hintLevel=0;
 if(state.hintLevel<word.length)state.hintLevel++;
 const fb=document.getElementById('feedback');
@@ -3079,11 +3177,23 @@ if(state.current){
 // streak остаётся 2, а при следующей встрече одного случайного правильного
 // ответа хватало, чтобы дойти до streak=3 и слово помечалось "выучено" —
 // хотя пользователь только что явно показал, что слово не знает.
-// Теперь "Пропустить" = "не знаю это слово" и обнуляет streak точно так же,
-// как обычный неверный ответ через updateWordProgress(id,false), но не
-// показывает feedback про "неправильно" — слово просто уходит в конец очереди.
+// "Пропустить" = "не знаю это слово" и должно обнулять streak как обычная
+// ошибка, НО не должно засчитываться как попытка к дневной цели — ранее это
+// делалось через updateWordProgress(id,false), а эта функция ВСЕГДА
+// увеличивает state.daily.newCount (счётчик "Дневная цель: X/5"), даже если
+// пользователь ничего не отвечал. Из-за этого пропуск слова ошибочно
+// продвигал дневную цель. Теперь streak сбрасывается напрямую, без
+// затрагивания счётчиков дня/статистики сессии.
 if(!state.answered){
-updateWordProgress(state.current.id,false);
+const ws=state.words[state.current.id];
+if(ws){
+ws.errors=(ws.errors||0)+1;
+ws.streak=0;
+ws.level=0;
+ws.nextReview=Date.now()+15*60000;
+saveState();
+updateStats();
+}
 }
 state.queue.push(state.current);
 state.daily.answeredIds=state.daily.answeredIds.filter(id=>id!==state.current.id);
@@ -3307,22 +3417,32 @@ const data=await resp.json();
 if(data.error||!data.parse||!data.parse.wikitext)return null;
 const wikitext=data.parse.wikitext['*']||'';
 const isPlaceholder=t=>/анықтамасы\s*берілмеген/i.test(t);
+// Служебные пометки типа "этимология", "грамматика" и т.п., которые не являются
+// переводом слова и раньше могли случайно попасть в результат через Вариант 2 —
+// это и было причиной "странных" переводов, не похожих на реальное значение слова.
+const isMeta=t=>/^(Этимология|Тарихы|Грамматикалық|Айтылуы|Синоним|Антоним|Туынды|Мысал)/i.test(t);
 
-// Вариант 1: строки-определения в вики-разметке списка (# ...)
+// Вариант 1: строки-определения в вики-разметке списка (# ...) — самый надёжный
+// формат, т.к. это явно оформленный список значений слова
 let lines=wikitext.split('\n')
 .map(l=>l.trim())
 .filter(l=>l.startsWith('#')&&!l.startsWith('#:'))
 .map(l=>stripWikiMarkup(l.replace(/^#+\s*/,'')))
-.filter(l=>l&&!isPlaceholder(l));
+.filter(l=>l&&!isPlaceholder(l)&&!isMeta(l));
 
-// Вариант 2: если списка нет, берём содержательные текстовые абзацы статьи
-// (пропускаем заголовки ==...==, шаблоны и служебные строки)
+// Вариант 2 (менее надёжен): если явного списка нет, ищем строго первый
+// содержательный абзац сразу после заголовка "Мағынасы"/"Анықтамасы" (раздел
+// значения слова), а не любой текст статьи подряд — иначе можно случайно
+// захватить этимологию или грамматическую помету вместо перевода.
 if(lines.length===0){
-lines=wikitext.split('\n')
+const meaningSection=wikitext.match(/={2,4}\s*(Мағынасы|Анықтамасы)\s*={2,4}([\s\S]*?)(?:\n={1,4}[^=]|$)/i);
+const sectionText=meaningSection?meaningSection[2]:wikitext;
+lines=sectionText.split('\n')
 .map(l=>l.trim())
 .filter(l=>l&&!l.startsWith('=')&&!l.startsWith('{{')&&!l.startsWith('[[Категория')&&!l.startsWith('|'))
 .map(l=>stripWikiMarkup(l))
-.filter(l=>l&&l.length>2&&!isPlaceholder(l));
+.filter(l=>l&&l.length>2&&l.length<120&&!isPlaceholder(l)&&!isMeta(l))
+.slice(0,3); // берём только первые строки раздела значения, не всю статью
 }
 
 const unique=[...new Set(lines)].slice(0,5);
@@ -3334,13 +3454,36 @@ return unique.length>0?unique:null;
 // самого казахского Викисловаря: полнотекстовый поиск находит статьи, где это
 // слово фигурирует в определении (kk.wiktionary.org обычно даёт короткие русские
 // глоссы вида "# су — вода"), и мы возвращаем подходящие заголовки статей.
+// ВАЖНО: раньше эта функция просто возвращала заголовки найденных статей без
+// проверки, что искомое русское слово действительно фигурирует как перевод (а не
+// случайно встретилось где-то в тексте статьи, например в примере предложения) —
+// это была основная причина несвязанных по смыслу результатов. Теперь для каждой
+// найденной статьи мы дополнительно разбираем её викитекст и проверяем, что
+// русское слово встречается именно в строке-определении (после #).
 async function searchKzArticlesForRuWord(query){
 const titles=await fullTextSearch(query,'kk.wiktionary.org',8);
 if(!titles||titles.length===0)return null;
-// Заголовки, содержащие иероглифы/латиницу/русский, обычно не то что нужно —
+// Заголовки, содержащие иероглифы/латиницу, обычно не то что нужно —
 // нас интересуют именно казахские слова (со спецбуквами или обычной кириллицей)
-const filtered=titles.filter(t=>!/[a-zA-Z]{2,}/.test(t)&&!/^Категория:|^Модуль:|^Шаблон:/i.test(t));
-const unique=[...new Set(filtered)].slice(0,8);
+const candidateTitles=titles.filter(t=>!/[a-zA-Z]{2,}/.test(t)&&!/^Категория:|^Модуль:|^Шаблон:/i.test(t)).slice(0,5);
+const queryLower=query.toLowerCase();
+const confirmed=[];
+for(const title of candidateTitles){
+try{
+const url=`https://kk.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(title)}&prop=wikitext&format=json&origin=*`;
+const resp=await fetch(url,{signal:AbortSignal.timeout(6000)});
+if(!resp.ok)continue;
+const data=await resp.json();
+if(data.error||!data.parse||!data.parse.wikitext)continue;
+const wikitext=data.parse.wikitext['*']||'';
+// Проверяем: встречается ли искомое русское слово именно в строке определения
+// (начинающейся с #), а не где-то ещё в статье — только тогда это настоящий перевод
+const defLines=wikitext.split('\n').filter(l=>l.trim().startsWith('#')&&!l.trim().startsWith('#:'));
+const matchesInDef=defLines.some(l=>stripWikiMarkup(l).toLowerCase().includes(queryLower));
+if(matchesInDef)confirmed.push(title);
+}catch(e){/* пропускаем статью, если не удалось проверить */}
+}
+const unique=[...new Set(confirmed)].slice(0,8);
 return unique.length>0?unique:null;
 }
 
@@ -3476,7 +3619,18 @@ if(attempt){results=attempt;sourceLabel='Glosbe.com';break}
 }
 
 if(results&&results.length>0){
-el.outerHTML=`<div style="display:flex;flex-direction:column;gap:.4rem">${results.map(m=>`<div style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.83rem;font-weight:600;color:var(--text)">${escapeChatHtml(m)}</div>`).join('')}</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: ${sourceLabel}</div>`;
+// Ссылка на исходную статью Wiktionary — так можно в один клик проверить
+// перевод самостоятельно, если он выглядит подозрительно или непонятно.
+// Для MyMemory/Glosbe прямой статьи нет, поэтому ссылку показываем только
+// для wiktionary-источников (ru.wiktionary.org / kk.wiktionary.org).
+let sourceLink='';
+if(sourceLabel==='ru.wiktionary.org'||sourceLabel==='kk.wiktionary.org'){
+const articleUrl=`https://${sourceLabel}/wiki/${encodeURIComponent(query)}`;
+sourceLink=` — <a href="${articleUrl}" target="_blank" rel="noopener" style="color:var(--blue,#3b82f6);text-decoration:underline">проверить статью</a>`;
+}else if(sourceLabel==='kk.wiktionary.org (поиск)'){
+sourceLink='';
+}
+el.outerHTML=`<div style="display:flex;flex-direction:column;gap:.4rem">${results.map(m=>`<div style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.83rem;font-weight:600;color:var(--text)">${escapeChatHtml(m)}</div>`).join('')}</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: ${sourceLabel}${sourceLink}</div>`;
 }else if(networkAttempts>0&&networkFailures===networkAttempts){
 // Все запросы упали технически (не дошли до сервера/не прошли CORS) —
 // значит проблема в доступе к источникам, а не в том, что слова нет.
