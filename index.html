@@ -24,6 +24,34 @@
      консоль браузера и посмотри на текст ошибки рядом с пометкой
      "[Внешний словарь] сетевой запрос не удался" — там будет видно, это CORS,
      таймаут, или сайт-источник действительно недоступен.
+  5. Внешний словарь: добавлен MyMemory Translation API как дополнительный
+     резервный источник между Wiktionary и Glosbe — он официально поддерживает
+     CORS (в отличие от glosbe.com/gapi, который часто падает с CORS-ошибкой в
+     браузере ещё до получения ответа). Также причина сбоя сети теперь сразу
+     показывается в самом интерфейсе (а не только в консоли F12).
+     См. tryMyMemoryLookup() и fetchExternalDict().
+  6. Тренировка: кнопки скорости озвучки (медленно/нормально/быстро) убраны с
+     экрана тренировки — они дублировали настройку, которая уже есть в
+     "Ещё → Настройки → Скорость озвучки" (select #defaultSpeed). Теперь
+     скорость настраивается один раз в Настройках. Функция setSpeed() оставлена
+     в коде на случай, если понадобится вернуть переключатель на экран тренировки.
+  7. Тренировка: перевод слова после ответа теперь показывается в отдельном
+     заметном блоке #wordTranslation сразу под примерами на казахском и русском
+     (внутри карточки слова), а не мелкой строкой в самом низу блока #feedback,
+     до которой было неудобно долистывать на телефоне. См. showFeedback() и
+     CSS .word-translation.
+  8. Тренировка: исправлен баг с некорректным зачётом слова как "выученного".
+     Причина: кнопка "Пропустить" не трогала прогресс (streak) слова вообще —
+     если у слова уже был streak=2 с прошлой сессии, а пользователь его не знал
+     и нажимал "Пропустить", streak оставался 2, и одного случайного верного
+     ответа при следующей встрече хватало, чтобы дойти до streak=3 и пометить
+     слово "выучено". Теперь skipWord() явно сбрасывает streak как обычный
+     неверный ответ (слово = "не знаю"), кнопка переименована в
+     "Не знаю / Пропустить". Дополнительно добавлена защита от гонки кликов:
+     nextWord() больше не сработает, пока ответ на текущее слово не засчитан
+     (state.answered), а поле ввода и варианты ответов блокируются физически
+     (disabled/pointer-events) сразу после ответа, чтобы исключить повторные
+     клики/Enter поверх уже показанного результата.
 -->
 <!DOCTYPE html>
 <html lang="ru">
@@ -310,6 +338,23 @@ nav#mainNav{
   text-align:left;line-height:1.6;display:none
 }
 .word-example strong{color:var(--text);font-weight:700}
+
+/* Заметный перевод слова, показывается сразу под примерами после ответа —
+   раньше пользователь видел перевод только мелкой строкой в самом низу блока
+   #feedback, теперь он виден сразу, без прокрутки. */
+.word-translation{
+  display:none;margin-top:.6rem;padding:.65rem .8rem;
+  border-radius:var(--radius-xs);text-align:center;
+  font-size:1rem;font-weight:800;
+}
+.word-translation.correct{
+  background:var(--green-bg);color:var(--green-dark);
+  border:2px solid var(--green);
+}
+.word-translation.wrong{
+  background:var(--red-bg);color:var(--red-dark);
+  border:2px solid var(--red);
+}
 
 /* ── INPUT AREA ────────────────────────────────────────────── */
 .answer-area{margin-top:.5rem}
@@ -802,6 +847,11 @@ input.s-pass:focus{border-color:var(--blue)}
       <div class="word-topic-chip" id="wordTopic">Загрузка...</div>
       <div class="main-word" id="mainWord">...</div>
       <div class="word-example" id="wordExample"></div>
+      <!-- Перевод слова после ответа. Раньше показывался мелкой строкой внутри
+           #feedback, который отрисовывается НИЖЕ примеров и кнопок — пользователю
+           приходилось листать вниз, чтобы его увидеть. Теперь отдельный, заметный
+           блок сразу под примерами на казахском/русском (заполняется в showFeedback()). -->
+      <div class="word-translation" id="wordTranslation"></div>
     </div>
 
     <div class="answer-area">
@@ -815,10 +865,12 @@ input.s-pass:focus{border-color:var(--blue)}
 
       <div class="speed-row">
         <button class="btn-hint btn" onclick="showHint()">Подсказка</button>
-        <button class="speed-btn" onclick="setSpeed(0.5)">медленно</button>
-        <button class="speed-btn active" onclick="setSpeed(1)">нормально</button>
-        <button class="speed-btn" onclick="setSpeed(1.5)">быстро</button>
       </div>
+      <!-- Кнопки скорости озвучки (медленно/нормально/быстро) убраны с экрана
+           тренировки по просьбе пользователя — теперь скорость настраивается
+           один раз в "Ещё → Настройки → Скорость озвучки" (select #defaultSpeed,
+           см. saveSettings()) и применяется ко всей озвучке через state.settings.speed. -->
+
     </div>
 
     <div id="replayAudioRow" style="display:none;text-align:center;margin-top:.4rem">
@@ -826,7 +878,7 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div class="feedback" id="feedback"></div>
     <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
-    <button class="btn btn-skip" onclick="skipWord()">Пропустить</button>
+    <button class="btn btn-skip" onclick="skipWord()" title="Слово не будет засчитано как выученное">Не знаю / Пропустить</button>
   </div>
 </div>
 
@@ -2628,8 +2680,11 @@ document.getElementById('wordTopic').textContent=topic?topic.name:'';
 document.getElementById('wordExample').style.display='none';
 document.getElementById('feedback').className='feedback';
 document.getElementById('feedback').textContent='';
+const trReset=document.getElementById('wordTranslation');
+if(trReset){trReset.style.display='none';trReset.textContent='';}
 document.getElementById('nextBtn').style.display='none';
 document.getElementById('answerInput').value='';
+document.getElementById('answerInput').disabled=false;
 try{document.getElementById('answerInput').focus();}catch(e){}
 
 const replayRow=document.getElementById('replayAudioRow');
@@ -2722,6 +2777,7 @@ const countsAsCorrect=isCorrect||isTypo;
 updateWordProgress(state.current.id,countsAsCorrect);
 showFeedback(countsAsCorrect,isTypo);
 state.answered=true;
+document.getElementById('answerInput').disabled=true;
 document.getElementById('nextBtn').style.display='inline-block';
 }
 
@@ -2732,6 +2788,10 @@ const isCorrect=el.textContent===correct;
 document.querySelectorAll('#quizOptions .quiz-opt').forEach(b=>{
 if(b.textContent===correct)b.classList.add('correct-opt');
 else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
+// Кнопки блокируются физически (не только визуально), чтобы после ответа
+// нельзя было кликнуть по другому варианту и запутать себя или состояние.
+b.disabled=true;
+b.style.pointerEvents='none';
 });
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
@@ -2745,6 +2805,8 @@ const isCorrect=el.textContent===correct;
 document.querySelectorAll('#audioOptions .quiz-opt').forEach(b=>{
 if(b.textContent===correct)b.classList.add('correct-opt');
 else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
+b.disabled=true;
+b.style.pointerEvents='none';
 });
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
@@ -2756,8 +2818,6 @@ const fb=document.getElementById('feedback');
 const ws=state.words[state.current.id];
 const streak=ws?ws.streak:0;
 const w=state.current;
-// Show translation line for audio and Kazan→Russian modes
-const translationLine=(state.mode==='C'||state.mode==='B')?`<br><small style="opacity:.85">📖 ${w.kz} — ${w.ru}</small>`:'';
 if(correct&&isTypo){
 // Ответ засчитан (смысл верный), но в написании была опечатка/мелкая неточность —
 // отдельный жёлтый статус, чтобы пользователь видел разницу с полностью верным ответом
@@ -2765,13 +2825,13 @@ if(correct&&isTypo){
 fb.className='feedback';
 fb.style.background='#fef3c7';
 fb.style.color='#92400e';
-fb.innerHTML=`〜 Почти! Небольшая опечатка. Правильное написание: <strong>${w.kz}</strong>. Прогресс: ${streak}/${STREAK_TO_LEARN}.${translationLine}`;
+fb.innerHTML=`〜 Почти! Небольшая опечатка. Правильное написание: <strong>${w.kz}</strong>. Прогресс: ${streak}/${STREAK_TO_LEARN}.`;
 }else if(correct){
 fb.className='feedback correct';
 if(streak>=STREAK_TO_LEARN){
-fb.innerHTML=`✓ Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) 🎉${translationLine}`;
+fb.innerHTML=`✓ Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) 🎉`;
 }else{
-fb.innerHTML=`✓ Правильно! Прогресс: ${streak}/${STREAK_TO_LEARN}. Слово вернётся позже для проверки.${translationLine}`;
+fb.innerHTML=`✓ Правильно! Прогресс: ${streak}/${STREAK_TO_LEARN}. Слово вернётся позже для проверки.`;
 }
 }else{
 fb.className='feedback wrong';
@@ -2779,6 +2839,14 @@ fb.innerHTML=`✗ Неправильно. Правильно: <strong>${w.kz}</s
 }
 document.getElementById('wordExample').style.display='block';
 document.getElementById('wordExample').innerHTML=`<strong>Казахский:</strong> ${w.example_kz}<br><strong>Русский:</strong> ${w.example_ru}`;
+// Заметный перевод слова сразу под примерами (вместо мелкой строки внизу
+// блока #feedback, которую было легко пропустить, особенно на телефоне).
+const tr=document.getElementById('wordTranslation');
+if(tr){
+tr.className='word-translation '+(correct?'correct':'wrong');
+tr.innerHTML=`📖 <strong>${w.kz}</strong> — ${w.ru}`;
+tr.style.display='block';
+}
 }
 
 function updateWordProgress(id,correct){
@@ -2985,6 +3053,13 @@ event.target.classList.add('active');
 }
 
 function nextWord(){
+// Защита от неверного зачёта слова: кнопка "Следующее слово" по разметке видна
+// только после ответа (см. checkAnswer/checkQuiz/checkAudio), но добавляем ещё
+// и проверку здесь на уровне логики — если по какой-то причине (гонка кликов,
+// рассинхронизация DOM) nextWord() вызвана до того, как ответ на текущее слово
+// был на самом деле засчитан, просто ничего не делаем вместо того чтобы молча
+// перейти дальше, оставив пользователя в недоумении, засчиталось слово или нет.
+if(!state.answered)return;
 const quizEl=document.getElementById('quizOptions');
 if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');
@@ -2998,6 +3073,18 @@ if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');
 if(audioEl)audioEl.remove();
 if(state.current){
+// БАГФИКС: раньше "Пропустить" вообще не трогало прогресс слова — streak
+// оставался прежним. Из-за этого могло получиться так: у слова уже был
+// streak=2 с прошлого раза, пользователь его не знает и жмёт "Пропустить",
+// streak остаётся 2, а при следующей встрече одного случайного правильного
+// ответа хватало, чтобы дойти до streak=3 и слово помечалось "выучено" —
+// хотя пользователь только что явно показал, что слово не знает.
+// Теперь "Пропустить" = "не знаю это слово" и обнуляет streak точно так же,
+// как обычный неверный ответ через updateWordProgress(id,false), но не
+// показывает feedback про "неправильно" — слово просто уходит в конец очереди.
+if(!state.answered){
+updateWordProgress(state.current.id,false);
+}
 state.queue.push(state.current);
 state.daily.answeredIds=state.daily.answeredIds.filter(id=>id!==state.current.id);
 }
@@ -3281,6 +3368,31 @@ const unique=[...new Set(meanings)].slice(0,8);
 return unique.length>0?unique:null;
 }
 
+// MyMemory Translation API — бесплатный, без ключа, официально поддерживает CORS
+// (в отличие от glosbe.com/gapi, который часто отдаёт ответ без заголовка
+// Access-Control-Allow-Origin и поэтому падает в браузере с CORS-ошибкой ещё до
+// того, как код вообще увидит результат). Используем его как более надёжный
+// резерв — часто именно он вытаскивает перевод, когда Wiktionary и Glosbe оба
+// не сработали (у казахского языка в Wiktionary мало статей, а Glosbe нестабилен).
+async function tryMyMemoryLookup(query,fromLang,toLang){
+const url=`https://api.mymemory.translated.net/get?q=${encodeURIComponent(query)}&langpair=${fromLang}|${toLang}`;
+const resp=await fetch(url,{signal:AbortSignal.timeout(6000)});
+if(!resp.ok)return null;
+const data=await resp.json();
+const results=[];
+const main=data&&data.responseData&&data.responseData.translatedText;
+// MyMemory иногда возвращает служебный текст вместо перевода, если пары языков
+// нет в его памяти переводов — отсеиваем такие ответы по характерным маркерам.
+const isPlaceholder=t=>!t||/MYMEMORY WARNING|NO QUERY SPECIFIED|INVALID LANGUAGE/i.test(t);
+if(main&&!isPlaceholder(main))results.push(main);
+const matches=(data&&data.matches)||[];
+matches.forEach(m=>{
+if(m.translation&&!isPlaceholder(m.translation)&&Number(m.match)>=0.5)results.push(m.translation);
+});
+const unique=[...new Set(results)].slice(0,6);
+return unique.length>0?unique:null;
+}
+
 async function fetchExternalDict(query){
 const el=document.getElementById('extDictLoading');
 if(!el)return;
@@ -3295,9 +3407,16 @@ const direction=hasKazakh?'kz-ru':'ru-kz';
 // диагностировать со стороны пользователя.
 let networkAttempts=0;
 let networkFailures=0;
+let lastFailureReason='';
 function trackedCall(promiseFactory){
 networkAttempts++;
-return promiseFactory().then(r=>r).catch(e=>{networkFailures++;console.warn('[Внешний словарь] сетевой запрос не удался:',e&&e.message?e.message:e);return null});
+return promiseFactory().then(r=>r).catch(e=>{
+networkFailures++;
+const reason=e&&e.message?e.message:String(e);
+lastFailureReason=reason;
+console.warn('[Внешний словарь] сетевой запрос не удался:',reason);
+return null;
+});
 }
 
 try{
@@ -3338,7 +3457,15 @@ if(results)sourceLabel='kk.wiktionary.org';
 }
 }
 
-// 4) Если Викисловарь не дал результата ни в каком варианте — пробуем Glosbe
+// 4) Если Викисловарь не дал результата — пробуем MyMemory (надёжный CORS-источник)
+if(!results){
+const fromLang=direction==='ru-kz'?'ru':'kk';
+const toLang=direction==='ru-kz'?'kk':'ru';
+results=await trackedCall(()=>tryMyMemoryLookup(query,fromLang,toLang));
+if(results)sourceLabel='MyMemory';
+}
+
+// 5) Последний резерв — Glosbe (менее надёжен из-за нестабильного CORS)
 if(!results){
 const fromLang=direction==='ru-kz'?'ru':'kk';
 const toLang=direction==='ru-kz'?'kk':'ru';
@@ -3353,9 +3480,9 @@ el.outerHTML=`<div style="display:flex;flex-direction:column;gap:.4rem">${result
 }else if(networkAttempts>0&&networkFailures===networkAttempts){
 // Все запросы упали технически (не дошли до сервера/не прошли CORS) —
 // значит проблема в доступе к источникам, а не в том, что слова нет.
-// Открой консоль браузера (F12 → Console) — там будет напечатана точная
-// причина каждого сбоя (пометка "[Внешний словарь] сетевой запрос не удался").
-el.innerHTML='Не удалось связаться ни с одним внешним источником (Wiktionary/Glosbe). Похоже на проблему сети или блокировку запросов браузером/расширением — подробности в консоли разработчика (F12). Локальная база слов выше работает независимо от этого.';
+// Показываем причину сразу в интерфейсе, а не только в консоли — раньше
+// пользователю приходилось открывать F12, чтобы понять, что происходит.
+el.innerHTML=`Не удалось связаться ни с одним внешним источником (Wiktionary/MyMemory/Glosbe). Похоже на проблему сети или блокировку запросов браузером/расширением.<br><span style="font-size:.7rem;color:var(--text3)">Техническая причина: ${escapeChatHtml(lastFailureReason||'неизвестна')}</span><br>Локальная база слов выше работает независимо от этого.`;
 }else{
 el.innerHTML='Во внешнем словаре нет статьи для этого слова. Попробуйте начальную форму слова (без падежных окончаний) или проверьте написание.';
 }
