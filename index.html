@@ -94,6 +94,29 @@
      Также добавлена ссылка "проверить статью" рядом с результатом из
      Wiktionary — по ней можно в один клик открыть исходную статью и
      убедиться в переводе самостоятельно. См. fetchExternalDict().
+  14. Дневная цель: устранена главная логическая ошибка счётчика. Поле
+     state.daily.newCount раньше увеличивалось при НЕВЕРНОМ ответе (см.
+     старый updateWordProgress), хотя UI показывал его как "Дневная цель:
+     X/Y новых слов", а getDueWords() использовал его как "сколько новых
+     слов уже выдано сегодня". Итог: (а) если пользователь ошибался — лимит
+     новых слов исчерпывался быстрее положенного и новые слова переставали
+     выдаваться, хотя цель по факту не достигнута; (б) если пользователь
+     отвечал идеально — прогресс-бар "Дневная цель" не заполнялся никогда,
+     сколько бы слов ни было выучено. Исправлено: newCount переименован в
+     goalCount и теперь растёт ТОЛЬКО при верном ответе на слово, которого
+     раньше не было в state.words (см. isNewWord в updateWordProgress).
+     Ошибки считаются отдельным полем state.daily.errorCount (только для
+     статистики, ни на что не влияет), повторные верные ответы — отдельным
+     state.daily.repeatCount (тоже только статистика). См. блок комментариев
+     прямо над объявлением `let state=...` — там подробно расписано, какое
+     поле за что отвечает, чтобы это не расползлось снова.
+     Заодно поправлено: (в) HTML-атрибут value у #dailyGoalInput был "5",
+     а реальный дефолт в JS — 20 (визуально не било по пользователю, т.к.
+     значение перезаписывается при открытии настроек, но сбивало с толку
+     при чтении разметки) — value приведено к 20. (г) skipWord() теперь
+     явно выставляет state.answered=false перед showNextWord(), а не
+     полагается на то, что это сделает сама showNextWord() — защита на
+     случай, если между этими вызовами появится асинхронный код.
 -->
 <!DOCTYPE html>
 <html lang="ru">
@@ -812,7 +835,6 @@ input.s-pass:focus{border-color:var(--blue)}
   <button class="nav-btn active" onclick="showSection('train')" data-section="train" style="position:relative">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     <span>Тренажёр</span>
-    <span id="dueCount" class="nav-badge" style="display:none">0</span>
   </button>
   <button class="nav-btn" onclick="showSection('chat')" data-section="chat">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
@@ -851,7 +873,7 @@ input.s-pass:focus{border-color:var(--blue)}
     </button>
     <button class="more-item" onclick="showSectionFromMore('hard')" style="position:relative">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      Сложные<span id="hardCount" class="nav-badge" style="display:none;top:-2px;right:-2px">0</span>
+      Сложные
     </button>
     <button class="more-item" onclick="showSectionFromMore('settings')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1010,7 +1032,17 @@ input.s-pass:focus{border-color:var(--blue)}
     <div class="settings-row">
       <div class="settings-label">Слов в день</div>
       <div style="display:flex;align-items:center;gap:.4rem">
-        <input type="number" id="dailyGoalInput" value="5" min="5" max="100"
+        <!-- БАГФИКС: атрибут value был "5", а реальное значение по умолчанию в
+             JS (state.settings.dailyGoal) — 20 (см. объявление state). Это
+             значение всё равно перезаписывается функцией renderSettings/при
+             открытии настроек (document.getElementById('dailyGoalInput').value=
+             state.settings.dailyGoal||20), так что бага в поведении по факту не
+             было, но до первой такой перерисовки в разметке было "5", что вводит
+             в заблуждение при чтении/редактировании кода. value и min здесь —
+             разные вещи: min=5 это нижняя граница ввода (см. saveCustomDailyGoal,
+             там тоже проверка val>=5), а value — начальное отображаемое число,
+             оно должно совпадать с реальным дефолтом состояния. -->
+        <input type="number" id="dailyGoalInput" value="20" min="5" max="100"
           class="s-num" onchange="saveCustomDailyGoal()">
         <span style="font-size:.8rem;color:var(--text2);font-weight:700">слов</span>
       </div>
@@ -1324,6 +1356,9 @@ input.s-pass:focus{border-color:var(--blue)}
 </div><!-- end container -->
 
 <script>
+// Счётчик запросов внешнего словаря — используется fetchExternalDict() для
+// защиты от гонки при быстром вводе в поиске (см. подробный комментарий там).
+let dictRequestCounter=0;
 // ── THEME TOGGLE ──────────────────────────────────────────────
 function toggleTheme(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
@@ -2608,7 +2643,27 @@ const DIALOGUES=[
 {id:50,title:"Үйде 2",lines:[{s:"A",t:"Үйді жинау керек."},{s:"B",t:"Мен терезені жуамын."},{s:"A",t:"Жақсы, мен кір жуамын."}],q:"Отбасы не істемек?",a:["Тамақ пісіру","Үйді жинау","Серуенге шығу"],c:1}
 ];
 
-let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{newCount:0,repeatCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+// ──────────────────────────────────────────────────────────────────────
+// ВАЖНО ДЛЯ БУДУЩИХ ПРАВОК (см. также CHANGELOG в самом верху файла, п.14):
+// state.daily.goalCount — ЕДИНСТВЕННОЕ поле, которое двигает "Дневную цель"
+// (прогресс-бар и подпись "X / Y новых слов") И лимит новых слов в getDueWords().
+// Оно должно расти ТОЛЬКО когда пользователь ВПЕРВЫЕ правильно отвечает на
+// слово, которого раньше не было в state.words (см. updateWordProgress).
+// НЕ путать с:
+//   - state.daily.repeatCount — сколько раз за день ответили верно на слово,
+//     которое уже встречалось раньше (просто счётчик для статистики, на цель
+//     и на getDueWords() не влияет).
+//   - state.daily.errorCount — сколько раз за день ошиблись (любое слово, не
+//     важно новое или нет; тоже только для статистики).
+// Раньше здесь было одно поле "newCount", которое ошибочно инкрементилось при
+// НЕВЕРНОМ ответе (см. старый checkAnswer→updateWordProgress) — из-за этого
+// "Дневная цель" росла от ошибок, а не от выученных слов, и getDueWords()
+// переставала выдавать новые слова, если пользователь много ошибался.
+// Если добавляешь новый способ засчитать ответ (новый режим тренировки и т.п.),
+// не создавай отдельный счётчик мимо updateWordProgress() — всегда проводи
+// результат через неё, иначе снова разъедутся "Дневная цель" и getDueWords().
+// ──────────────────────────────────────────────────────────────────────
+let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 const STORAGE_KEY='qazaq_tili_v2';
 
 function loadState(){
@@ -2619,13 +2674,22 @@ const yesterday=new Date(Date.now()-86400000).toDateString();
 const hadRealPractice=(state.daily.answeredIds||[]).length>0;
 if(state.daily.date===yesterday&&hadRealPractice){state.streak=(state.streak||0)+1}
 else if(state.daily.date!==today){state.streak=0}
-state.daily={newCount:0,repeatCount:0,date:today,answeredIds:[]};
+state.daily={goalCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[]};
 state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 saveState();
 }
 if(!state.streak)state.streak=0;
 if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
+// Миграция со старого (багованного) поля newCount на новое goalCount: раньше
+// newCount рос от ошибок, поэтому его значение бессмысленно переносить как есть
+// — просто гарантируем, что новое поле существует и стартует с 0 у всех, кто
+// уже играл со старой версией. За "сегодня" оно и так пересчитается по факту
+// новых верных ответов, ничего не теряется, кроме самого счётчика ошибок дня.
+if(state.daily.goalCount===undefined)state.daily.goalCount=0;
+if(state.daily.repeatCount===undefined)state.daily.repeatCount=0;
+if(state.daily.errorCount===undefined)state.daily.errorCount=0;
+if('newCount' in state.daily)delete state.daily.newCount;
 // Миграция со старой версии: раньше прогресс слова хранился только в level (без streak/lastSeen)
 Object.values(state.words||{}).forEach(ws=>{
 if(ws.streak===undefined)ws.streak=Math.min(ws.level||0,STREAK_TO_LEARN);
@@ -2646,18 +2710,24 @@ return'learning';
 }
 
 function getDueWords(){
+// БАГФИКС (см. блок комментариев над объявлением state.daily выше): раньше
+// здесь читалось state.daily.newCount, которое ошибочно росло от НЕВЕРНЫХ
+// ответов — поэтому лимит новых слов на день исчерпывался быстрее, если
+// пользователь много ошибался, вместо того чтобы отражать реально пройденные
+// новые слова. Теперь используем goalCount — он растёт только от верных
+// ответов на действительно новые слова (см. updateWordProgress).
 const now=Date.now();
 const due=[];
 const newWords=[];
 WORDS.forEach(w=>{
 const ws=state.words[w.id];
 if(!ws){
-if(state.daily.newCount<state.settings.dailyGoal)newWords.push(w);
+if(state.daily.goalCount<state.settings.dailyGoal)newWords.push(w);
 }else{
 if(ws.nextReview<=now)due.push(w);
 }
 });
-const remaining=state.settings.dailyGoal-state.daily.newCount;
+const remaining=state.settings.dailyGoal-state.daily.goalCount;
 const shuffled=newWords.sort(()=>Math.random()-.5).slice(0,Math.max(0,remaining));
 return[...due,...shuffled];
 }
@@ -2944,6 +3014,13 @@ tr.style.display='block';
 }
 
 function updateWordProgress(id,correct){
+// БАГФИКС (см. подробный комментарий над объявлением state.daily): важно
+// зафиксировать "было ли слово новым" ДО того, как мы создадим для него
+// запись в state.words ниже — иначе к моменту проверки запись уже будет
+// существовать, и слово всегда будет выглядеть "не новым".
+// "Новое" здесь = ровно то же условие, что использует getDueWords() —
+// у слова ещё нет записи в state.words вообще (никогда не встречалось).
+const isNewWord=!state.words[id];
 if(!state.words[id])state.words[id]={streak:0,nextReview:0,errors:0,total:0,correct:0,level:0,lastSeen:0};
 const ws=state.words[id];
 ws.total++;
@@ -2963,16 +3040,29 @@ else if(ws.streak===3)intervalMs=2*86400000; // 3-й верный ответ -> 
 else if(ws.streak===4)intervalMs=7*86400000; // дальше — обычные интервалы повторения
 else intervalMs=21*86400000;
 ws.nextReview=Date.now()+intervalMs;
+if(!state.daily.goalCount)state.daily.goalCount=0;
 if(!state.daily.repeatCount)state.daily.repeatCount=0;
-state.daily.repeatCount++;
+// ВАЖНО: "Дневная цель" и лимит новых слов в getDueWords() двигает ТОЛЬКО
+// goalCount, и растёт он ТОЛЬКО когда правильно отвечено на слово, которое
+// пользователь видит первый раз в жизни (isNewWord). Верный ответ на слово,
+// которое уже встречалось раньше (повтор/закрепление), в цель не засчитывается
+// — иначе цель "новых слов" на самом деле считала бы и повторы, что не то же
+// самое, что показывает подпись в UI ("X / Y новых слов").
+if(isNewWord)state.daily.goalCount++;
+else state.daily.repeatCount++;
 }else{
 ws.errors=(ws.errors||0)+1;
 state.sessionStats.wrong++;
 ws.streak=0; // ошибка обнуляет счётчик — слово снова нужно назвать 3 раза подряд
 ws.level=0;
 ws.nextReview=Date.now()+15*60000; // вернётся через 15 минут на дополнительную тренировку
-if(!state.daily.newCount)state.daily.newCount=0;
-state.daily.newCount++;
+// БАГФИКС: раньше неверный ответ увеличивал ТОТ ЖЕ счётчик, что двигает
+// "Дневную цель" (старое поле newCount) — из-за этого цель росла от ошибок,
+// а не от выученных слов. Ошибки теперь считаются отдельно и НЕ влияют ни
+// на "Дневную цель", ни на лимит новых слов в getDueWords() — это просто
+// статистика "сколько раз ошиблись сегодня".
+if(!state.daily.errorCount)state.daily.errorCount=0;
+state.daily.errorCount++;
 }
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
 if(!state.daily.answeredIds.includes(id))state.daily.answeredIds.push(id);
@@ -3179,11 +3269,12 @@ if(state.current){
 // хотя пользователь только что явно показал, что слово не знает.
 // "Пропустить" = "не знаю это слово" и должно обнулять streak как обычная
 // ошибка, НО не должно засчитываться как попытка к дневной цели — ранее это
-// делалось через updateWordProgress(id,false), а эта функция ВСЕГДА
-// увеличивает state.daily.newCount (счётчик "Дневная цель: X/5"), даже если
-// пользователь ничего не отвечал. Из-за этого пропуск слова ошибочно
+// делалось через updateWordProgress(id,false), а эта функция раньше ВСЕГДА
+// увеличивала счётчик "Дневная цель" при любом неверном ответе (см. историю
+// бага в комментарии над state.daily). Из-за этого пропуск слова ошибочно
 // продвигал дневную цель. Теперь streak сбрасывается напрямую, без
-// затрагивания счётчиков дня/статистики сессии.
+// затрагивания счётчиков дня/статистики сессии — updateWordProgress() здесь
+// намеренно НЕ вызывается.
 if(!state.answered){
 const ws=state.words[state.current.id];
 if(ws){
@@ -3198,6 +3289,14 @@ updateStats();
 state.queue.push(state.current);
 state.daily.answeredIds=state.daily.answeredIds.filter(id=>id!==state.current.id);
 }
+// БАГФИКС (мелкий, защитный): раньше state.answered не сбрасывался здесь явно
+// перед showNextWord(). showNextWord() и так ставит его в false для следующего
+// слова, так что бага в текущем поведении не было, но если в будущем между
+// skipWord() и showNextWord() появится асинхронный код (например await перед
+// отправкой статистики на сервер), state.answered в этот промежуток будет в
+// неопределённом состоянии — кнопка "Следующее"/Enter могут среагировать раньше
+// времени. Ставим явно, чтобы не полагаться на порядок вызовов.
+state.answered=false;
 showNextWord();
 }
 
@@ -3282,6 +3381,19 @@ function startTopicTraining(){
 if(!state.currentTopic){alert('Выберите тему');return}
 const topicWords=state.currentTopic==='__all__'?[...WORDS]:WORDS.filter(w=>w.topic===state.currentTopic);
 state.queue=shuffleArray([...topicWords]);
+// БАГФИКС: в отличие от nextWord()/skipWord()/setMode(), эта функция не
+// убирала старые кнопки #quizOptions/#audioOptions режима "Каз → Рус (аудио)"
+// перед показом нового слова. Если пользователь только что ответил на вопрос
+// в режиме C в обычной тренировке, а затем перешёл в раздел "Темы" и нажал
+// "Начать тренировку" — старые (уже задизейбленные, с подсветкой
+// правильного/неправильного варианта) кнопки прошлого слова оставались
+// висеть на экране под новым словом. showNextWord()/renderWord() их не
+// трогают в режимах A/B, поэтому чистить нужно здесь явно, как и во всех
+// остальных местах, откуда стартует новое слово.
+const quizEl=document.getElementById('quizOptions');
+if(quizEl)quizEl.remove();
+const audioEl=document.getElementById('audioOptions');
+if(audioEl)audioEl.remove();
 showSection('train');
 document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
 document.querySelectorAll('#mainNav button')[0].classList.add('active');
@@ -3539,6 +3651,19 @@ return unique.length>0?unique:null;
 async function fetchExternalDict(query){
 const el=document.getElementById('extDictLoading');
 if(!el)return;
+// БАГФИКС (гонка запросов): fetchExternalDict() запускается на КАЖДОЕ нажатие
+// клавиши в поиске (см. oninput="searchWords()" → renderDictionary() →
+// fetchExternalDict(query), без debounce). Если пользователь печатает быстро,
+// в моменте оказывается несколько параллельных цепочек сетевых запросов сразу.
+// Раньше более старый, но МЕДЛЕННЫЙ запрос (например, на промежуточное "а")
+// мог ответить ПОЗЖЕ, чем уже успевший отрисоваться результат по актуальному
+// "ауру" — и своим результатом перезаписать актуальный, показывая пользователю
+// перевод не того слова, что сейчас введено в поле. Фиксируем токен текущего
+// запроса и в конце сверяем: если searchInput с момента запуска уже изменился
+// (пользователь печатал дальше или стёр текст) — просто не трогаем DOM, пусть
+// актуальный (более поздний) вызов сам допишет свой результат.
+const myRequestToken=++dictRequestCounter;
+const isStale=()=>myRequestToken!==dictRequestCounter;
 const hasKazakh=/[әғқңөұүһі]/i.test(query);
 const direction=hasKazakh?'kz-ru':'ru-kz';
 
@@ -3618,6 +3743,7 @@ if(attempt){results=attempt;sourceLabel='Glosbe.com';break}
 }
 }
 
+if(isStale())return; // пользователь уже ввёл что-то другое, пока этот запрос летал — не перезаписываем актуальный результат
 if(results&&results.length>0){
 // Ссылка на исходную статью Wiktionary — так можно в один клик проверить
 // перевод самостоятельно, если он выглядит подозрительно или непонятно.
@@ -3642,6 +3768,7 @@ el.innerHTML='Во внешнем словаре нет статьи для эт
 }
 }catch(e){
 console.warn('[Внешний словарь] непредвиденная ошибка:',e);
+if(isStale())return;
 if(el)el.innerHTML='Внешний словарь сейчас недоступен (нет интернета или сайт временно не отвечает). Локальная база слов выше работает независимо от этого.';
 }
 }
@@ -3726,21 +3853,23 @@ const pct=total?Math.round(learned/total*100):0;
 document.getElementById('totalWords').textContent=total;
 document.getElementById('learnedWords').textContent=learned;
 document.getElementById('percentWords').textContent=pct+'%';
-const hard=getHardWords().length;
-const hc=document.getElementById('hardCount');
-if(hard>0){hc.textContent=hard;hc.style.display='inline'}else hc.style.display='none';
-const dueNow=WORDS.filter(w=>{
-const ws=state.words[w.id];
-return ws&&ws.nextReview<=Date.now();
-}).length;
-const dc=document.getElementById('dueCount');
-if(dc){if(dueNow>0){dc.textContent=dueNow;dc.style.display='inline'}else dc.style.display='none'}
+// Красные бейджи-счётчики (#hardCount на "Сложные" и #dueCount на "Тренажёр"
+// в нижней навигации) убраны по просьбе пользователя — сами элементы удалены
+// из разметки, поэтому код, который их обновлял, тоже убран. Значения
+// getHardWords().length и "сколько слов ждут повторения" по-прежнему
+// используются в других местах (например renderHardWords), это никак не
+// потеряно — убрана только сама подпись-бейдж в навигации.
 updateStreakDisplay();
 }
 
 function updateDailyProgress(){
+// БАГФИКС: раньше читалось state.daily.newCount, которое ошибочно росло от
+// НЕВЕРНЫХ ответов (см. комментарий у объявления state.daily выше) — то есть
+// прогресс-бар "Дневная цель" двигался от ошибок, а не от выученных новых
+// слов. Теперь читаем goalCount — растёт только от верных ответов на новые
+// слова, что и обещает подпись "X / Y новых слов".
 const goal=state.settings.dailyGoal;
-const done=state.daily.newCount||0;
+const done=state.daily.goalCount||0;
 const pct=Math.min(100,Math.round(done/goal*100));
 document.getElementById('dailyProgress').style.width=pct+'%';
 const streakText=state.streak>0?` 🔥 ${state.streak} дн.`:'';
@@ -3772,7 +3901,12 @@ updateDailyProgress();
 function resetProgress(){
 if(confirm('Вы уверены? Весь прогресс будет сброшен.')){
 localStorage.removeItem(STORAGE_KEY);
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{newCount:0,repeatCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+// ПРИМЕЧАНИЕ: структура state.daily здесь должна ТОЧНО совпадать с той, что
+// в основном объявлении let state=... выше (goalCount/repeatCount/errorCount).
+// Если завтра снова понадобится добавить/переименовать поле дневной статистики —
+// правь во всех местах, где создаётся "чистый" state.daily: основное
+// объявление, loadState(), resetProgress(), importProgress().
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 saveState();
 updateStats();
 initQueue();
@@ -3812,7 +3946,12 @@ return;
 }
 if(!confirm('Текущий прогресс будет заменён данными из файла. Продолжить?'))return;
 localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{newCount:0,repeatCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+// Тут state временно пересоздаётся "с нуля" только как заготовка перед
+// loadState(), которая тут же перечитает реальные данные из localStorage
+// и сама выполнит миграцию полей (см. loadState). Форма daily здесь всё
+// равно должна совпадать с основным объявлением state — см. примечание в
+// resetProgress().
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 loadState();
 updateStats();
 initQueue();
@@ -3955,10 +4094,13 @@ const text=input.value.trim();
 if(!text)return;
 const apiKey=getOpenRouterKey();
 if(!apiKey){
+// БАГ (мелкий, некритичный): showSection('settings') сама корректно подсвечивает
+// нужную кнопку — см. showSection(), блок про moreSheet. Строки ниже пытались
+// сделать то же самое вручную, но искали кнопку "Настройки" внутри #mainNav —
+// а она находится в #moreSheet (открывается через "Ещё"), поэтому find()
+// всегда возвращал undefined и весь блок ничего не делал. Убрано как мёртвый
+// код; showSection('settings') и так подсвечивает нужный пункт в шторке "Ещё".
 showSection('settings');
-document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
-const settingsBtn=Array.from(document.querySelectorAll('#mainNav button')).find(b=>b.textContent.includes('Настройки'));
-if(settingsBtn)settingsBtn.classList.add('active');
 const keyInput=document.getElementById('openrouterKeyInput');
 if(keyInput)keyInput.focus();
 alert('Сначала добавьте бесплатный ключ OpenRouter в Настройках, чтобы пользоваться ИИ-чатом.');
@@ -4214,7 +4356,27 @@ if('speechSynthesis' in window){
 checkKkVoice();
 window.speechSynthesis.onvoiceschanged=checkKkVoice;
 }
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){loadState();updateStats()}});
+document.addEventListener('visibilitychange',()=>{
+if(!document.hidden){
+const dateBefore=state.daily.date;
+loadState();
+updateStats();
+// БАГФИКС: если пока вкладка/приложение были свёрнуты, наступил новый
+// календарный день, loadState() тихо сбрасывает state.daily (см. её код) —
+// но раньше здесь на этом всё и заканчивалось. Экран при этом не обновлялся:
+// строка "Дневная цель: X/Y" продолжала показывать вчерашние цифры (updateStats()
+// не дёргает updateDailyProgress() — это делает только renderWord()), а очередь
+// слов в тренировке (state.queue/state.current) оставалась вчерашней, то есть
+// новый дневной лимит новых слов из getDueWords() не применялся, пока
+// пользователь случайно не дойдёт до конца старой очереди. Теперь при смене
+// дня явно пересобираем очередь и перерисовываем текущий экран.
+if(dateBefore!==state.daily.date){
+initQueue();
+}else{
+updateDailyProgress();
+}
+}
+});
 document.getElementById('defaultSpeed').value=state.settings.speed;
 document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||20;
 loadOpenRouterSettings();
