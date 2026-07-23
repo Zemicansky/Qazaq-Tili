@@ -3347,15 +3347,27 @@ if(state.current){
 // затрагивания счётчиков дня/статистики сессии — updateWordProgress() здесь
 // намеренно НЕ вызывается.
 if(!state.answered){
+// БАГФИКС: если слово встречается пользователю первый раз в жизни (ещё нет
+// записи в state.words), ветка ниже раньше пропускалась целиком — "Пропустить"
+// для совсем нового слова не создавало запись прогресса вообще, и такое слово
+// оставалось неотличимо от никогда не показанного: errors/total не росли, оно
+// не попадало в answeredIds, а следующий случайный верный ответ на него сразу
+// начинал стрик "с чистого листа", как будто пользователь его вообще не видел
+// и не показывал явно, что не знает. Теперь запись создаётся так же, как это
+// делает updateWordProgress() для обычного неверного ответа, чтобы "Пропустить"
+// одинаково работало и для новых, и для уже встречавшихся слов.
+if(!state.words[state.current.id]){
+state.words[state.current.id]={streak:0,nextReview:0,errors:0,total:0,correct:0,level:0,lastSeen:0};
+}
 const ws=state.words[state.current.id];
-if(ws){
+ws.total=(ws.total||0)+1;
+ws.lastSeen=Date.now();
 ws.errors=(ws.errors||0)+1;
 ws.streak=0;
 ws.level=0;
 ws.nextReview=Date.now()+15*60000;
 saveState();
 updateStats();
-}
 }
 state.queue.push(state.current);
 state.daily.answeredIds=state.daily.answeredIds.filter(id=>id!==state.current.id);
