@@ -169,6 +169,28 @@
      того чтобы её полностью заменять — пользователь продолжает видеть новые
      слова из базы, а сложные слова просто перемешаны туда же для лишней
      практики. См. initQueue().
+  20. Тренировка (режим свободного ввода): исправлен баг честности прогресса —
+     кнопка "Подсказка" (showHint) могла раскрыть слово целиком по буквам, и
+     ввод этого же слова после этого всё равно засчитывался как полноценный
+     верный ответ, продвигающий стрик к "выучено" и дневную цель — то есть
+     слово можно было пометить "выученным", ни разу не вспомнив его самому.
+     Теперь showHint() помечает состояние карточки (state.hintUsed), а
+     checkAnswer() при полностью раскрытой подсказке передаёт в
+     updateWordProgress()/showFeedback() отдельный флаг hintAssisted: ответ
+     не считается ошибкой (не сбрасывает стрик), но и не продвигает его —
+     слово просто возвращается на повтор через 15 минут, как есть честная
+     подсказка в интерфейсе. Частичная подсказка (не все буквы открыты)
+     не считается "подсказанным ответом" и работает как раньше. См.
+     showHint(), checkAnswer(), updateWordProgress(), showFeedback().
+  21. Словарь (поиск): исправлено отсутствие debounce у поля поиска —
+     searchWords() вызывался на каждое нажатие клавиши (oninput) и сразу
+     запускал fetchExternalDict(), которая делает цепочку сетевых запросов
+     (Wiktionary → MyMemory → Glosbe). При быстром наборе слова это означало
+     десятки параллельных запросов к внешним сайтам за пару секунд. Теперь
+     локальная часть словаря (по базе WORDS) по-прежнему обновляется мгновенно
+     на каждое нажатие, а сетевой запрос к внешнему словарю уходит один раз,
+     через 400мс после того как пользователь остановился. См. searchWords(),
+     renderDictionary().
 -->
 <!DOCTYPE html>
 <html lang="ru">
@@ -381,23 +403,36 @@ nav#mainNav{
    "Сегодня" помечается отдельно рамкой, чтобы не путаться с выполненной
    целью, даже если сегодняшняя цель уже тоже выполнена (тогда оба
    признака сочетаются: заливка + рамка). */
+/* УЛУЧШЕНИЕ (дизайн, 2-я итерация по фидбэку "некрасиво выглядит"):
+   первая попытка вписывала число в кружок фиксированного размера (20px)
+   внутри узкой ячейки — при реальной ширине ячейки (~45px на 7 колонок)
+   кружок оказывался тесным, число визуально прижималось к краю кружка,
+   а обводка "сегодня" вокруг кружка выглядела не по центру (видно на
+   скриншоте пользователя). Убрана вся вложенная геометрия (кружки,
+   инсет-обводки, градиенты) — состояния различаются только плоским
+   цветом фона самой ячейки и цветом текста, без вложенных фигур,
+   которым тесно в таком маленьком блоке. Просто и аккуратно:
+   - обычный день: нейтральный серый фон
+   - цель выполнена: мягкий зелёный фон + зелёный текст
+   - сегодня: белый/контрастный фон card + акцентная рамка по всей ячейке
+   - сегодня И цель выполнена: зелёный фон (как у goal-met) + рамка */
 .week-grid{
   display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;
   text-align:center;
 }
 .week-day{
-  padding:.35rem .05rem;border-radius:var(--radius-xs);
+  padding:.4rem .05rem;border-radius:10px;
   background:var(--bg3);border:1.5px solid transparent;
-  font-size:.62rem;font-weight:700;color:var(--text3);
+  font-size:.6rem;font-weight:700;color:var(--text3);
   display:flex;flex-direction:column;align-items:center;
-  min-height:38px;justify-content:center;gap:.15rem;
+  min-height:38px;justify-content:center;gap:.2rem;
 }
-.week-day .day-name{color:var(--text3);font-size:.56rem;font-weight:700;letter-spacing:.2px}
-.week-day .day-val{font-size:.72rem;font-weight:800;color:var(--text2);line-height:1}
-.week-day.goal-met{background:var(--accent-glow)}
-.week-day.goal-met .day-name,.week-day.goal-met .day-val{color:var(--accent)}
-.week-day.today{border-color:var(--accent)}
-.week-day.today .day-name,.week-day.today .day-val{color:var(--accent)}
+.week-day .day-name{color:inherit;font-size:.56rem;font-weight:700;letter-spacing:.2px;opacity:.75}
+.week-day .day-val{font-size:.8rem;font-weight:800;color:inherit;line-height:1}
+.week-day.goal-met{background:var(--accent-glow);color:var(--accent)}
+.week-day.today{background:var(--card);border-color:var(--accent);color:var(--accent);box-shadow:var(--shadow)}
+.week-day.today.goal-met{background:var(--accent-glow)}
+
 
 /* ── DAILY GOAL ────────────────────────────────────────────── */
 .goal-row{
@@ -2884,15 +2919,23 @@ function getDueWords(){
 const now=Date.now();
 const due=[];
 const newWords=[];
+// БАГФИКС: это самое критичное место, где используется dailyGoal — если бы
+// значение оказалось undefined (например после повреждённого импорта или
+// будущей ошибки миграции), goalCount<undefined всегда false, и НИ ОДНО
+// новое слово никогда не попало бы в очередь — тренировка выглядела бы
+// "все слова уже пройдены", хотя реально пользователь просто не может
+// начать. В остальных местах чтения dailyGoal уже стоит защита ||20 —
+// добавляем её и сюда для единообразия.
+const goal=state.settings.dailyGoal||20;
 WORDS.forEach(w=>{
 const ws=state.words[w.id];
 if(!ws){
-if(state.daily.goalCount<state.settings.dailyGoal)newWords.push(w);
+if(state.daily.goalCount<goal)newWords.push(w);
 }else{
 if(ws.nextReview<=now)due.push(w);
 }
 });
-const remaining=state.settings.dailyGoal-state.daily.goalCount;
+const remaining=goal-state.daily.goalCount;
 const shuffled=newWords.sort(()=>Math.random()-.5).slice(0,Math.max(0,remaining));
 return[...due,...shuffled];
 }
@@ -2967,6 +3010,7 @@ if(state.queue.length===0){initQueue();return}
 state.current=state.queue.shift();
 state.answered=false;
 state.hintLevel=0;
+state.hintUsed=false;
 state.cardInputMode='choice';
 renderWord();
 updateStats();
@@ -3022,6 +3066,17 @@ document.getElementById('inputRow').style.display='none';
 if(replayRow)replayRow.style.display='block';
 renderAudioOptions(w);
 playAudio();
+}
+// БАГФИКС: кнопка "Подсказка" (.speed-row) находится СНАРУЖИ #inputRow —
+// поэтому раньше оставалась видна даже когда #inputRow скрыт (режим "выбор
+// из вариантов" и режим "Аудио" C). Нажатие показывало буквы правильного
+// слова, что напрямую выдаёт ответ в задании с выбором из 4 вариантов —
+// подсказка там не просто бесполезна, а ломает саму суть режима. Теперь
+// кнопка видна только тогда, когда реально показан режим свободного ввода.
+const hintRow=document.querySelector('.speed-row');
+if(hintRow){
+const showHintBtn=state.mode!=='C'&&state.cardInputMode==='typing';
+hintRow.style.display=showHintBtn?'':'none';
 }
 updateDailyProgress();
 }
@@ -3211,8 +3266,16 @@ const bestDistance=Math.min(...candidates.map(c=>levenshteinDistance(input,c)));
 if(bestDistance>0&&bestDistance<=maxAllowedDistance)isTypo=true;
 }
 const countsAsCorrect=isCorrect||isTypo;
-updateWordProgress(state.current.id,countsAsCorrect);
-showFeedback(countsAsCorrect,isTypo);
+// БАГФИКС: раньше подсказка (showHint) никак не влияла на результат — открыв
+// подсказкой всё слово по буквам, можно было ввести его и получить полноценный
+// стрик, как будто ответил по памяти. Считаем ответ подсказанным, только если
+// подсказка была раскрыта до конца (state.hintLevel>=длина слова) — частичная
+// подсказка (1-2 буквы) всё ещё требует вспомнить остальное, поэтому не штрафуется.
+const word=isModeB?state.current.ru:state.current.kz;
+const hintFullyRevealed=!!state.hintUsed&&(state.hintLevel||0)>=word.length;
+const wasHintAssisted=countsAsCorrect&&hintFullyRevealed;
+updateWordProgress(state.current.id,countsAsCorrect,wasHintAssisted);
+showFeedback(countsAsCorrect,isTypo,wasHintAssisted);
 state.answered=true;
 document.getElementById('answerInput').disabled=true;
 document.getElementById('nextBtn').style.display='inline-block';
@@ -3257,12 +3320,20 @@ document.getElementById('nextBtn').style.display='inline-block';
 showStickyNext();
 }
 
-function showFeedback(correct,isTypo){
+function showFeedback(correct,isTypo,hintAssisted){
 const fb=document.getElementById('feedback');
 const ws=state.words[state.current.id];
 const streak=ws?ws.streak:0;
 const w=state.current;
-if(correct&&isTypo){
+if(correct&&hintAssisted){
+// Ответ верный, но слово было полностью раскрыто подсказкой — честно говорим
+// об этом вместо того, чтобы показать обычное "Правильно!" с продвижением
+// стрика, которого на самом деле не произошло (см. updateWordProgress()).
+fb.className='feedback';
+fb.style.background='#fef3c7';
+fb.style.color='#92400e';
+fb.innerHTML=`〜 Верно, но слово было подсказано целиком — стрик (${streak}/${STREAK_TO_LEARN}) не продвинулся. Слово скоро вернётся для самостоятельной проверки.`;
+}else if(correct&&isTypo){
 // Ответ засчитан (смысл верный), но в написании была опечатка/мелкая неточность —
 // отдельный жёлтый статус, чтобы пользователь видел разницу с полностью верным ответом
 // и запомнил точное написание, а не порадовался идеальному ответу по ошибке.
@@ -3299,7 +3370,7 @@ tr.style.display='block';
 }
 }
 
-function updateWordProgress(id,correct){
+function updateWordProgress(id,correct,hintAssisted){
 // БАГФИКС (см. подробный комментарий над объявлением state.daily): важно
 // зафиксировать "было ли слово новым" ДО того, как мы создадим для него
 // запись в state.words ниже — иначе к моменту проверки запись уже будет
@@ -3312,6 +3383,21 @@ const ws=state.words[id];
 ws.total++;
 ws.lastSeen=Date.now();
 state.sessionStats.total++;
+// БАГФИКС: ответ, набранный после того как подсказка раскрыла слово целиком,
+// формально верный, но не показывает, что слово выучено — раньше он всё равно
+// продвигал стрик к "выучено" и засчитывался в дневную цель наравне с обычным
+// ответом. Теперь такой ответ не двигает стрик/goalCount вперёд (но и не
+// сбрасывает их, в отличие от настоящей ошибки) — слово просто возвращается
+// на повтор чуть раньше, как лёгкое напоминание, что его стоит повторить.
+if(correct&&hintAssisted){
+ws.correct++;
+state.sessionStats.correct++;
+ws.nextReview=Date.now()+15*60000;
+saveState();
+updateStats();
+updateStreakDisplay();
+return;
+}
 if(correct){
 ws.correct++;
 state.sessionStats.correct++;
@@ -3371,7 +3457,7 @@ updateStreakDisplay();
 }
 
 function showHint(){
-if(!state.current)return;
+if(!state.current||state.answered)return;
 // Слово для подсказки зависит от направления перевода: в режиме "Рус → Каз" (A)
 // угадываем казахское слово, а в режиме "Каз → Рус" (B) — русский перевод.
 // Раньше здесь всегда бралось state.current.kz, поэтому в режиме B подсказка
@@ -3379,13 +3465,19 @@ if(!state.current)return;
 const word=state.mode==='B'?state.current.ru:state.current.kz;
 if(!state.hintLevel)state.hintLevel=0;
 if(state.hintLevel<word.length)state.hintLevel++;
+// БАГФИКС: использование подсказки раньше никак не влияло на результат — можно
+// было открыть подсказкой всё слово целиком и всё равно получить полноценный
+// стрик, как будто слово было названо по памяти. Теперь любое использование
+// подсказки на текущей карточке помечается (state.hintUsed) и учитывается в
+// checkAnswer() — см. комментарий там.
+state.hintUsed=true;
 const fb=document.getElementById('feedback');
 const masked=word.split('').map((ch,i)=>i<state.hintLevel?ch:'_').join('');
 fb.className='feedback';
 fb.style.background='#fef3c7';
 fb.style.color='#92400e';
 if(state.hintLevel>=word.length){
-fb.textContent=`Подсказка: ${masked} — это всё слово!`;
+fb.textContent=`Подсказка: ${masked} — это всё слово! Ответ с подсказкой всё равно нужно ввести самому, но в стрик он не засчитается.`;
 }else{
 fb.textContent=`Подсказка: ${masked} (${word.length} букв). Нажмите ещё раз, чтобы открыть следующую букву.`;
 }
@@ -3642,7 +3734,21 @@ function renderDialogues(){
 const list=document.getElementById('dialoguesList');
 list.innerHTML=DIALOGUES.map(d=>{
 const lines=d.lines.map(l=>`<div class="dialogue-line"><span class="speaker">${l.s}:</span> ${l.t}</div>`).join('');
-const opts=d.a.map((o,i)=>`<button class="dopt" onclick="checkDialogue(${d.id},${i},this)">${o}</button>`).join('');
+// БАГФИКС: renderDialogues() перерисовывает список заново при каждом входе на
+// вкладку "Диалоги" (см. showSection('dialogues')) — кнопки ответов создавались
+// "с нуля", без классов correct-opt/wrong-opt, даже если пользователь уже
+// отвечал на этот диалог раньше (state.dialogueState[id]===true). Из-за этого
+// диалог визуально выглядел как совсем новый — но checkDialogue() тут же
+// молча отказывался засчитывать клик (return в самом начале), никак не
+// объясняя, почему ничего не происходит при нажатии. Теперь при отрисовке
+// уже отвеченных диалогов сразу восстанавливаем зелёную/красную подсветку
+// правильного варианта и блокируем кнопки — так же, как сразу после ответа.
+const alreadyAnswered=!!state.dialogueState[d.id];
+const opts=d.a.map((o,i)=>{
+const cls=alreadyAnswered&&i===d.c?'dopt correct-opt':'dopt';
+const dis=alreadyAnswered?'disabled style="pointer-events:none"':'';
+return`<button class="${cls}" onclick="checkDialogue(${d.id},${i},this)" ${dis}>${o}</button>`;
+}).join('');
 return`<div class="dialogue-item"><h3>${d.id}. ${d.title}</h3>${lines}<div class="dialogue-quiz"><p style="font-weight:600;margin-bottom:.3rem">Вопрос: ${d.q}</p><div id="dq${d.id}">${opts}</div></div></div>`;
 }).join('');
 }
@@ -3659,7 +3765,8 @@ else if(b===el&&i!==correct)b.classList.add('wrong-opt');
 saveState();
 }
 
-function renderDictionary(){
+function renderDictionary(opts){
+const skipExternal=opts&&opts.skipExternal;
 const input=document.getElementById('searchInput');
 const results=document.getElementById('searchResults');
 const query=input.value.trim().toLowerCase();
@@ -3675,6 +3782,17 @@ return`<div class="search-item"><span class="kz">${w.kz} — ${w.ru} ${badge}</s
 }).join('');
 }else{
 localHtml='<p style="color:var(--text3);font-size:.85rem">Не найдено в вашей базе</p>';
+}
+// БАГФИКС (см. комментарий у searchWords()): при вызове "на каждую букву"
+// (skipExternal=true) обновляем только локальные результаты по базе WORDS —
+// они не требуют сети и должны быть мгновенными. Запрос к внешнему словарю
+// (Wiktionary/MyMemory/Glosbe) уходит только из отложенного (debounced) вызова,
+// когда пользователь на 400мс перестал печатать, чтобы не запускать пачку
+// сетевых запросов на каждое нажатие клавиши.
+if(skipExternal){
+const prevExt=document.getElementById('extDictResult');
+results.innerHTML=localHtml+(prevExt?prevExt.outerHTML:'<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" style="color:var(--text3);font-size:.83rem">Печатайте, поиск начнётся, когда вы остановитесь...</div></div>');
+return;
 }
 results.innerHTML=localHtml+`<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" style="color:var(--text3);font-size:.83rem">Поиск...</div></div>`;
 fetchExternalDict(query);
@@ -4025,7 +4143,24 @@ if(!text)return;
 playWithBrowserVoice(text);
 }
 
-function searchWords(){renderDictionary()}
+// БАГФИКС: searchWords() вызывался на КАЖДОЕ нажатие клавиши (oninput) и сразу
+// синхронно вызывал renderDictionary() → fetchExternalDict(), которая запускает
+// цепочку из нескольких сетевых запросов (Wiktionary → MyMemory → Glosbe).
+// При быстром наборе слова это означало десятки параллельных HTTP-запросов к
+// внешним сайтам за пару секунд — лишняя нагрузка, риск упереться в лимит
+// запросов источника, и без того более медленный отклик, так как браузер и
+// источник обрабатывают запросы одновременно вместо одного финального. Стейл-
+// защита (isStale() в fetchExternalDict) не даёт устаревшему ответу перезаписать
+// актуальный результат, но сами запросы всё равно уходили все до одного.
+// Теперь локальная часть словаря (WORDS) по-прежнему обновляется мгновенно на
+// каждое нажатие — задержка касается только сетевого fetchExternalDict(), запрос
+// уходит один раз, через 400мс после того как пользователь перестал печатать.
+let searchDebounceTimer=null;
+function searchWords(){
+renderDictionary({skipExternal:true});
+clearTimeout(searchDebounceTimer);
+searchDebounceTimer=setTimeout(()=>{renderDictionary()},400);
+}
 
 function renderStats(){
 const total=WORDS.length;
@@ -4114,7 +4249,13 @@ function updateDailyProgress(){
 // прогресс-бар "Дневная цель" двигался от ошибок, а не от выученных новых
 // слов. Теперь читаем goalCount — растёт только от верных ответов на новые
 // слова, что и обещает подпись "X / Y новых слов".
-const goal=state.settings.dailyGoal;
+// БАГФИКС: во всех остальных местах, где читается state.settings.dailyGoal
+// (getDueWords, loadState, renderWeekGrid, инициализация поля настроек), есть
+// защита ||20 на случай отсутствующего/нулевого значения — здесь её не было.
+// Если dailyGoal когда-либо окажется undefined или 0 (повреждённый файл
+// импорта, будущая ошибка миграции), done/goal*100 давало бы NaN/Infinity,
+// и прогресс-бар "Дневная цель" сломался бы визуально (ширина NaN%).
+const goal=state.settings.dailyGoal||20;
 const done=state.daily.goalCount||0;
 const pct=Math.min(100,Math.round(done/goal*100));
 document.getElementById('dailyProgress').style.width=pct+'%';
@@ -4161,6 +4302,16 @@ state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},
 saveState();
 updateStats();
 initQueue();
+// БАГФИКС: после сброса прогресса недельный календарь ("Активность за
+// неделю") и уже отвеченные диалоги оставались на экране со старыми
+// данными (зелёные дни выполненной цели, подсвеченные ответы диалогов),
+// пока пользователь не уходил с вкладки и не возвращался обратно —
+// resetProgress() обновляла только очередь тренировки и статистику,
+// но не сами эти экраны. Обновляем оба сразу; renderDialogues() достаточно
+// безопасно вызывать, даже если человек сейчас не на вкладке "Диалоги" —
+// она просто перерисует скрытый в данный момент список.
+renderWeekGrid();
+renderDialogues();
 alert('Прогресс сброшен.');
 }
 }
@@ -4206,6 +4357,11 @@ state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},
 loadState();
 updateStats();
 initQueue();
+// БАГФИКС (см. тот же комментарий в resetProgress()): без явного вызова эти
+// два экрана продолжали бы показывать данные до импорта, пока пользователь
+// не переключился бы на вкладку и обратно.
+renderWeekGrid();
+renderDialogues();
 alert('Прогресс восстановлен из файла.');
 }catch(e){
 alert('Не удалось прочитать файл. Убедитесь, что это корректный JSON, экспортированный из этого приложения.');
@@ -4431,8 +4587,17 @@ const refusalPhrases=[
 'не могу генерировать','не могу создавать','как языковая модель','я являюсь ии-моделью',
 'i cannot','i\'m sorry, but i','as an ai language model'
 ];
-// Короткий ответ (менее ~12 символов) без казахских букв тоже подозрителен — вряд ли это перевод
-const suspiciouslyShort=text.trim().length<8;
+// БАГФИКС: порог "подозрительно короткий ответ" в 8 символов был слишком
+// агрессивным для этого чата — многие настоящие короткие переводы на
+// казахский короче этого (например "Иә." — 3 символа, "Жоқ." — 4). Такие
+// правильные ответы ошибочно помечались как "похоже на отказ", из-за чего
+// sendChatMessage() без необходимости перебирала все резервные модели, а
+// если и они тоже честно отвечали коротко — пользователь в итоге видел
+// общую ошибку "не удалось получить чистый ответ" вместо на самом деле
+// верного короткого перевода, который был получен с первого раза. Порог
+// снижен до 2 символов — отсекает по сути только пустую строку или один
+// случайный символ, не трогая короткие, но осмысленные ответы.
+const suspiciouslyShort=text.trim().length<2;
 return suspiciouslyShort||refusalPhrases.some(p=>t.includes(p));
 }
 
