@@ -374,24 +374,30 @@ nav#mainNav{
 .card-title{font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:.65rem}
 
 /* ── WEEK GRID ─────────────────────────────────────────────── */
+/* ИСПРАВЛЕНО (по фидбэку): точки-индикаторы активности убраны — не нужны.
+   Возвращена заливка ячейки зелёным, но теперь она означает конкретно
+   "цель дня выполнена" (пройдено слов >= state.settings.dailyGoal за
+   день), а не просто "было хоть какое-то действие" — см. renderWeekGrid.
+   "Сегодня" помечается отдельно рамкой, чтобы не путаться с выполненной
+   целью, даже если сегодняшняя цель уже тоже выполнена (тогда оба
+   признака сочетаются: заливка + рамка). */
 .week-grid{
   display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;
   text-align:center;
 }
 .week-day{
-  padding:.45rem .1rem;border-radius:var(--radius-xs);
-  background:var(--bg3);
+  padding:.35rem .05rem;border-radius:var(--radius-xs);
+  background:var(--bg3);border:1.5px solid transparent;
   font-size:.62rem;font-weight:700;color:var(--text3);
+  display:flex;flex-direction:column;align-items:center;
+  min-height:38px;justify-content:center;gap:.15rem;
 }
-.week-day .dn{color:var(--text2);font-size:.6rem;font-weight:600}
-.week-day .dv{font-size:.75rem;font-weight:800;color:var(--text);margin:.1rem 0}
-.week-day .dw{font-size:.6rem;color:var(--accent);font-weight:800}
-.week-day.today{background:var(--accent-glow);border:2px solid var(--accent)}
-.week-day.today .dv{color:var(--accent)}
-.week-day.has-activity{background:var(--accent-glow);border:1.5px solid var(--accent)}
-.week-day.has-activity .dn{color:var(--accent)}
-.week-day.has-activity .dv{color:var(--accent)}
-.day-words{font-size:.58rem;color:var(--accent);font-weight:800;margin-top:.1rem;letter-spacing:-.2px}
+.week-day .day-name{color:var(--text3);font-size:.56rem;font-weight:700;letter-spacing:.2px}
+.week-day .day-val{font-size:.72rem;font-weight:800;color:var(--text2);line-height:1}
+.week-day.goal-met{background:var(--accent-glow)}
+.week-day.goal-met .day-name,.week-day.goal-met .day-val{color:var(--accent)}
+.week-day.today{border-color:var(--accent)}
+.week-day.today .day-name,.week-day.today .day-val{color:var(--accent)}
 
 /* ── DAILY GOAL ────────────────────────────────────────────── */
 .goal-row{
@@ -554,6 +560,33 @@ nav#mainNav{
 }
 .btn-next:active{border-bottom-width:1px;margin-top:calc(.6rem + 2px)}
 .btn-next:not([style*="inline"]){display:none}
+
+/* ── STICKY NEXT BAR ───────────────────────────────────────────
+   ПРОБЛЕМА (по просьбе пользователя): после ответа кнопка "Следующее
+   слово →" рисуется в конце карточки, а до неё — карточка слова, варианты
+   ответа, подсказка и блок обратной связи. На телефоне это часто ниже
+   экрана, и чтобы перейти к следующему слову, приходится каждый раз
+   листать вниз. Решение: как только ответ засчитан, поверх контента
+   появляется отдельная закреплённая снизу панель (над нижней навигацией)
+   с копией той же кнопки — её видно сразу, без прокрутки. Обычная
+   #nextBtn внутри карточки остаётся в коде (на случай десктопа/будущих
+   изменений разметки), но визуально дублируется этой панелью.
+   См. checkAnswer()/checkChoice()/checkAudioChoice() — переключают её
+   через showStickyNext()/hideStickyNext(). */
+.sticky-next-bar{
+  position:fixed;left:0;right:0;
+  bottom:calc(64px + env(safe-area-inset-bottom));
+  z-index:250;
+  display:none;
+  padding:.6rem .9rem;
+  background:linear-gradient(to top,var(--bg) 65%,transparent);
+  pointer-events:none;
+}
+.sticky-next-bar.show{display:block}
+.sticky-next-bar .btn-next{
+  margin-top:0;pointer-events:auto;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);
+}
 
 .btn-skip{
   background:transparent;color:var(--text3);
@@ -935,18 +968,30 @@ input.s-pass:focus{border-color:var(--blue)}
 
 <!-- TRAIN SECTION -->
 <div id="sec-train" class="section active">
-  <div class="card">
-    <p class="card-title">Активность за неделю</p>
+  <!-- УЛУЧШЕНИЕ (по просьбе пользователя): заголовок "Активность за неделю"
+       убран — сама сетка дней уже понятна без подписи, а вложенный
+       вертикальный отступ карточки уменьшен (padding .6rem вместо
+       стандартного 1rem), чтобы блок был компактнее. -->
+  <div class="card" style="padding:.6rem">
     <div class="week-grid" id="weekGrid"></div>
   </div>
 
   <div class="card">
+    <!-- Режим "Аудио" (C) временно скрыт из интерфейса по просьбе пользователя.
+         Вся логика (setMode('C'), state.mode==='C' и т.п.) НЕ удалена — оставлена
+         в коде для будущих обновлений. Кнопка просто не рендерится (display:none),
+         чтобы её можно было вернуть в один шаг, убрав style ниже. -->
     <div class="mode-tabs">
       <button class="mode-tab active" id="modeA" onclick="setMode('A')">Рус → Каз</button>
       <button class="mode-tab" id="modeB" onclick="setMode('B')">Каз → Рус</button>
-      <button class="mode-tab" id="modeC" onclick="setMode('C')">🔊 Аудио</button>
+      <button class="mode-tab" id="modeC" onclick="setMode('C')" style="display:none">🔊 Аудио</button>
     </div>
 
+    <!-- УЛУЧШЕНИЕ (дизайн): раньше слева было статичное "Дневная цель", а справа —
+         текст #dailyLabel, который САМ начинался с "Дневная цель: ...", то есть
+         подпись дублировалась дважды в одной строке (видно на скриншоте). Теперь
+         подпись только одна — слева, статично, а #dailyLabel справа содержит
+         ТОЛЬКО число и стрик (см. updateDailyProgress()), без повторного текста. -->
     <div class="goal-row">
       <span>Дневная цель</span>
       <span id="dailyLabel" class="done">0 / 5 слов</span>
@@ -992,6 +1037,13 @@ input.s-pass:focus{border-color:var(--blue)}
     <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
     <button class="btn btn-skip" onclick="skipWord()" title="Слово не будет засчитано как выученное">Не знаю / Пропустить</button>
   </div>
+</div>
+
+<!-- Закреплённая снизу панель "Следующее слово" — см. комментарий у CSS
+     .sticky-next-bar. Живёт вне .card, чтобы position:fixed считался от
+     окна, а не от контейнера с overflow. -->
+<div class="sticky-next-bar" id="stickyNextBar">
+  <button class="btn btn-next" onclick="nextWord()">Следующее слово →</button>
 </div>
 
 <!-- TOPICS SECTION -->
@@ -1223,6 +1275,14 @@ input.s-pass:focus{border-color:var(--blue)}
 </table>
 </div>
 <p style="font-size:.85rem;color:var(--text2)"><strong>Проще говоря:</strong> сначала выбираешь а/е по последнему гласному звуку, потом д/т по последней согласной. Оба слова «мектеп» и «жұмыс» оканчиваются на глухую согласную — поэтому у обоих «т», а буква после неё («е» или «а») зависит только от гласных внутри слова.</p>
+<!-- ДОБАВЛЕНО: проверено по kaz-tili.kz (местный падеж, Жатыс септік) — не хватало
+     важного исключения. Если к слову УЖЕ приклеен притяжательный суффикс 3-го лица
+     («его/её», -сы/-сі или -ы/-і), то падежный суффикс всегда -нда/-нде,
+     а не -да/-де/-та/-те. Без этого правила фразы вроде «его дом» получались бы
+     с ошибкой (үйде вместо үйінде). -->
+<div style="background:var(--yellow-bg);padding:.65rem;border-radius:var(--radius-sm);margin-top:.65rem;font-size:.85rem;border-left:3px solid var(--yellow);color:var(--text)">
+<strong>Важное исключение:</strong> если к слову уже приклеен суффикс «его/её» (-сы/-сі или -ы/-і), то падежный суффикс всегда <strong>-нда/-нде</strong> (где?), <strong>-на/-не</strong> (куда?) и <strong>-нан/-нен</strong> (откуда?) — независимо от последней буквы слова. Үй → үй<strong>і</strong> (его дом) → үйі<strong>нде</strong> (в его доме) / үйі<strong>не</strong> (в его дом) / үйі<strong>нен</strong> (из его дома), а не «үйіде» и т.п. Это же правило действует и для суффиксов «куда/откуда» выше, не только для «где».
+</div>
 </div>
 
 <div class="card" style="border-left:3px solid var(--blue)">
@@ -1267,9 +1327,13 @@ input.s-pass:focus{border-color:var(--blue)}
 </div>
 
 <div class="card" style="border-left:3px solid var(--red)">
-<h2>4. «Нет» — просто добавь «ма/ме»</h2>
+<h2>4. «Нет» — вставь «ма/ме» (или ба/бе, па/пе)</h2>
+<!-- ИСПРАВЛЕНО: заголовок и правило раньше упоминали только "-ма/-ме", хотя
+     таблица ниже уже верно показывала и "-ма/-ме" (после гласных, л/р/у/й),
+     и "-ба/-бе" (после м/н/ң, ж/з), и "-па/-пе" (после глухих) — например
+     Айт+падым. Проверено по kaz-tili.kz (Отрицательные суффиксы, su_mn2.htm). -->
 <div style="background:var(--red-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--red);color:var(--text)">
-<strong>Правило:</strong> Чтобы сделать глагол отрицательным, вставь <strong>-ма/-ме</strong> перед окончанием.
+<strong>Правило:</strong> Чтобы сделать глагол отрицательным, вставь перед окончанием один из трёх вариантов суффикса — <strong>-ма/-ме</strong> (после гласных и л/р/у/й), <strong>-ба/-бе</strong> (после м/н/ң и ж/з) или <strong>-па/-пе</strong> (после глухих согласных к/қ/п/с/т/ш и др.).
 </div>
 <p style="font-size:.9rem;margin-bottom:.5rem"><strong>Как это работает:</strong></p>
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
@@ -1291,7 +1355,7 @@ input.s-pass:focus{border-color:var(--blue)}
 </div>
 
 <div class="card" style="border-left:3px solid #a78bfa">
-<h2>5. Вопрос: просто добавь «ба/бе»</h2>
+<h2>5. Вопрос: добавь «ма/ме/ба/бе/па/пе»</h2>
 <div style="background:rgba(167,139,250,.12);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid #a78bfa;color:var(--text)">
 <strong>Правило:</strong> Чтобы задать вопрос «да/нет», поставь <strong>-ма/-ме/-ба/-бе/-па/-пе</strong> в конец предложения.
 </div>
@@ -1336,9 +1400,14 @@ input.s-pass:focus{border-color:var(--blue)}
 </div>
 
 <div class="card" style="border-left:3px solid var(--green)">
-<h2>7. Множественное число: просто «лар/лер»</h2>
+<h2>7. Множественное число: «лар/лер», «дар/дер» или «тар/тер»</h2>
+<!-- ИСПРАВЛЕНО: заголовок и правило раньше говорили ТОЛЬКО про "-лар/-лер",
+     хотя таблица примеров ниже уже верно показывала "-тар" (Достар, Кітаптар,
+     Тамақтар) — то есть правило противоречило собственным примерам. На самом
+     деле окончание трёхвариантное, по последней букве слова (аналогично
+     падежам выше). Проверено по kaz-tili.kz (Множественное число, su_mn1.htm). -->
 <div style="background:var(--green-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--green);color:var(--text)">
-<strong>Правило:</strong> Чтобы сказать «много» — добавь <strong>-лар/-лер</strong> к слову.
+<strong>Правило:</strong> Чтобы сказать «много», добавь один из трёх вариантов окончания — <strong>-лар/-лер</strong> (после гласных и р/у/й), <strong>-дар/-дер</strong> (после ж/з и м/н/ң) или <strong>-тар/-тер</strong> (после глухих согласных к/қ/п/с/т/ш и др.) — гласная (а или е) выбирается как обычно по последнему гласному звуку слова.
 </div>
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
@@ -1349,7 +1418,8 @@ input.s-pass:focus{border-color:var(--blue)}
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Бала</td><td style="padding:.5rem">Бала<strong>лар</strong></td><td style="padding:.5rem">Дети</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Қала</td><td style="padding:.5rem">Қала<strong>лар</strong></td><td style="padding:.5rem">Города</td></tr>
 <tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Үй</td><td style="padding:.5rem">Үй<strong>лер</strong></td><td style="padding:.5rem">Дома</td></tr>
-<tr><td style="padding:.5rem">Тамақ</td><td style="padding:.5rem">Тамақ<strong>тар</strong></td><td style="padding:.5rem">Блюда</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.5rem">Тамақ</td><td style="padding:.5rem">Тамақ<strong>тар</strong></td><td style="padding:.5rem">Блюда</td></tr>
+<tr><td style="padding:.5rem">Сөз</td><td style="padding:.5rem">Сөз<strong>дер</strong></td><td style="padding:.5rem">Слова</td></tr>
 </table>
 </div>
 
@@ -2750,8 +2820,19 @@ try{const s=localStorage.getItem(STORAGE_KEY);if(s)state={...state,...JSON.parse
 const today=new Date().toDateString();
 if(state.daily.date!==today){
 const yesterday=new Date(Date.now()-86400000).toDateString();
-const hadRealPractice=(state.daily.answeredIds||[]).length>0;
-if(state.daily.date===yesterday&&hadRealPractice){state.streak=(state.streak||0)+1}
+// БАГФИКС: страйк ("🔥 N дн. подряд") и недельный календарь (зелёные дни в
+// "Активность за неделю") раньше использовали РАЗНЫЕ условия того, что
+// считается "занимался в этот день". Календарь красит день зелёным только
+// если пройдено слов >= дневной цели (goal-met, см. renderWeekGrid), а
+// страйк здесь инкрементировался уже от ОДНОГО отвеченного слова
+// (answeredIds.length>0) — то есть от простого факта захода в тренировку,
+// даже без выполнения цели. Из-за этого страйк мог показывать больше дней,
+// чем реально подсвечено зелёным в календаре (ровно то, что видно на
+// скриншоте пользователя: 3 дня подряд по страйку, но только 2 зелёных
+// дня). Теперь оба места считают "выполнено" одинаково — по достижению
+// state.daily.goalCount дневной цели, а не по факту хотя бы одного ответа.
+const goalWasMet=(state.daily.goalCount||0)>=(state.settings.dailyGoal||20);
+if(state.daily.date===yesterday&&goalWasMet){state.streak=(state.streak||0)+1}
 else if(state.daily.date!==today){state.streak=0}
 state.daily={goalCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[]};
 state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
@@ -2769,6 +2850,11 @@ if(state.daily.goalCount===undefined)state.daily.goalCount=0;
 if(state.daily.repeatCount===undefined)state.daily.repeatCount=0;
 if(state.daily.errorCount===undefined)state.daily.errorCount=0;
 if('newCount' in state.daily)delete state.daily.newCount;
+// Режим "Аудио" (C) временно скрыт из интерфейса (кнопка display:none, см. HTML
+// выше) — если у вернувшегося пользователя в сохранённом состоянии почему-то
+// остался mode:'C' (например, с прошлой сессии до этого изменения), переключаем
+// на 'A', иначе ни одна кнопка режима не подсветится как активная.
+if(state.mode==='C')state.mode='A';
 // Миграция со старой версии: раньше прогресс слова хранился только в level (без streak/lastSeen)
 Object.values(state.words||{}).forEach(ws=>{
 if(ws.streak===undefined)ws.streak=Math.min(ws.level||0,STREAK_TO_LEARN);
@@ -2849,6 +2935,7 @@ document.getElementById('inputRow').style.display='none';
 document.getElementById('feedback').className='feedback correct';
 document.getElementById('feedback').textContent=minutesLeft?`Следующее слово вернётся на проверку примерно через ${minutesLeft} мин. Зайдите чуть позже!`:'Возвращайтесь чуть позже для повторения.';
 document.getElementById('nextBtn').style.display='none';
+hideStickyNext();
 const quizEl=document.getElementById('quizOptions');if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');if(audioEl)audioEl.remove();
 const toggleEl=document.getElementById('inputModeToggle');if(toggleEl)toggleEl.remove();
@@ -2859,6 +2946,20 @@ return WORDS.filter(w=>{
 const ws=state.words[w.id];
 return ws&&ws.errors>=3;
 });
+}
+
+// Показывает/прячет закреплённую снизу панель "Следующее слово →" (см.
+// комментарий у CSS .sticky-next-bar и у #stickyNextBar в HTML) — вызывается
+// в паре с обычной #nextBtn везде, где раньше включалось только inline-button,
+// чтобы кнопка перехода к следующему слову была видна сразу после ответа,
+// без прокрутки экрана вниз.
+function showStickyNext(){
+const bar=document.getElementById('stickyNextBar');
+if(bar)bar.classList.add('show');
+}
+function hideStickyNext(){
+const bar=document.getElementById('stickyNextBar');
+if(bar)bar.classList.remove('show');
 }
 
 function showNextWord(){
@@ -2882,6 +2983,7 @@ document.getElementById('feedback').textContent='';
 const trReset=document.getElementById('wordTranslation');
 if(trReset){trReset.style.display='none';trReset.textContent='';}
 document.getElementById('nextBtn').style.display='none';
+hideStickyNext();
 document.getElementById('answerInput').value='';
 document.getElementById('answerInput').disabled=false;
 try{document.getElementById('answerInput').focus();}catch(e){}
@@ -3044,6 +3146,7 @@ b.style.pointerEvents='none';
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
+showStickyNext();
 const toggleEl=document.getElementById('inputModeToggle');
 if(toggleEl)toggleEl.remove();
 }
@@ -3113,6 +3216,7 @@ showFeedback(countsAsCorrect,isTypo);
 state.answered=true;
 document.getElementById('answerInput').disabled=true;
 document.getElementById('nextBtn').style.display='inline-block';
+showStickyNext();
 const toggleEl=document.getElementById('inputModeToggle');
 if(toggleEl)toggleEl.remove();
 }
@@ -3133,6 +3237,7 @@ b.style.pointerEvents='none';
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
+showStickyNext();
 }
 
 function checkAudio(el){
@@ -3149,6 +3254,7 @@ b.style.pointerEvents='none';
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
+showStickyNext();
 }
 
 function showFeedback(correct,isTypo){
@@ -3247,10 +3353,18 @@ state.daily.errorCount++;
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
 if(!state.daily.answeredIds.includes(id))state.daily.answeredIds.push(id);
 // Записываем активность за сегодня в историю (для корректного отображения недели)
+// БАГФИКС: раньше сюда писалось answeredIds.length — число ВСЕХ уникальных
+// отвеченных слов за день (включая повторы и даже слова, на которые в итоге
+// ответили неверно). Это НЕ то же самое, что goalCount (только новые слова,
+// отвеченные ВЕРНО — именно это число показано пользователю как "Дневная
+// цель: X/Y слов" в самом интерфейсе тренировки). Из-за расхождения
+// недельный календарь мог закрашивать день как "цель выполнена" по одной
+// метрике, а страйк — считать по другой, и они расходились (см. фидбэк
+// пользователя: страйк 3 дня, а зелёных дней в календаре только 2). Теперь
+// обе места (renderWeekGrid и loadState) используют goalCount.
 if(!state.activityHistory)state.activityHistory={};
 const todayKey=new Date().toDateString();
-if(!state.activityHistory[todayKey])state.activityHistory[todayKey]=0;
-state.activityHistory[todayKey]=state.daily.answeredIds.length;
+state.activityHistory[todayKey]=state.daily.goalCount;
 saveState();
 updateStats();
 updateStreakDisplay();
@@ -3880,7 +3994,16 @@ sourceLink=` — <a href="${articleUrl}" target="_blank" rel="noopener" style="c
 }else if(sourceLabel==='kk.wiktionary.org (поиск)'){
 sourceLink='';
 }
-el.outerHTML=`<div style="display:flex;flex-direction:column;gap:.4rem">${results.map(m=>`<div style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.83rem;font-weight:600;color:var(--text)">${escapeChatHtml(m)}</div>`).join('')}</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: ${sourceLabel}${sourceLink}</div>`;
+// УЛУЧШЕНИЕ: раньше блок показывал ТОЛЬКО перевод(ы), без самого введённого
+// слова — пользователю было неочевидно, к какому слову относится результат,
+// особенно если он уже прокрутил вниз или скопировал текст отдельно (см.
+// скриншот пользователя). Теперь сверху отдельной строкой всегда показывается
+// само найденное/введённое слово (query), а под ним — перевод(ы) из внешнего
+// источника, визуально как пара "слово → перевод".
+el.outerHTML=`<div style="display:flex;flex-direction:column;gap:.4rem">`+
+`<div style="background:var(--bg2,var(--bg3));border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.83rem;font-weight:800;color:var(--text)">${escapeChatHtml(query)}</div>`+
+results.map(m=>`<div style="background:var(--bg3);border:1.5px solid var(--border);border-radius:8px;padding:.4rem .6rem;font-size:.83rem;font-weight:600;color:var(--text);padding-left:1.1rem;position:relative"><span style="position:absolute;left:.4rem;color:var(--text3)">→</span>${escapeChatHtml(m)}</div>`).join('')
++`</div><div style="font-size:.65rem;color:var(--text3);margin-top:.4rem">Источник: ${sourceLabel}${sourceLink}</div>`;
 }else if(networkAttempts>0&&networkFailures===networkAttempts){
 // Все запросы упали технически (не дошли до сервера/не прошли CORS) —
 // значит проблема в доступе к источникам, а не в том, что слова нет.
@@ -3945,11 +4068,18 @@ const dayName=week[d.getDay()];
 const isToday=i===0;
 const dateKey=d.toDateString();
 const wordsCount=history[dateKey]||0;
-const hasActivity=wordsCount>0;
+// ИСПРАВЛЕНО (по фидбэку): раньше зелёным заливалась ячейка при ЛЮБОЙ
+// активности (даже 1 слово) — на неделе с частыми занятиями получалось
+// сразу 5-6 одинаково ярких плашек подряд и выглядело пёстро. Теперь
+// зелёный означает конкретно "дневная цель выполнена" — то есть в этот
+// день пройдено слов не меньше, чем задано в Настройках → Дневная цель
+// (state.settings.dailyGoal). Точки-индикаторы убраны — не нужны.
+const goal=state.settings.dailyGoal||20;
+const goalMet=wordsCount>=goal;
 let cls='week-day';
 if(isToday)cls+=' today';
-if(hasActivity)cls+=' has-activity';
-weekHtml+=`<div class="${cls}" title="${hasActivity?wordsCount+' слов':''}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div>${hasActivity?`<div class="day-words">${wordsCount}сл</div>`:'<div class="day-words" style="opacity:0">·</div>'}</div>`;
+if(goalMet)cls+=' goal-met';
+weekHtml+=`<div class="${cls}" title="${wordsCount>0?wordsCount+' новых слов':''}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div></div>`;
 }
 el.innerHTML=weekHtml;
 }
@@ -3989,7 +4119,12 @@ const done=state.daily.goalCount||0;
 const pct=Math.min(100,Math.round(done/goal*100));
 document.getElementById('dailyProgress').style.width=pct+'%';
 const streakText=state.streak>0?` 🔥 ${state.streak} дн.`:'';
-document.getElementById('dailyLabel').textContent=`Дневная цель: ${done} / ${goal} новых слов${streakText}`;
+// БАГФИКС (дизайн): раньше здесь писалось "Дневная цель: X / Y новых слов",
+// хотя слева уже стоит статичная подпись <span>Дневная цель</span> — подпись
+// дублировалась дважды в одной строке (см. скриншот пользователя). Теперь
+// справа только число и стрик, слово "новых слов" сокращено до "слов", чтобы
+// строка не разъезжалась на мобильных экранах.
+document.getElementById('dailyLabel').textContent=`${done} / ${goal} слов${streakText}`;
 }
 
 function updateStreakDisplay(){
