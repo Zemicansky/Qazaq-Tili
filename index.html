@@ -3656,6 +3656,16 @@ b.style.pointerEvents='none';
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
+// БАГФИКС: в отличие от checkAnswer()/checkAudio(), здесь забыли скрыть кнопку
+// "Не знаю / Пропустить" после ответа — она оставалась кликабельной поверх уже
+// отвеченного слова (режим "выбор из вариантов" — cardInputMode по умолчанию
+// 'choice', то есть основной сценарий использования тренажёра). Клик по ней
+// молча возвращал уже пройденное слово в конец очереди и убирал его из
+// daily.answeredIds (см. skipWord()) — слово могло появиться в тренировке ещё
+// раз без причины, а прогресс мог задвоиться/сброситься неожиданно для
+// пользователя, который просто промахнулся пальцем.
+const skipBtnQuiz=document.getElementById('skipBtn');
+if(skipBtnQuiz)skipBtnQuiz.style.display='none';
 showStickyNext();
 }
 
@@ -3983,8 +3993,18 @@ ws.nextReview=Date.now()+15*60000;
 saveState();
 updateStats();
 }
+// БАГФИКС (защитный, по аналогии с веткой streak выше): раньше слово
+// возвращалось в очередь и убиралось из answeredIds безусловно, даже если
+// state.answered уже true (например, если "Пропустить" вызвана после того,
+// как ответ на слово уже засчитан — гонка кликов, повторный клик до того,
+// как кнопка успела скрыться). Так уже отвеченное и учтённое в дневной цели
+// слово могло молча вернуться в очередь и появиться ещё раз в этой же
+// сессии. Теперь re-queue происходит только для действительно не отвеченного
+// слова, тем же условием, что и сброс streak выше.
+if(!state.answered){
 state.queue.push(state.current);
 state.daily.answeredIds=state.daily.answeredIds.filter(id=>id!==state.current.id);
+}
 }
 // БАГФИКС (мелкий, защитный): раньше state.answered не сбрасывался здесь явно
 // перед showNextWord(). showNextWord() и так ставит его в false для следующего
@@ -4728,7 +4748,8 @@ const goal=state.settings.dailyGoal||20;
 const done=state.daily.goalCount||0;
 const pct=Math.min(100,Math.round(done/goal*100));
 document.getElementById('dailyProgress').style.width=pct+'%';
-const streakText=state.streak>0?` 🔥 ${state.streak} дн.`:'';
+const displayStreak=getDisplayStreak();
+const streakText=displayStreak>0?` 🔥 ${displayStreak} дн.`:'';
 // БАГФИКС (дизайн): раньше здесь писалось "Дневная цель: X / Y новых слов",
 // хотя слева уже стоит статичная подпись <span>Дневная цель</span> — подпись
 // дублировалась дважды в одной строке (см. скриншот пользователя). Теперь
@@ -4737,13 +4758,35 @@ const streakText=state.streak>0?` 🔥 ${state.streak} дн.`:'';
 document.getElementById('dailyLabel').textContent=`${done} / ${goal} слов${streakText}`;
 }
 
+// БАГФИКС (страйк не показывался "в свой первый день"): раньше state.streak
+// увеличивался ТОЛЬКО в loadState() при переходе на новый день (то есть
+// только когда пользователь открывал приложение НАЗАВТРА после выполнения
+// цели). Из-за этого сам счётчик "🔥 N дн. подряд" был по сути невидим —
+// в тот же день, когда цель только что выполнена, state.streak всё ещё
+// показывал старое (вчерашнее) значение или 0, если это вообще первый день
+// занятий. Пользователь видел бейдж только на следующий день, да и то не
+// сразу, а лишь после повторного открытия/перезагрузки приложения.
+// Теперь getDisplayStreak() считает "видимый" страйк с учётом сегодняшнего
+// дня: если дневная цель уже выполнена сегодня, показываем state.streak+1
+// (то есть сегодня — это первый/следующий день серии), не дожидаясь завтра.
+// Сам state.streak при этом НЕ трогаем здесь — он остаётся "подтверждённым"
+// числом полностью прошедших дней и увеличивается на 1 по-настоящему только
+// в loadState() при переходе на следующий день (см. комментарий там). Так что
+// это чисто отображаемая величина, а не подмена хранимого состояния.
+function getDisplayStreak(){
+const goal=state.settings.dailyGoal||20;
+const goalMetToday=(state.daily.goalCount||0)>=goal;
+return goalMetToday?(state.streak||0)+1:(state.streak||0);
+}
+
 function updateStreakDisplay(){
 const el=document.getElementById('streakDisplay');
 if(el){
-if(state.streak>0){
-el.innerHTML=`<span class="fire">🔥</span><span class="days" id="streakDays">${state.streak}</span>`;
+const displayStreak=getDisplayStreak();
+if(displayStreak>0){
+el.innerHTML=`<span class="fire">🔥</span><span class="days" id="streakDays">${displayStreak}</span>`;
 el.style.display='flex';
-el.title=state.streak+' дн. подряд';
+el.title=displayStreak+' дн. подряд';
 }
 else{el.style.display='none'}
 }
