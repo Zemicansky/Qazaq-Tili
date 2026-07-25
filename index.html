@@ -345,6 +345,7 @@ header{
 }
 .theme-toggle:active{transform:scale(.9)}
 
+
 /* ── NAV ───────────────────────────────────────────────────── */
 nav#mainNav{
   position:fixed;bottom:0;left:0;right:0;
@@ -420,18 +421,39 @@ nav#mainNav{
   display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;
   text-align:center;
 }
+/* УЛУЧШЕНИЕ (визуал, логика не менялась): чисто декоративная доработка —
+   плавные переходы между состояниями, лёгкая "приподнятость" карточки дня
+   через тень, градиентная заливка + мягкое свечение для выполненной цели
+   вместо плоского цвета, и небольшая пульсация рамки у "сегодня", чтобы
+   текущий день сразу считывался глазом на фоне остальных шести ячеек. */
 .week-day{
   padding:.4rem .05rem;border-radius:10px;
   background:var(--bg3);border:1.5px solid transparent;
   font-size:.6rem;font-weight:700;color:var(--text3);
   display:flex;flex-direction:column;align-items:center;
   min-height:38px;justify-content:center;gap:.2rem;
+  transition:background .3s ease,border-color .3s ease,color .3s ease,
+             box-shadow .3s ease,transform .15s ease;
 }
 .week-day .day-name{color:inherit;font-size:.56rem;font-weight:700;letter-spacing:.2px;opacity:.75}
 .week-day .day-val{font-size:.8rem;font-weight:800;color:inherit;line-height:1}
-.week-day.goal-met{background:var(--accent-glow);color:var(--accent)}
-.week-day.today{background:var(--card);border-color:var(--accent);color:var(--accent);box-shadow:var(--shadow)}
-.week-day.today.goal-met{background:var(--accent-glow)}
+.week-day.goal-met{
+  background:linear-gradient(160deg,var(--accent-glow),var(--accent-glow) 60%,transparent);
+  color:var(--accent);
+  box-shadow:0 2px 10px var(--accent-glow);
+}
+.week-day.today{
+  background:var(--card);border-color:var(--accent);color:var(--accent);
+  box-shadow:var(--shadow),0 0 0 3px var(--accent-glow);
+  animation:weekTodayPulse 2.4s ease-in-out infinite;
+}
+.week-day.today.goal-met{
+  background:linear-gradient(160deg,var(--accent-glow),var(--accent-glow) 60%,transparent);
+}
+@keyframes weekTodayPulse{
+  0%,100%{box-shadow:var(--shadow),0 0 0 3px var(--accent-glow)}
+  50%{box-shadow:var(--shadow),0 0 0 5px var(--accent-glow)}
+}
 
 
 /* ── DAILY GOAL ────────────────────────────────────────────── */
@@ -448,6 +470,39 @@ nav#mainNav{
   height:100%;
   background:linear-gradient(90deg,var(--accent),var(--blue));
   border-radius:6px;transition:width .4s ease;min-width:0
+}
+
+/* ── GOAL + MODE ROW (объединено, по просьбе пользователя) ────
+   Раньше "Дневная цель" (заголовок + число + отдельная строка прогресс-бара)
+   и переключатель режима были друг под другом — вместе занимали много
+   вертикального места. Теперь одна строка: слева уменьшенная дневная цель
+   (короткая подпись + тонкий мини-прогресс-бар вместо толстого), справа —
+   компактный переключатель режима. См. .goal-mode-row в HTML.
+   ИСПРАВЛЕНО (по фидбэку "некрасиво"): раньше две кнопки режима "плавали"
+   отдельно друг от друга без общего фона — рядом с тонким прогресс-баром
+   это смотрелось разрозненно и неаккуратно (видно на скриншоте). Теперь
+   у переключателя есть общая подложка-капсула (как у исходного .mode-tabs),
+   просто уменьшенная, и выровнена по вертикали с прогресс-баром слева —
+   визуально оба элемента строки стоят на одной высоте и читаются как
+   единый компактный блок, а не два случайных предмета рядом. */
+.goal-mode-row{
+  display:flex;align-items:center;gap:.7rem;
+  margin-bottom:.85rem;
+}
+.goal-mode-row .goal-mini{
+  flex:1;min-width:0;
+}
+.goal-mode-row .goal-mini-label{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:.72rem;font-weight:700;color:var(--text2);
+  margin-bottom:.35rem;
+}
+.goal-mode-row .goal-mini-label .done{color:var(--accent);font-weight:800}
+.goal-mode-row .progress-track{
+  height:7px;margin:0;
+}
+.goal-mode-row .mode-tabs-compact{
+  margin-bottom:0;flex-shrink:0;
 }
 
 /* ── MODE SWITCH ───────────────────────────────────────────── */
@@ -468,6 +523,44 @@ nav#mainNav{
 .mode-tab.active{
   background:var(--blue);color:#fff;
   box-shadow:var(--shadow);
+}
+
+/* ── COMPACT MODE SWITCH (в одной строке с целью дня) ──────────
+   ИСПРАВЛЕНО (по фидбэку "некрасиво сделано"): раньше кнопки режима были
+   двумя независимыми "таблетками" без общей подложки — на скриншоте видно,
+   что они выглядели как два случайных элемента, а не единый переключатель.
+   Теперь это настоящий сегментированный контрол: одна общая капсула-фон
+   (var(--bg3)) с внутренним padding, активная кнопка выделяется заливкой
+   и тенью — тот же принцип, что у полноразмерного .mode-tabs, просто в
+   компактных пропорциях, чтобы помещаться в одну строку с прогресс-баром. */
+.mode-tabs-compact{
+  display:flex;gap:.15rem;
+  background:var(--bg3);border-radius:20px;
+  padding:.2rem;flex-shrink:0;
+}
+.mode-tab-c{
+  padding:.32rem .65rem;
+  background:transparent;color:var(--text2);
+  border:none;border-radius:16px;
+  font-size:.68rem;font-weight:800;cursor:pointer;
+  transition:all .18s;font-family:inherit;white-space:nowrap;
+}
+.mode-tab-c:active{transform:scale(.95)}
+.mode-tab-c.active{
+  background:var(--blue);color:#fff;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+
+/* ── UTILITY ROW (Повторить аудио / Ввести слово вручную) ─────
+   Раньше эти две кнопки были отдельными блоками друг под другом (каждая
+   на всю ширину, с большим вертикальным отступом) — вместе они занимали
+   много места. Теперь это один общий ряд под ответом, кнопки одного
+   компактного стиля (.btn-sm), выровнены по центру, с небольшим зазором
+   между ними — не растягиваются на всю ширину. См. .utility-row в HTML/JS
+   (renderWord(), renderInputModeToggle()). */
+.utility-row{
+  display:flex;justify-content:center;align-items:center;
+  gap:.5rem;margin-top:.5rem;flex-wrap:wrap;
 }
 
 /* ── WORD CARD ─────────────────────────────────────────────── */
@@ -610,17 +703,31 @@ nav#mainNav{
    через showStickyNext()/hideStickyNext(). */
 .sticky-next-bar{
   position:fixed;left:0;right:0;
-  bottom:calc(64px + env(safe-area-inset-bottom));
-  z-index:250;
+  /* ИСПРАВЛЕНО: раньше позиция считалась как "64px + safe-area" в предположении,
+     что нижняя навигация всегда ровно 64px высотой. На деле высота nav#mainNav
+     зависит от padding и содержимого — на многих телефонах панель оказывалась
+     либо частично под навигацией, либо с некрасивым зазором. Теперь высота
+     nav измеряется в JS (см. positionStickyNextBar()) и передаётся сюда через
+     CSS-переменную --nav-h, поэтому панель всегда встаёт ровно над навигацией.
+     z-index поднят выше навигации (400 > 300), чтобы панель точно не могла
+     оказаться перекрытой чем-либо снизу. */
+  bottom:var(--nav-h,64px);
+  z-index:400;
   display:none;
-  padding:.6rem .9rem;
-  background:linear-gradient(to top,var(--bg) 65%,transparent);
+  padding:.55rem .75rem calc(.55rem + 2px);
+  background:linear-gradient(to top,var(--bg) 55%,transparent);
   pointer-events:none;
 }
 .sticky-next-bar.show{display:block}
 .sticky-next-bar .btn-next{
   margin-top:0;pointer-events:auto;
-  box-shadow:0 4px 16px rgba(0,0,0,.25);
+  max-width:480px;margin-left:auto;margin-right:auto;
+  box-shadow:0 6px 20px rgba(0,0,0,.35);
+  animation:stickyPop .22s ease-out;
+}
+@keyframes stickyPop{
+  from{transform:translateY(8px);opacity:0}
+  to{transform:translateY(0);opacity:1}
 }
 
 .btn-skip{
@@ -1003,36 +1110,35 @@ input.s-pass:focus{border-color:var(--blue)}
 
 <!-- TRAIN SECTION -->
 <div id="sec-train" class="section active">
-  <!-- УЛУЧШЕНИЕ (по просьбе пользователя): заголовок "Активность за неделю"
-       убран — сама сетка дней уже понятна без подписи, а вложенный
-       вертикальный отступ карточки уменьшен (padding .6rem вместо
-       стандартного 1rem), чтобы блок был компактнее. -->
-  <div class="card" style="padding:.6rem">
-    <div class="week-grid" id="weekGrid"></div>
-  </div>
-
+  <!-- ОБЪЕДИНЕНО (по просьбе пользователя): раньше неделя и сама тренировка
+       были в двух разных карточках — между ними была рамка+тень+двойной
+       padding, из-за чего казалось, что это несвязанные блоки, хотя оба
+       показывают прогресс (неделя — когда занимался, цель — сколько сделал
+       сегодня). Теперь это одна карточка: неделя сверху, сразу под ней —
+       строка с целью/режимом, без видимой границы между ними. -->
   <div class="card">
-    <!-- Режим "Аудио" (C) временно скрыт из интерфейса по просьбе пользователя.
-         Вся логика (setMode('C'), state.mode==='C' и т.п.) НЕ удалена — оставлена
-         в коде для будущих обновлений. Кнопка просто не рендерится (display:none),
-         чтобы её можно было вернуть в один шаг, убрав style ниже. -->
-    <div class="mode-tabs">
-      <button class="mode-tab active" id="modeA" onclick="setMode('A')">Рус → Каз</button>
-      <button class="mode-tab" id="modeB" onclick="setMode('B')">Каз → Рус</button>
-      <button class="mode-tab" id="modeC" onclick="setMode('C')" style="display:none">🔊 Аудио</button>
-    </div>
+    <div class="week-grid" id="weekGrid" style="margin-bottom:.9rem"></div>
 
-    <!-- УЛУЧШЕНИЕ (дизайн): раньше слева было статичное "Дневная цель", а справа —
-         текст #dailyLabel, который САМ начинался с "Дневная цель: ...", то есть
-         подпись дублировалась дважды в одной строке (видно на скриншоте). Теперь
-         подпись только одна — слева, статично, а #dailyLabel справа содержит
-         ТОЛЬКО число и стрик (см. updateDailyProgress()), без повторного текста. -->
-    <div class="goal-row">
-      <span>Дневная цель</span>
-      <span id="dailyLabel" class="done">0 / 5 слов</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="dailyProgress" style="width:0%"></div>
+    <!-- ОБЪЕДИНЕНО (по просьбе пользователя): "Дневная цель" и переключатель
+         режима (Рус→Каз / Каз→Рус) раньше были друг под другом, каждый на
+         всю ширину — занимали много места по высоте. Теперь одна строка:
+         слева уменьшенная цель (короткая подпись + тонкий прогресс-бар),
+         справа компактный переключатель режима. См. .goal-mode-row в CSS. -->
+    <div class="goal-mode-row">
+      <div class="goal-mini">
+        <div class="goal-mini-label">
+          <span>Цель дня</span>
+          <span id="dailyLabel" class="done">0 / 5 слов</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="dailyProgress" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="mode-tabs-compact" id="modeTabsCompact">
+        <button class="mode-tab-c active" id="modeA" onclick="setMode('A')">Рус→Каз</button>
+        <button class="mode-tab-c" id="modeB" onclick="setMode('B')">Каз→Рус</button>
+        <button class="mode-tab-c" id="modeC" onclick="setMode('C')" style="display:none">🔊</button>
+      </div>
     </div>
 
     <div class="word-card" id="wordDisplay">
@@ -1065,8 +1171,16 @@ input.s-pass:focus{border-color:var(--blue)}
 
     </div>
 
-    <div id="replayAudioRow" style="display:none;text-align:center;margin-top:.4rem">
-      <button class="audio-btn" style="width:auto;padding:.35rem .9rem;border-radius:20px;gap:.4rem;display:inline-flex;align-items:center;font-size:.8rem;font-weight:700;color:var(--blue);border-color:var(--blue)" onclick="playAudio()">🔊 Повторить аудио</button>
+    <!-- ОБЪЕДИНЕНО (по просьбе пользователя): "Повторить аудио" и "Ввести слово
+         вручную" раньше были в разных блоках друг под другом. Теперь это общий
+         ряд #replayAudioRow (см. .utility-row в CSS) — обе кнопки в едином
+         компактном стиле (.btn-sm), помещаются в одну строку. Сама кнопка
+         "Повторить аудио" получила отдельный id #replayAudioBtn, чтобы её
+         видимость переключалась независимо от ряда в целом (ряд остаётся
+         видимым, пока в нём есть хоть одна кнопка — см. renderWord() и
+         renderInputModeToggle() в JS). -->
+    <div id="replayAudioRow" class="utility-row" style="display:none">
+      <button class="btn-sm" id="replayAudioBtn" onclick="playAudio()" style="display:none">🔊 Повторить аудио</button>
     </div>
     <div class="feedback" id="feedback"></div>
     <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
@@ -2976,6 +3090,13 @@ document.getElementById('mainWord').textContent='😴';
 document.getElementById('wordTopic').textContent='Все слова сейчас отдыхают';
 document.getElementById('inputRow').style.display='none';
 document.getElementById('feedback').className='feedback correct';
+// ИСПРАВЛЕНО: showFeedback() (см. её код) теперь скрывает #feedback через
+// style.display='none' после ответа на слово (по просьбе пользователя —
+// убран блок "✓ Правильно/✗ Неправильно"). Это сообщение ("все слова
+// отдыхают") — другой, полезный случай, который нужно показывать, поэтому
+// явно возвращаем display в исходное состояние здесь, иначе оно могло бы
+// остаться скрытым, если до этого пользователь успел ответить на слово.
+document.getElementById('feedback').style.display='';
 document.getElementById('feedback').textContent=minutesLeft?`Следующее слово вернётся на проверку примерно через ${minutesLeft} мин. Зайдите чуть позже!`:'Возвращайтесь чуть позже для повторения.';
 document.getElementById('nextBtn').style.display='none';
 hideStickyNext();
@@ -2996,7 +3117,21 @@ return ws&&ws.errors>=3;
 // в паре с обычной #nextBtn везде, где раньше включалось только inline-button,
 // чтобы кнопка перехода к следующему слову была видна сразу после ответа,
 // без прокрутки экрана вниз.
+// Измеряет реальную высоту нижней навигации (nav#mainNav) и прокидывает её
+// в CSS-переменную --nav-h, чтобы .sticky-next-bar (bottom:var(--nav-h))
+// всегда вставала ровно над навигацией, независимо от реальных отступов/
+// safe-area на конкретном устройстве. Вызывается при загрузке, при повороте
+// экрана/ресайзе и прямо перед показом панели.
+function positionStickyNextBar(){
+const nav=document.getElementById('mainNav');
+if(!nav)return;
+document.documentElement.style.setProperty('--nav-h',nav.offsetHeight+'px');
+}
+window.addEventListener('resize',positionStickyNextBar);
+window.addEventListener('orientationchange',positionStickyNextBar);
+
 function showStickyNext(){
+positionStickyNextBar();
 const bar=document.getElementById('stickyNextBar');
 if(bar)bar.classList.add('show');
 }
@@ -3040,7 +3175,7 @@ if(toggleEl)toggleEl.remove();
 
 if(state.mode==='A'){
 document.getElementById('mainWord').textContent=w.ru;
-if(replayRow)replayRow.style.display='none';
+if(replayRow)document.getElementById('replayAudioBtn').style.display='none';
 if(state.cardInputMode==='typing'){
 document.getElementById('inputRow').style.display='flex';
 document.getElementById('answerInput').placeholder='Введите перевод на казахском...';
@@ -3051,7 +3186,7 @@ renderChoiceOptions(w,'kz');
 renderInputModeToggle();
 }else if(state.mode==='B'){
 document.getElementById('mainWord').textContent=w.kz;
-if(replayRow)replayRow.style.display='block';
+if(replayRow)document.getElementById('replayAudioBtn').style.display='inline-block';
 if(state.cardInputMode==='typing'){
 document.getElementById('inputRow').style.display='flex';
 document.getElementById('answerInput').placeholder='Введите перевод на русском...';
@@ -3063,7 +3198,7 @@ renderInputModeToggle();
 }else if(state.mode==='C'){
 document.getElementById('mainWord').textContent='🔊';
 document.getElementById('inputRow').style.display='none';
-if(replayRow)replayRow.style.display='block';
+if(replayRow){document.getElementById('replayAudioBtn').style.display='inline-block';replayRow.style.display='flex';}
 renderAudioOptions(w);
 playAudio();
 }
@@ -3084,18 +3219,23 @@ updateDailyProgress();
 // Кнопка под карточкой для режимов A/B, переключающая текущую карточку между
 // "выбор из 4 слов" (по умолчанию) и свободным вводом. Выбор — только для
 // текущей карточки, следующая снова открывается с выбором (см. showNextWord).
+// Кнопка под карточкой для режимов A/B, переключающая текущую карточку между
+// "выбор из 4 слов" (по умолчанию) и свободным вводом. Выбор — только для
+// текущей карточки, следующая снова открывается с выбором (см. showNextWord).
+// ОБЪЕДИНЕНО (по просьбе пользователя): раньше эта кнопка рисовалась в
+// собственном отдельном блоке ниже поля ответа/вариантов. Теперь она
+// вставляется в общий ряд #replayAudioRow (см. .utility-row в CSS) — вместе
+// с "Повторить аудио", если та тоже видна в этом режиме (например, в режиме
+// "Каз → Рус"). Если "Повторить аудио" в этом режиме скрыта (режим
+// "Рус → Каз"), ряд всё равно показывается — просто с одной этой кнопкой.
 function renderInputModeToggle(){
 const old=document.getElementById('inputModeToggle');
 if(old)old.remove();
 const label=state.cardInputMode==='typing'?'🔤 Выбрать из вариантов':'✏️ Ввести слово вручную';
-const html=`<div id="inputModeToggle" style="text-align:center;margin-top:.5rem">
-<button class="btn-sm" onclick="toggleCardInputMode()" style="font-size:.75rem">${label}</button>
-</div>`;
-// Якорим после #quizOptions, если он есть на экране (режим "выбор"), иначе
-// после #inputRow (режим "ввод") — иначе, вставляя всегда сразу за
-// #wordDisplay, кнопка оказалась бы ВЫШЕ вариантов ответа/поля ввода.
-const anchor=document.getElementById('quizOptions')||document.getElementById('inputRow');
-anchor.insertAdjacentHTML('afterend',html);
+const row=document.getElementById('replayAudioRow');
+if(!row)return;
+row.style.display='flex';
+row.insertAdjacentHTML('beforeend',`<button class="btn-sm" id="inputModeToggle" onclick="toggleCardInputMode()">${label}</button>`);
 }
 
 function toggleCardInputMode(){
@@ -3358,6 +3498,14 @@ fb.innerHTML=`✓ Правильно! Прогресс: ${streak}/${STREAK_TO_LE
 fb.className='feedback wrong';
 fb.innerHTML=`✗ Неправильно. Правильно: <strong>${w.kz}</strong> — ${w.ru}. Счётчик сброшен.`;
 }
+// УБРАНО (по просьбе пользователя): зелёный/красный блок "✓ Правильно!.../
+// ✗ Неправильно..." с текстом прогресса — пользователь посчитал его лишним
+// на экране. Логика/текст выше НЕ удалены (используются в других местах,
+// например #wordTranslation и статистика ниже), просто сам блок #feedback
+// теперь скрыт через display:none. Чтобы вернуть — достаточно убрать эту
+// строку. Перевод слова (#wordTranslation, "📖 слово — перевод") НЕ трогали,
+// он остаётся видимым как раньше.
+fb.style.display='none';
 document.getElementById('wordExample').style.display='block';
 document.getElementById('wordExample').innerHTML=`<strong>Казахский:</strong> ${w.example_kz}<br><strong>Русский:</strong> ${w.example_ru}`;
 // Заметный перевод слова сразу под примерами (вместо мелкой строки внизу
@@ -3633,7 +3781,10 @@ showNextWord();
 
 function setMode(m){
 state.mode=m;
-document.querySelectorAll('.mode-tabs button').forEach(b=>b.classList.remove('active'));
+// ИСПРАВЛЕНО: переключатель переехал в компактную "таблетку"
+// (.mode-tabs-compact / .mode-tab-c) — селектор обновлён, чтобы снятие/
+// установка класса active по-прежнему находило нужные кнопки.
+document.querySelectorAll('.mode-tabs-compact button').forEach(b=>b.classList.remove('active'));
 document.getElementById('mode'+m).classList.add('active');
 const quizEl=document.getElementById('quizOptions');
 if(quizEl)quizEl.remove();
@@ -4799,6 +4950,7 @@ loadOpenRouterSettings();
 updateStats();
 renderWeekGrid();
 initQueue();
+positionStickyNextBar();
 
 </script>
 </body>
