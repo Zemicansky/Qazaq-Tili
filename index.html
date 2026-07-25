@@ -1063,6 +1063,41 @@ input.s-pass:focus{border-color:var(--blue)}
 .more-item:active{transform:scale(.93)}
 .more-item.active-more{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
 
+/* ── Панель "Все слова" (вкладка Темы) ────────────────────────────────
+   Тот же bottom-sheet паттерн, что и #moreSheet, но со своим более высоким
+   max-height и внутренним скроллом, т.к. список слов может быть длинным
+   (вся база или большая тема), а сам sheet должен оставаться в пределах
+   экрана на телефоне. См. openAllWordsSheet()/closeAllWordsSheet(). */
+#allWordsOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;backdrop-filter:blur(2px)}
+#allWordsSheet{
+  display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--bg2);border-radius:24px 24px 0 0;
+  border-top:2px solid var(--border);z-index:401;
+  padding:1rem .9rem;
+  padding-bottom:max(1.25rem,env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .28s cubic-bezier(.22,.61,.36,1);
+  max-width:480px;margin:0 auto;
+  max-height:82vh;flex-direction:column;
+}
+.aw-header{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.6rem;flex:none}
+.aw-title{font-weight:800;font-size:.95rem;color:var(--text)}
+.aw-close{background:var(--bg3);border:none;color:var(--text2);width:30px;height:30px;border-radius:50%;font-size:1rem;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
+.aw-filter-row{display:flex;gap:.4rem;margin-bottom:.6rem;flex:none}
+.aw-filter-row select{flex:1;background:var(--bg3);border:2px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:.45rem .5rem;font-size:.78rem;font-weight:700;font-family:inherit}
+.aw-count{font-size:.72rem;color:var(--text3);font-weight:700;margin-bottom:.4rem;flex:none}
+.aw-list{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.aw-group-title{font-size:.7rem;color:var(--accent);font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin:.7rem 0 .25rem;position:sticky;top:0;background:var(--bg2);padding:.15rem 0}
+.aw-group-title:first-child{margin-top:0}
+.aw-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .1rem;border-bottom:1px solid var(--border)}
+.aw-item:last-child{border-bottom:none}
+.aw-item .kz{font-weight:700;color:var(--text);flex:1;font-size:.85rem}
+.aw-item .ru{color:var(--text2);font-size:.76rem;text-align:right;max-width:38%}
+.aw-item button{background:none;border:none;cursor:pointer;font-size:.9rem;padding:.15rem .3rem;border-radius:6px;flex-shrink:0}
+.aw-item button:hover{background:var(--bg3)}
+.aw-badge{font-size:.6rem;padding:.08rem .35rem;border-radius:8px;font-weight:800;flex-shrink:0}
+.aw-badge.learned{background:var(--green-bg);color:var(--green-dark)}
+.aw-badge.learning{background:var(--blue-bg);color:var(--blue)}
+
 /* ── SESSION REVIEW ────────────────────────────────────────── */
 .session-review{
   background:linear-gradient(135deg,var(--accent),var(--blue));
@@ -1260,12 +1295,43 @@ input.s-pass:focus{border-color:var(--blue)}
 <!-- TOPICS SECTION -->
 <div id="sec-topics" class="section">
   <div class="card">
+    <!-- Кнопка "Все слова" — переставлена в самый верх карточки (по просьбе
+         пользователя): при большом числе тем список topicsGrid длинный, и
+         кнопка внизу карточки уезжала за пределы видимой области экрана,
+         пока пользователь не долистает до конца. Теперь видна сразу. -->
+    <div style="margin-bottom:.75rem">
+      <button class="btn-sm" style="width:100%" onclick="openAllWordsSheet()">📖 Все слова</button>
+    </div>
     <p class="card-title">Выберите тему</p>
     <div class="topics-grid" id="topicsGrid"></div>
-    <div style="margin-top:1rem;text-align:center">
-      <button class="btn btn-next" style="display:inline-block;width:100%" onclick="startTopicTraining()">Начать тренировку →</button>
+    <div style="margin-top:1rem">
+      <button class="btn btn-next" style="width:100%" onclick="startTopicTraining()">Начать тренировку →</button>
     </div>
   </div>
+</div>
+
+<!-- Панель "Все слова" — список слов темы/всей базы с озвучкой и статусом.
+     См. openAllWordsSheet()/closeAllWordsSheet()/renderAllWordsList(). -->
+<div id="allWordsOverlay" onclick="closeAllWordsSheet()"></div>
+<div id="allWordsSheet">
+  <div class="sheet-handle"></div>
+  <div class="aw-header">
+    <div class="aw-title" id="awTitle">Все слова</div>
+    <button class="aw-close" onclick="closeAllWordsSheet()">✕</button>
+  </div>
+  <div class="aw-filter-row">
+    <select id="awTopicFilter" onchange="renderAllWordsList()">
+      <option value="__all__">Все темы</option>
+    </select>
+    <select id="awStatusFilter" onchange="renderAllWordsList()">
+      <option value="all">Любой статус</option>
+      <option value="learned">✓ Выучено</option>
+      <option value="learning">В процессе</option>
+      <option value="new">Новые</option>
+    </select>
+  </div>
+  <div class="aw-count" id="awCount"></div>
+  <div class="aw-list" id="awList"></div>
 </div>
 
 <!-- DIALOGUES SECTION -->
@@ -3932,6 +3998,7 @@ showNextWord();
 }
 
 function setMode(m){
+if(state.mode===m)return; // клик по уже активному режиму — ничего не делаем
 state.mode=m;
 // ИСПРАВЛЕНО: переключатель переехал в компактную "таблетку"
 // (.mode-tabs-compact / .mode-tab-c) — селектор обновлён, чтобы снятие/
@@ -3942,7 +4009,24 @@ const quizEl=document.getElementById('quizOptions');
 if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');
 if(audioEl)audioEl.remove();
-showNextWord();
+// БАГФИКС (по просьбе пользователя): раньше здесь вызывался showNextWord(),
+// который берёт СЛЕДУЮЩЕЕ слово из очереди (state.queue.shift()) — то есть
+// простое переключение направления перевода (Рус→Каз / Каз→Рус) незаметно
+// "съедало" текущее слово и подменяло его новым. Особенно заметно было при
+// быстром/двойном клике по вкладкам режима: слово на карточке менялось,
+// хотя пользователь не отвечал и не просил следующее слово. Теперь смена
+// режима не трогает очередь и state.current — то же самое слово просто
+// перерисовывается в новом направлении (renderWord() сам показывает нужное
+// поле в зависимости от state.mode). renderWord() всегда рисует карточку
+// как "ещё не отвечена" (очищает #feedback, прячет #nextBtn и т.п.), поэтому
+// state.answered тоже сбрасывается в false: задание в новом направлении
+// (например было Каз→Рус, стало Рус→Каз) — это по сути другой вопрос про то
+// же слово, и на него можно ответить заново, без искусственного запрета.
+state.answered=false;
+state.hintLevel=0;
+state.hintUsed=false;
+state.cardInputMode='choice';
+renderWord();
 }
 
 function showSection(id){
@@ -4030,6 +4114,89 @@ const audioEl=document.getElementById('audioOptions');
 if(audioEl)audioEl.remove();
 showSection('train');
 showNextWord();
+}
+
+// ── Панель "Все слова" (вкладка Темы) ──────────────────────────────────
+// По запросу пользователя: возможность посмотреть список всех слов проекта,
+// не заходя в тренировку. Открывается кнопкой "📖 Все слова" рядом с
+// "Начать тренировку →". Если на момент открытия выбрана конкретная тема
+// (state.currentTopic), список сразу фильтруется по ней — иначе показываются
+// все слова базы, сгруппированные по темам. Фильтры темы/статуса внутри
+// панели позволяют дальше сузить список, не закрывая её.
+function openAllWordsSheet(){
+const sheet=document.getElementById('allWordsSheet');
+const overlay=document.getElementById('allWordsOverlay');
+// Список тем в select — перестраиваем каждый раз перед открытием, чтобы не
+// дублировать разметку и не тащить отдельное состояние синхронизации с TOPICS.
+const topicFilter=document.getElementById('awTopicFilter');
+topicFilter.innerHTML='<option value="__all__">Все темы</option>'+
+TOPICS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+// Предзаполняем фильтр темой, выбранной на экране "Темы" (если есть и это
+// не служебное значение "__all__"), чтобы кнопка ощущалась как "показать
+// слова именно этой темы", а не всегда сбрасывала выбор пользователя.
+topicFilter.value=(state.currentTopic&&state.currentTopic!=='__all__')?state.currentTopic:'__all__';
+document.getElementById('awStatusFilter').value='all';
+renderAllWordsList();
+sheet.style.display='flex';
+overlay.style.display='block';
+requestAnimationFrame(()=>{sheet.style.transform='translateY(0)'});
+}
+
+function closeAllWordsSheet(){
+const sheet=document.getElementById('allWordsSheet');
+const overlay=document.getElementById('allWordsOverlay');
+sheet.style.transform='translateY(100%)';
+setTimeout(()=>{sheet.style.display='none';overlay.style.display='none'},280);
+}
+
+function renderAllWordsList(){
+const topicId=document.getElementById('awTopicFilter').value;
+const statusFilter=document.getElementById('awStatusFilter').value;
+const titleEl=document.getElementById('awTitle');
+const listEl=document.getElementById('awList');
+const countEl=document.getElementById('awCount');
+
+let words=topicId==='__all__'?[...WORDS]:WORDS.filter(w=>w.topic===topicId);
+if(statusFilter!=='all')words=words.filter(w=>getWordStatus(w.id)===statusFilter);
+
+titleEl.textContent=topicId==='__all__'?'Все слова':(TOPICS.find(t=>t.id===topicId)?.name||'Все слова');
+countEl.textContent=`Найдено: ${words.length}`;
+
+if(words.length===0){
+listEl.innerHTML='<p style="color:var(--text3);font-size:.85rem;font-weight:600">Слов не найдено</p>';
+return;
+}
+
+function badgeFor(id){
+const status=getWordStatus(id);
+if(status==='learned')return'<span class="aw-badge learned">✓</span>';
+if(status==='learning')return'<span class="aw-badge learning">…</span>';
+return'';
+}
+
+function itemHtml(w){
+return`<div class="aw-item"><span class="kz">${escHtml(w.kz)}</span>${badgeFor(w.id)}<span class="ru">${escHtml(w.ru)}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">🔊</button></div>`;
+}
+
+// При просмотре конкретной темы список плоский (группировать нечем).
+// При просмотре "Все темы" — группируем по темам с подзаголовками, чтобы
+// длинный список было проще просматривать и ориентироваться в нём.
+if(topicId!=='__all__'){
+listEl.innerHTML=words.map(itemHtml).join('');
+}else{
+let html='';
+TOPICS.forEach(t=>{
+const topicWords=words.filter(w=>w.topic===t.id);
+if(topicWords.length===0)return;
+html+=`<div class="aw-group-title">${escHtml(t.name)} (${topicWords.length})</div>`+topicWords.map(itemHtml).join('');
+});
+// Слова без темы (если такие есть в базе) — отдельной группой в конце.
+const noTopicWords=words.filter(w=>!TOPICS.find(t=>t.id===w.topic));
+if(noTopicWords.length>0){
+html+=`<div class="aw-group-title">Без темы (${noTopicWords.length})</div>`+noTopicWords.map(itemHtml).join('');
+}
+listEl.innerHTML=html;
+}
 }
 
 function renderDialogues(){
