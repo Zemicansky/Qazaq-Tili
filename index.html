@@ -417,9 +417,20 @@ nav#mainNav{
    - цель выполнена: мягкий зелёный фон + зелёный текст
    - сегодня: белый/контрастный фон card + акцентная рамка по всей ячейке
    - сегодня И цель выполнена: зелёный фон (как у goal-met) + рамка */
+/* УЛУЧШЕНИЕ (по фидбэку "не нравится как выглядит панель"): раньше все 7
+   ячеек недели были одинаковым тусклым серым фоном (var(--bg3)) с тусклым
+   же текстом — панель выглядела плоской и невыразительной, "сегодня" почти
+   терялось среди остальных дней. Теперь: обычные дни — без заливки, только
+   тонкая граница и приглушённый текст (легче, воздушнее); "сегодня" —
+   заметная акцентная заливка сразу видна глазом; "цель выполнена" — мягкий
+   зелёный с иконкой-галочкой вместо просто цветного текста. Также убран
+   отдельный inline margin-bottom:1.5rem у блока в HTML — большой пустой
+   промежуток между панелью недели и тренажёром ниже создавался именно
+   комбинацией этого инлайн-отступа и отступа .goal-mode-row; расстояние
+   теперь задаётся один раз здесь, компактнее. */
 .week-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;
-  text-align:center;
+  display:grid;grid-template-columns:repeat(7,1fr);gap:.35rem;
+  text-align:center;margin-bottom:.85rem;
 }
 /* УЛУЧШЕНИЕ (визуал, логика не менялась): чисто декоративная доработка —
    плавные переходы между состояниями, лёгкая "приподнятость" карточки дня
@@ -427,32 +438,31 @@ nav#mainNav{
    вместо плоского цвета, и небольшая пульсация рамки у "сегодня", чтобы
    текущий день сразу считывался глазом на фоне остальных шести ячеек. */
 .week-day{
-  padding:.4rem .05rem;border-radius:10px;
-  background:var(--bg3);border:1.5px solid transparent;
+  padding:.45rem .05rem;border-radius:12px;
+  background:transparent;border:1.5px solid var(--border);
   font-size:.6rem;font-weight:700;color:var(--text3);
   display:flex;flex-direction:column;align-items:center;
-  min-height:38px;justify-content:center;gap:.2rem;
+  min-height:40px;justify-content:center;gap:.25rem;
   transition:background .3s ease,border-color .3s ease,color .3s ease,
              box-shadow .3s ease,transform .15s ease;
 }
-.week-day .day-name{color:inherit;font-size:.56rem;font-weight:700;letter-spacing:.2px;opacity:.75}
-.week-day .day-val{font-size:.8rem;font-weight:800;color:inherit;line-height:1}
+.week-day .day-name{color:inherit;font-size:.56rem;font-weight:700;letter-spacing:.3px;opacity:.7;text-transform:uppercase}
+.week-day .day-val{font-size:.85rem;font-weight:800;color:inherit;line-height:1}
 .week-day.goal-met{
-  background:linear-gradient(160deg,var(--accent-glow),var(--accent-glow) 60%,transparent);
-  color:var(--accent);
-  box-shadow:0 2px 10px var(--accent-glow);
+  background:var(--green-bg);border-color:var(--green);
+  color:var(--green-dark);
 }
 .week-day.today{
-  background:var(--card);border-color:var(--accent);color:var(--accent);
-  box-shadow:var(--shadow),0 0 0 3px var(--accent-glow);
+  background:var(--accent);border-color:var(--accent);color:#fff;
+  box-shadow:0 3px 10px var(--accent-glow);
   animation:weekTodayPulse 2.4s ease-in-out infinite;
 }
 .week-day.today.goal-met{
-  background:linear-gradient(160deg,var(--accent-glow),var(--accent-glow) 60%,transparent);
+  background:var(--accent);border-color:var(--accent);color:#fff;
 }
 @keyframes weekTodayPulse{
-  0%,100%{box-shadow:var(--shadow),0 0 0 3px var(--accent-glow)}
-  50%{box-shadow:var(--shadow),0 0 0 5px var(--accent-glow)}
+  0%,100%{box-shadow:0 3px 10px var(--accent-glow)}
+  50%{box-shadow:0 3px 14px var(--accent-glow)}
 }
 
 
@@ -484,7 +494,7 @@ nav#mainNav{
    без лишней сложности (никаких колец/иконок), просто аккуратнее. */
 .goal-mode-row{
   display:flex;flex-direction:column;gap:.75rem;
-  margin-bottom:1.1rem;
+  margin-bottom:.5rem;
   background:var(--card2);
   border-radius:var(--radius-sm);
   padding:.75rem .85rem;
@@ -571,14 +581,34 @@ nav#mainNav{
    компактного стиля (.btn-sm), выровнены по центру, с небольшим зазором
    между ними — не растягиваются на всю ширину. См. .utility-row в HTML/JS
    (renderWord(), renderInputModeToggle()). */
+/* БАГФИКС (по фидбэку "на некоторых устройствах в одну строку, на некоторых
+   криво ломается на 2"): причина — flex-wrap:wrap без явных правил для
+   самих кнопок. Перенос срабатывал только когда сумма реальных пиксельных
+   ширин двух кнопок (зависящих от системного шрифта/масштаба конкретного
+   устройства) превышала ширину ряда — то есть на разных экранах решение
+   "переносить или нет" принималось непредсказуемо, а если перенос всё же
+   происходил, вторая кнопка могла остаться прижатой к центру криво из-за
+   justify-content:center на неполном ряду. Теперь поведение одинаковое
+   везде: обе кнопки — гибкие элементы равной ширины (flex:1 1 0), которые
+   ужимают свой текст (white-space:normal только тут, до 2 строк) вместо
+   переноса всего ряда, и ряд всегда остаётся в одну строку по высоте. */
 .utility-row{
-  display:flex;justify-content:center;align-items:center;
-  gap:.5rem;margin-top:.5rem;flex-wrap:wrap;
+  display:flex;justify-content:center;align-items:stretch;
+  gap:.5rem;margin-top:.5rem;flex-wrap:nowrap;
 }
+.utility-row .btn-sm{
+  flex:1 1 0;min-width:0;
+  white-space:normal;line-height:1.25;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;
+}
+/* Если в ряду только одна кнопка (например режим Каз→Рус без переключателя
+   ввода), не растягиваем её на всю ширину — оставляем компактной. */
+.utility-row .btn-sm:only-child{flex:0 1 auto}
 
 /* ── WORD CARD ─────────────────────────────────────────────── */
 .word-card{
-  text-align:center;padding:1.5rem 1rem .8rem;
+  text-align:center;padding:1rem 1rem .8rem;
   position:relative;
 }
 .word-topic-chip{
@@ -1130,7 +1160,7 @@ input.s-pass:focus{border-color:var(--blue)}
        сегодня). Теперь это одна карточка: неделя сверху, сразу под ней —
        строка с целью/режимом, без видимой границы между ними. -->
   <div class="card">
-    <div class="week-grid" id="weekGrid" style="margin-bottom:1.5rem"></div>
+    <div class="week-grid" id="weekGrid"></div>
 
     <!-- ОБЪЕДИНЕНО (по просьбе пользователя): "Дневная цель" и переключатель
          режима (Рус→Каз / Каз→Рус) раньше были друг под другом, каждый на
@@ -1197,7 +1227,7 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div class="feedback" id="feedback"></div>
     <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
-    <button class="btn btn-skip" onclick="skipWord()" title="Слово не будет засчитано как выученное">Не знаю / Пропустить</button>
+    <button class="btn btn-skip" id="skipBtn" onclick="skipWord()" title="Слово не будет засчитано как выученное">Не знаю / Пропустить</button>
   </div>
 </div>
 
@@ -2978,7 +3008,39 @@ let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words
 const STORAGE_KEY='qazaq_tili_v2';
 
 function loadState(){
-try{const s=localStorage.getItem(STORAGE_KEY);if(s)state={...state,...JSON.parse(s)}}catch(e){}
+try{
+const s=localStorage.getItem(STORAGE_KEY);
+if(s){
+const saved=JSON.parse(s);
+// БАГФИКС (серьёзный, воспроизводится на телефоне): loadState() вызывается не
+// только при полной загрузке страницы, но и при каждом возврате видимости
+// вкладки/приложения (см. обработчик visibilitychange ниже) — например, когда
+// пользователь сворачивает приложение, отвечает на звонок, переключается в
+// другое приложение или просто блокирует экран прямо во время тренировки, ещё
+// НЕ ответив на текущее слово. Поля queue/current/answered/hintLevel/hintUsed/
+// cardInputMode обновляются только в памяти при переходе к следующему слову
+// (showNextWord()) и НЕ сохраняются в localStorage сразу — они попадают на диск
+// только вместе со следующим saveState() (обычно это происходит уже ПОСЛЕ ответа
+// на слово, см. updateWordProgress()). Из-за этого старый код здесь безусловно
+// подменял state.current/state.queue устаревшим снимком с диска (например, всё
+// ещё "тем самым" словом, что было ДО нажатия "Следующее слово"), при этом
+// сам экран не перерисовывался — пользователь продолжал видеть на экране одно
+// слово, а внутреннее состояние молча откатывалось на другое. Введённый ответ
+// при этом проверялся и засчитывался НЕ тому слову, что было показано на
+// экране, портя прогресс случайного другого слова. Теперь эти чисто сессионные/
+// временные поля из сохранённого снимка не переносятся вообще — они либо уже
+// верны в памяти (обычный случай — вкладка/приложение просто вернулись в фокус
+// посреди тренировки), либо будут заново выставлены initQueue()/showNextWord()
+// при обычной полной перезагрузке страницы (она и так вызывается ниже).
+delete saved.queue;
+delete saved.current;
+delete saved.answered;
+delete saved.hintLevel;
+delete saved.hintUsed;
+delete saved.cardInputMode;
+state={...state,...saved};
+}
+}catch(e){}
 const today=new Date().toDateString();
 if(state.daily.date!==today){
 const yesterday=new Date(Date.now()-86400000).toDateString();
@@ -3116,6 +3178,8 @@ hideStickyNext();
 const quizEl=document.getElementById('quizOptions');if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');if(audioEl)audioEl.remove();
 const toggleEl=document.getElementById('inputModeToggle');if(toggleEl)toggleEl.remove();
+// Пропускать здесь нечего — слов для показа нет, поэтому кнопка "Не знаю / Пропустить" тоже скрывается.
+const skipBtnSleep=document.getElementById('skipBtn');if(skipBtnSleep)skipBtnSleep.style.display='none';
 }
 
 function getHardWords(){
@@ -3170,8 +3234,21 @@ const w=state.current;
 const topic=TOPICS.find(t=>t.id===w.topic);
 document.getElementById('wordTopic').textContent=topic?topic.name:'';
 document.getElementById('wordExample').style.display='none';
-document.getElementById('feedback').className='feedback';
-document.getElementById('feedback').textContent='';
+// БАГФИКС: блок #feedback используется и для подсказки (showHint), и для
+// предупреждения об озвучке (showAudioWarning) — обе функции задают ему
+// НЕ через класс, а напрямую через style.background/color/display (см. их
+// код). Сброс одного только className здесь эти инлайн-стили не убирал,
+// поэтому если на предыдущей карточке успела показаться подсказка или
+// предупреждение "казахский голос недоступен", пустая жёлтая плашка молча
+// оставалась видна поверх новой карточки слова, пока пользователь не отвечал
+// (только тогда showFeedback() принудительно скрывает #feedback). Теперь при
+// показе новой карточки инлайн-стили сбрасываются полностью, а не только класс.
+const fbReset=document.getElementById('feedback');
+fbReset.className='feedback';
+fbReset.textContent='';
+fbReset.style.display='none';
+fbReset.style.background='';
+fbReset.style.color='';
 const trReset=document.getElementById('wordTranslation');
 if(trReset){trReset.style.display='none';trReset.textContent='';}
 document.getElementById('nextBtn').style.display='none';
@@ -3179,6 +3256,10 @@ hideStickyNext();
 document.getElementById('answerInput').value='';
 document.getElementById('answerInput').disabled=false;
 try{document.getElementById('answerInput').focus();}catch(e){}
+// БАГФИКС: показываем кнопку "Не знаю / Пропустить" заново для новой карточки —
+// она скрывается после ответа на предыдущее слово (см. checkAnswer/checkChoice/checkAudio).
+const skipBtnReset=document.getElementById('skipBtn');
+if(skipBtnReset)skipBtnReset.style.display='';
 
 const replayRow=document.getElementById('replayAudioRow');
 // Убираем переключатель "Ввести слово вручную" от предыдущей карточки —
@@ -3188,7 +3269,11 @@ if(toggleEl)toggleEl.remove();
 
 if(state.mode==='A'){
 document.getElementById('mainWord').textContent=w.ru;
-if(replayRow)document.getElementById('replayAudioBtn').style.display='none';
+// УЛУЧШЕНИЕ (по просьбе пользователя): раньше в режиме "Рус → Каз" кнопка
+// "Повторить аудио" была скрыта. Теперь она видна и здесь — playAudio()
+// всегда озвучивает state.current.kz (казахское слово), а в этом режиме
+// именно оно и есть правильный ответ, который пользователь хочет услышать.
+if(replayRow)document.getElementById('replayAudioBtn').style.display='inline-block';
 if(state.cardInputMode==='typing'){
 document.getElementById('inputRow').style.display='flex';
 document.getElementById('answerInput').placeholder='Введите перевод на казахском...';
@@ -3354,6 +3439,8 @@ b.style.pointerEvents='none';
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
+const skipBtnElChoice=document.getElementById('skipBtn');
+if(skipBtnElChoice)skipBtnElChoice.style.display='none';
 showStickyNext();
 const toggleEl=document.getElementById('inputModeToggle');
 if(toggleEl)toggleEl.remove();
@@ -3432,6 +3519,15 @@ showFeedback(countsAsCorrect,isTypo,wasHintAssisted);
 state.answered=true;
 document.getElementById('answerInput').disabled=true;
 document.getElementById('nextBtn').style.display='inline-block';
+// БАГФИКС: кнопка "Не знаю / Пропустить" раньше оставалась видимой и кликабельной
+// даже после того, как ответ на слово уже засчитан (нет ни одной строки кода,
+// которая бы её скрывала). Случайный клик по ней после ПРАВИЛЬНОГО ответа не
+// портил прогресс (skipWord() проверяет state.answered), но лишний раз возвращал
+// уже пройденное слово в конец очереди и молча убирал его из daily.answeredIds —
+// слово могло показаться ещё раз в той же сессии без всякой причины. Теперь
+// кнопка скрывается сразу после ответа, вместе с полем ввода/вариантами.
+const skipBtnEl=document.getElementById('skipBtn');
+if(skipBtnEl)skipBtnEl.style.display='none';
 showStickyNext();
 const toggleEl=document.getElementById('inputModeToggle');
 if(toggleEl)toggleEl.remove();
@@ -3470,6 +3566,8 @@ b.style.pointerEvents='none';
 updateWordProgress(state.current.id,isCorrect);
 showFeedback(isCorrect);
 document.getElementById('nextBtn').style.display='inline-block';
+const skipBtnElAudio=document.getElementById('skipBtn');
+if(skipBtnElAudio)skipBtnElAudio.style.display='none';
 showStickyNext();
 }
 
