@@ -472,37 +472,50 @@ nav#mainNav{
   border-radius:6px;transition:width .4s ease;min-width:0
 }
 
-/* ── GOAL + MODE ROW (объединено, по просьбе пользователя) ────
-   Раньше "Дневная цель" (заголовок + число + отдельная строка прогресс-бара)
-   и переключатель режима были друг под другом — вместе занимали много
-   вертикального места. Теперь одна строка: слева уменьшенная дневная цель
-   (короткая подпись + тонкий мини-прогресс-бар вместо толстого), справа —
-   компактный переключатель режима. См. .goal-mode-row в HTML.
-   ИСПРАВЛЕНО (по фидбэку "некрасиво"): раньше две кнопки режима "плавали"
-   отдельно друг от друга без общего фона — рядом с тонким прогресс-баром
-   это смотрелось разрозненно и неаккуратно (видно на скриншоте). Теперь
-   у переключателя есть общая подложка-капсула (как у исходного .mode-tabs),
-   просто уменьшенная, и выровнена по вертикали с прогресс-баром слева —
-   визуально оба элемента строки стоят на одной высоте и читаются как
-   единый компактный блок, а не два случайных предмета рядом. */
+/* ── GOAL + MODE ROW (редизайн по запросу "просто, но красиво") ────
+   Требование: цель дня и переключатель режимов остаются В ОДНОЙ строке,
+   но выглядят как единый аккуратный блок, а не два разрозненных элемента.
+   Решение: вся строка обёрнута в мягкую карточку-подложку (--card2) со
+   своим скруглением и паддингом — это визуально объединяет "Цель дня"
+   и переключатель режима в один модуль интерфейса, а не просто ставит их
+   рядом на общем фоне карточки тренировки. Прогресс-бар остался
+   горизонтальным (по фидбэку — "просто, как сейчас, но чище"), но стал
+   чуть толще, с более мягким скруглением и лёгким свечением заливки —
+   без лишней сложности (никаких колец/иконок), просто аккуратнее. */
 .goal-mode-row{
-  display:flex;align-items:center;gap:.7rem;
-  margin-bottom:.85rem;
+  display:flex;flex-direction:column;gap:.75rem;
+  margin-bottom:1.1rem;
+  background:var(--card2);
+  border-radius:var(--radius-sm);
+  padding:.75rem .85rem;
 }
 .goal-mode-row .goal-mini{
-  flex:1;min-width:0;
+  width:100%;
 }
 .goal-mode-row .goal-mini-label{
-  display:flex;align-items:center;justify-content:space-between;
-  font-size:.72rem;font-weight:700;color:var(--text2);
-  margin-bottom:.35rem;
+  display:flex;align-items:baseline;justify-content:space-between;
+  font-size:.74rem;font-weight:700;color:var(--text2);
+  margin-bottom:.45rem;
 }
-.goal-mode-row .goal-mini-label .done{color:var(--accent);font-weight:800}
+.goal-mode-row .goal-mini-label .done{
+  color:var(--accent);font-weight:800;font-size:.78rem;
+  font-variant-numeric:tabular-nums;
+}
 .goal-mode-row .progress-track{
-  height:7px;margin:0;
+  height:9px;margin:0;
+  background:var(--bg3);
 }
+.goal-mode-row .progress-fill{
+  box-shadow:0 0 8px var(--accent-glow);
+}
+/* Переключатель режимов теперь под целью дня (по просьбе пользователя),
+   на всю ширину, кнопки крупнее — было слишком компактно и мелко. */
 .goal-mode-row .mode-tabs-compact{
-  margin-bottom:0;flex-shrink:0;
+  margin-bottom:0;width:100%;
+  background:var(--bg3);
+}
+.goal-mode-row .mode-tabs-compact .mode-tab-c{
+  flex:1;
 }
 
 /* ── MODE SWITCH ───────────────────────────────────────────── */
@@ -539,10 +552,10 @@ nav#mainNav{
   padding:.2rem;flex-shrink:0;
 }
 .mode-tab-c{
-  padding:.32rem .65rem;
+  padding:.55rem .8rem;
   background:transparent;color:var(--text2);
   border:none;border-radius:16px;
-  font-size:.68rem;font-weight:800;cursor:pointer;
+  font-size:.78rem;font-weight:800;cursor:pointer;
   transition:all .18s;font-family:inherit;white-space:nowrap;
 }
 .mode-tab-c:active{transform:scale(.95)}
@@ -565,7 +578,7 @@ nav#mainNav{
 
 /* ── WORD CARD ─────────────────────────────────────────────── */
 .word-card{
-  text-align:center;padding:1.5rem 1rem 1rem;
+  text-align:center;padding:1.5rem 1rem .8rem;
   position:relative;
 }
 .word-topic-chip{
@@ -639,7 +652,7 @@ nav#mainNav{
 /* ── QUIZ OPTIONS ──────────────────────────────────────────── */
 .quiz-grid{
   display:grid;grid-template-columns:1fr 1fr;
-  gap:.5rem;margin-top:.65rem
+  gap:.5rem;margin-top:.4rem
 }
 .quiz-opt{
   padding:.7rem .6rem;
@@ -1117,7 +1130,7 @@ input.s-pass:focus{border-color:var(--blue)}
        сегодня). Теперь это одна карточка: неделя сверху, сразу под ней —
        строка с целью/режимом, без видимой границы между ними. -->
   <div class="card">
-    <div class="week-grid" id="weekGrid" style="margin-bottom:.9rem"></div>
+    <div class="week-grid" id="weekGrid" style="margin-bottom:1.5rem"></div>
 
     <!-- ОБЪЕДИНЕНО (по просьбе пользователя): "Дневная цель" и переключатель
          режима (Рус→Каз / Каз→Рус) раньше были друг под другом, каждый на
@@ -3324,7 +3337,7 @@ const options=shuffleArray([correct,...others.map(o=>o[field])].slice(0,4));
 const html=options.map(o=>`<button class="quiz-opt" data-value="${escHtml(o)}" data-correct="${escHtml(correct)}" onclick="checkChoice(this)">${escHtml(o)}</button>`).join('');
 let el=document.getElementById('quizOptions');
 if(el)el.remove();
-document.getElementById('wordDisplay').insertAdjacentHTML('afterend',`<div id="quizOptions" class="quiz-grid" style="margin-top:.65rem">${html}</div>`);
+document.getElementById('wordDisplay').insertAdjacentHTML('afterend',`<div id="quizOptions" class="quiz-grid" style="margin-top:.4rem">${html}</div>`);
 }
 
 function checkChoice(el){
