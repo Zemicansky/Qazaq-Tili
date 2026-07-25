@@ -493,9 +493,10 @@ nav#mainNav{
    чуть толще, с более мягким скруглением и лёгким свечением заливки —
    без лишней сложности (никаких колец/иконок), просто аккуратнее. */
 .goal-mode-row{
-  display:flex;flex-direction:column;gap:.75rem;
+  display:flex;flex-direction:column;gap:.7rem;
   margin-bottom:.5rem;
   background:var(--card2);
+  border:1px solid var(--border);
   border-radius:var(--radius-sm);
   padding:.75rem .85rem;
 }
@@ -505,27 +506,44 @@ nav#mainNav{
 .goal-mode-row .goal-mini-label{
   display:flex;align-items:baseline;justify-content:space-between;
   font-size:.74rem;font-weight:700;color:var(--text2);
-  margin-bottom:.45rem;
+  letter-spacing:.2px;
+  margin-bottom:.5rem;
 }
 .goal-mode-row .goal-mini-label .done{
-  color:var(--accent);font-weight:800;font-size:.78rem;
+  color:var(--accent);font-weight:800;font-size:.8rem;
   font-variant-numeric:tabular-nums;
 }
 .goal-mode-row .progress-track{
   height:9px;margin:0;
   background:var(--bg3);
+  border:1px solid var(--border);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.05);
 }
 .goal-mode-row .progress-fill{
   box-shadow:0 0 8px var(--accent-glow);
+  border-radius:6px;
 }
 /* Переключатель режимов теперь под целью дня (по просьбе пользователя),
-   на всю ширину, кнопки крупнее — было слишком компактно и мелко. */
+   на всю ширину, кнопки крупнее — было слишком компактно и мелко.
+   УЛУЧШЕНИЕ: неактивная кнопка раньше была абсолютно прозрачной — рядом с
+   яркой синей "таблеткой" активного режима она читалась как пустой текст,
+   а не как часть единого переключателя. Теперь у неактивной кнопки есть
+   тонкая собственная рамка и чуть более тёмный оттенок текста, поэтому
+   визуально видно, что это тоже кликабельный вариант переключателя, а не
+   фоновая подпись — при этом активная кнопка по-прежнему выделяется явно
+   заливкой и тенью. */
 .goal-mode-row .mode-tabs-compact{
   margin-bottom:0;width:100%;
   background:var(--bg3);
+  border:1px solid var(--border);
 }
 .goal-mode-row .mode-tabs-compact .mode-tab-c{
   flex:1;
+  border:1px solid transparent;
+  color:var(--text);
+}
+.goal-mode-row .mode-tabs-compact .mode-tab-c.active{
+  border-color:transparent;
 }
 
 /* ── MODE SWITCH ───────────────────────────────────────────── */
@@ -846,15 +864,16 @@ nav#mainNav{
 .topic-card{
   padding:.7rem .85rem;border:2px solid var(--border);
   border-radius:var(--radius-sm);cursor:pointer;
-  transition:all .18s;display:flex;align-items:center;
-  gap:.65rem;background:var(--card);
+  transition:all .18s;display:flex;flex-direction:column;
+  gap:.4rem;background:var(--card);
   box-shadow:0 1px 4px rgba(0,0,0,.05)
 }
+.topic-card .tc-row{display:flex;align-items:center;justify-content:space-between;gap:.65rem}
 .topic-card:active{transform:scale(.98)}
 .topic-card.active{border-color:var(--accent);background:var(--accent-glow)}
 .topic-card .tc-name,.topic-card .name{font-weight:800;font-size:.88rem;flex:1;color:var(--text)}
 .topic-card .tc-count,.topic-card .count{font-size:.72rem;color:var(--text2);white-space:nowrap}
-.topic-card .progress-bar{width:100%;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;flex:none;margin-top:.3rem;min-width:60px}
+.topic-card .progress-bar{width:100%;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;flex:none}
 .topic-card .progress-fill{height:100%;background:var(--accent);border-radius:3px}
 
 /* ── DICTIONARY ────────────────────────────────────────────── */
@@ -1370,6 +1389,7 @@ input.s-pass:focus{border-color:var(--blue)}
         <div class="settings-sub">Используется казахский голос браузера/ОС (kk-KZ), если он установлен на устройстве. Ключи сторонних сервисов не нужны.</div>
       </div>
     </div>
+    <div class="settings-sub">Прогресс хранится только в этом браузере. Чтобы не потерять его или перенести на другое устройство — скачайте файл резервной копии и сохраните его (например, в облачное хранилище файлов или почту).</div>
     <div class="settings-row">
       <div class="settings-label">Резервная копия</div>
       <button class="btn-sm" onclick="exportProgress()">📥 Скачать</button>
@@ -1382,6 +1402,7 @@ input.s-pass:focus{border-color:var(--blue)}
         <button class="btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Загрузить</button>
       </div>
     </div>
+    <div id="backupReminder" class="settings-sub" style="margin-top:-.3rem"></div>
     <div class="settings-row">
       <div class="settings-label">Сбросить прогресс</div>
       <button class="btn-sm btn-danger" onclick="resetProgress()">Сбросить</button>
@@ -1391,7 +1412,7 @@ input.s-pass:focus{border-color:var(--blue)}
 
 <!-- GRAMMAR SECTION -->
 <div id="sec-grammar" class="section">
-<div class="card" style="background:linear-gradient(135deg,var(--blue3),#7c3aed);border:none">
+<div class="card" style="background:linear-gradient(135deg,var(--blue),#7c3aed);border:none">
 <h2 style="color:white">Грамматика за 20 минут</h2>
 <p style="font-size:.9rem;opacity:.9;color:rgba(255,255,255,.85)">Эти 7 правил — 80% всего, что нужно для разговора. Всё объяснено на пальцах, с реальными примерами из жизни.</p>
 </div>
@@ -1479,7 +1500,7 @@ input.s-pass:focus{border-color:var(--blue)}
 
 <div class="card" style="border-left:3px solid var(--blue)">
 <h2>3. Мой/твой/его — всё одним суффиксом</h2>
-<div style="background:var(--blue-glow);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--blue);color:var(--text)">
+<div style="background:var(--blue-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--blue);color:var(--text)">
 <strong>Правило:</strong> В казахском нет слов «мой», «твой», «его». Вместо этого суффикс приклеивается к слову.
 </div>
 <p style="font-size:.9rem;margin-bottom:.5rem"><strong>Запомни 3 суффикса:</strong></p>
@@ -1645,8 +1666,7 @@ input.s-pass:focus{border-color:var(--blue)}
 • Muhamedowa, R. <em>Kazakh: A Comprehensive Grammar</em>. Routledge, 2016.<br>
 • Dotton, Z. &amp; Doyle Wagner, J. <em>A Grammar of Kazakh</em>. Duke University. <a href="https://slaviccenters.duke.edu/sites/slaviccenters.duke.edu/files/file-attachments/kazakh-grammar.pdf" target="_blank" rel="noopener" style="color:var(--blue)">PDF</a><br>
 • Krippes, K. <em>Kazakh (Qazaq) Grammatical Sketch with Affix List</em>, 1993. <a href="https://eric.ed.gov/?id=ED404842" target="_blank" rel="noopener" style="color:var(--blue)">ERIC ED404842</a><br>
-• <a href="https://en.wikipedia.org/wiki/Kazakh_language" target="_blank" rel="noopener" style="color:var(--blue)">Kazakh language — Wikipedia</a> (раздел «Grammar»/«Cases»)<br>
-Если заметите ошибку — это живой раздел, дайте знать, будем сверять и поправлять дальше.
+• <a href="https://en.wikipedia.org/wiki/Kazakh_language" target="_blank" rel="noopener" style="color:var(--blue)">Kazakh language — Wikipedia</a> (раздел «Grammar»/«Cases»)
 </p>
 </div>
 
@@ -3132,6 +3152,8 @@ return[...due,...shuffled];
 function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
 
 function initQueue(){
+state.topicSession=false;
+state.currentTopic=null;
 const due=getDueWords();
 state.queue=shuffleArray([...due]);
 if(state.queue.length===0){
@@ -3218,7 +3240,10 @@ if(bar)bar.classList.remove('show');
 }
 
 function showNextWord(){
-if(state.queue.length===0){initQueue();return}
+if(state.queue.length===0){
+if(state.topicSession){showTopicCompleted();return}
+initQueue();return
+}
 state.current=state.queue.shift();
 state.answered=false;
 state.hintLevel=0;
@@ -3226,6 +3251,22 @@ state.hintUsed=false;
 state.cardInputMode='choice';
 renderWord();
 updateStats();
+}
+
+function showTopicCompleted(){
+state.topicSession=false;
+document.getElementById('mainWord').textContent='🎉';
+document.getElementById('wordTopic').textContent='Тема пройдена';
+document.getElementById('inputRow').style.display='none';
+const quizEl=document.getElementById('quizOptions');if(quizEl)quizEl.remove();
+const audioEl=document.getElementById('audioOptions');if(audioEl)audioEl.remove();
+const toggleEl=document.getElementById('inputModeToggle');if(toggleEl)toggleEl.remove();
+document.getElementById('feedback').className='feedback correct';
+document.getElementById('feedback').style.display='';
+document.getElementById('feedback').textContent='Все слова этой темы пройдены. Можно выбрать другую тему или вернуться к обычной тренировке.';
+document.getElementById('nextBtn').style.display='none';
+hideStickyNext();
+const skipBtnEl=document.getElementById('skipBtn');if(skipBtnEl)skipBtnEl.style.display='none';
 }
 
 function renderWord(){
@@ -3956,11 +3997,11 @@ const grid=document.getElementById('topicsGrid');
 const allLearned=WORDS.filter(w=>getWordStatus(w.id)==='learned').length;
 const allTotal=WORDS.length;
 const allPct=allTotal?Math.round(allLearned/allTotal*100):0;
-const allCard=`<div class="topic-card${state.currentTopic==='__all__'?' active':''}" onclick="selectTopic('__all__')" style="grid-column:1/-1;border-color:var(--accent);background:${state.currentTopic==='__all__'?'var(--accent-glow)':'var(--card)'}"><div class="name">⭐ Все темы</div><div class="count">${allLearned}/${allTotal} выучено</div><div class="progress-bar" style="margin-top:.3rem"><div class="progress-fill" style="width:${allPct}%"></div></div></div>`;
+const allCard=`<div class="topic-card${state.currentTopic==='__all__'?' active':''}" onclick="selectTopic('__all__')" style="grid-column:1/-1;border-color:var(--accent);background:${state.currentTopic==='__all__'?'var(--accent-glow)':'var(--card)'}"><div class="tc-row"><div class="name">⭐ Все темы</div><div class="count">${allLearned}/${allTotal} выучено</div></div><div class="progress-bar"><div class="progress-fill" style="width:${allPct}%"></div></div></div>`;
 grid.innerHTML=allCard+TOPICS.map(t=>{
 const learned=WORDS.filter(w=>w.topic===t.id&&getWordStatus(w.id)==='learned').length;
 const total=WORDS.filter(w=>w.topic===t.id).length;
-return`<div class="topic-card${state.currentTopic===t.id?' active':''}" onclick="selectTopic('${t.id}')"><div class="name">${t.name}</div><div class="count">${learned}/${total} выучено</div><div class="progress-bar" style="margin-top:.3rem"><div class="progress-fill" style="width:${total?Math.round(learned/total*100):0}%"></div></div></div>`;
+return`<div class="topic-card${state.currentTopic===t.id?' active':''}" onclick="selectTopic('${t.id}')"><div class="tc-row"><div class="name">${t.name}</div><div class="count">${learned}/${total} выучено</div></div><div class="progress-bar"><div class="progress-fill" style="width:${total?Math.round(learned/total*100):0}%"></div></div></div>`;
 }).join('');
 }
 
@@ -3973,6 +4014,7 @@ function startTopicTraining(){
 if(!state.currentTopic){alert('Выберите тему');return}
 const topicWords=state.currentTopic==='__all__'?[...WORDS]:WORDS.filter(w=>w.topic===state.currentTopic);
 state.queue=shuffleArray([...topicWords]);
+state.topicSession=true;
 // БАГФИКС: в отличие от nextWord()/skipWord()/setMode(), эта функция не
 // убирала старые кнопки #quizOptions/#audioOptions режима "Каз → Рус (аудио)"
 // перед показом нового слова. Если пользователь только что ответил на вопрос
@@ -3987,8 +4029,6 @@ if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');
 if(audioEl)audioEl.remove();
 showSection('train');
-document.querySelectorAll('#mainNav button').forEach(b=>b.classList.remove('active'));
-document.querySelectorAll('#mainNav button')[0].classList.add('active');
 showNextWord();
 }
 
@@ -4433,12 +4473,12 @@ const accuracy=Object.values(state.words).reduce((a,w)=>a+(w.total?w.correct:0),
 const totalAttempts=Object.values(state.words).reduce((a,w)=>a+(w.total||0),0);
 const pct=totalAttempts?Math.round(accuracy/totalAttempts*100):0;
 document.getElementById('statsGrid').innerHTML=`
-<div class="stat-card"><div class="val">${total}</div><div class="label">Всего слов</div></div>
-<div class="stat-card"><div class="val">${learned}</div><div class="label">Выучено</div></div>
-<div class="stat-card"><div class="val">${learning}</div><div class="label">В процессе</div></div>
-<div class="stat-card"><div class="val">${newW}</div><div class="label">Новых</div></div>
-<div class="stat-card"><div class="val">${pct}%</div><div class="label">Точность</div></div>
-<div class="stat-card"><div class="val">${totalAttempts}</div><div class="label">Всего попыток</div></div>
+<div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Всего слов</div></div>
+<div class="stat-card"><div class="stat-val">${learned}</div><div class="stat-lbl">Выучено</div></div>
+<div class="stat-card"><div class="stat-val">${learning}</div><div class="stat-lbl">В процессе</div></div>
+<div class="stat-card"><div class="stat-val">${newW}</div><div class="stat-lbl">Новых</div></div>
+<div class="stat-card"><div class="stat-val">${pct}%</div><div class="stat-lbl">Точность</div></div>
+<div class="stat-card"><div class="stat-val">${totalAttempts}</div><div class="stat-lbl">Всего попыток</div></div>
 `;
 renderWeekGrid();
 let tpHtml='';
@@ -4446,7 +4486,7 @@ TOPICS.forEach(t=>{
 const tw=WORDS.filter(w=>w.topic===t.id);
 const tl=tw.filter(w=>getWordStatus(w.id)==='learned').length;
 const pct=tw.length?Math.round(tl/tw.length*100):0;
-tpHtml+=`<div style="margin-bottom:.5rem"><div style="display:flex;justify-content:space-between;font-size:.85rem"><span>${t.name}</span><span>${tl}/${tw.length}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+tpHtml+=`<div class="topic-progress-item"><div class="topic-progress-row"><span>${t.name}</span><span>${tl}/${tw.length}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
 });
 document.getElementById('topicProgress').innerHTML=tpHtml;
 }
@@ -4533,7 +4573,11 @@ document.getElementById('dailyLabel').textContent=`${done} / ${goal} слов${s
 function updateStreakDisplay(){
 const el=document.getElementById('streakDisplay');
 if(el){
-if(state.streak>0){el.innerHTML=`<span style="font-size:1.5rem">🔥</span><span style="font-size:1.1rem;font-weight:700">${state.streak}</span><span style="font-size:.75rem;color:var(--muted)">дн. подряд</span>`;el.style.display='flex'}
+if(state.streak>0){
+el.innerHTML=`<span class="fire">🔥</span><span class="days" id="streakDays">${state.streak}</span>`;
+el.style.display='flex';
+el.title=state.streak+' дн. подряд';
+}
 else{el.style.display='none'}
 }
 }
@@ -4578,6 +4622,31 @@ alert('Прогресс сброшен.');
 }
 }
 
+const LAST_BACKUP_STORAGE='qazaq_tili_last_backup';
+
+function updateBackupReminder(){
+const el=document.getElementById('backupReminder');
+if(!el)return;
+let ts=null;
+try{ts=localStorage.getItem(LAST_BACKUP_STORAGE)}catch(e){}
+if(!ts){
+el.textContent='Резервной копии ещё не было. Прогресс хранится только в этом браузере — если очистить его данные или сменить устройство, прогресс будет потерян без сохранённого файла.';
+el.style.color='var(--orange)';
+return;
+}
+const days=Math.floor((Date.now()-Number(ts))/86400000);
+if(days<=0){
+el.textContent='Последняя резервная копия: сегодня.';
+el.style.color='var(--text2)';
+}else if(days<14){
+el.textContent=`Последняя резервная копия: ${days} дн. назад.`;
+el.style.color='var(--text2)';
+}else{
+el.textContent=`Последняя резервная копия: ${days} дн. назад. Рекомендуем сохранить свежий файл — прогресс хранится только в этом браузере.`;
+el.style.color='var(--orange)';
+}
+}
+
 function exportProgress(){
 try{
 const payload={app:'qazaq-tili',exportedAt:new Date().toISOString(),state};
@@ -4591,6 +4660,8 @@ document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
 URL.revokeObjectURL(url);
+try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
+updateBackupReminder();
 }catch(e){
 alert('Не удалось создать файл резервной копии.');
 }
@@ -4604,8 +4675,21 @@ reader.onload=()=>{
 try{
 const parsed=JSON.parse(reader.result);
 const incoming=parsed&&parsed.state?parsed.state:parsed;
-if(!incoming||typeof incoming!=='object'||!incoming.words){
-alert('Файл не похож на резервную копию прогресса этого приложения.');
+// БАГФИКС (валидация импорта): раньше проверялось только наличие поля
+// words — любой JSON со случайным полем "words" (например, от совсем
+// другого приложения или частично повреждённый файл) проходил проверку
+// и полностью заменял прогресс, даже если остальная структура (daily,
+// settings) была битой или отсутствовала. Теперь проверяем форму
+// ключевых полей, от которых реально зависит работа приложения —
+// это не защищает от абсолютно любой порчи данных, но отсекает явно
+// не подходящие файлы до того, как они попадут в localStorage.
+const isValid=incoming&&typeof incoming==='object'
+&&incoming.words&&typeof incoming.words==='object'&&!Array.isArray(incoming.words)
+&&incoming.daily&&typeof incoming.daily==='object'
+&&typeof incoming.daily.goalCount==='number'
+&&incoming.settings&&typeof incoming.settings==='object';
+if(!isValid){
+alert('Файл не похож на резервную копию прогресса этого приложения — проверьте, что выбран правильный файл.');
 return;
 }
 if(!confirm('Текущий прогресс будет заменён данными из файла. Продолжить?'))return;
@@ -4624,6 +4708,8 @@ initQueue();
 // не переключился бы на вкладку и обратно.
 renderWeekGrid();
 renderDialogues();
+try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
+updateBackupReminder();
 alert('Прогресс восстановлен из файла.');
 }catch(e){
 alert('Не удалось прочитать файл. Убедитесь, что это корректный JSON, экспортированный из этого приложения.');
@@ -5019,11 +5105,25 @@ if(ml)ml.href=murl;
 
 loadState();
 // Блокировка зума по двойному тапу (iOS Safari игнорирует CSS touch-action для этого жеста)
+// БАГФИКС (переключение режимов Рус→Каз/Каз→Рус при быстрых тапах): раньше
+// preventDefault() срабатывал на ЛЮБОМ втором touchend в пределах 300мс от
+// предыдущего — независимо от того, по какому элементу тапнули. Из-за этого при
+// быстром переключении режимов (например тап по "Рус→Каз", затем сразу по
+// "Каз→Рус") второй тап засчитывался как "двойной тап для зума": preventDefault()
+// на touchend отменял синтетический click-эвент, который браузер обычно генерирует
+// следом, — поэтому onclick="setMode(...)" у второй кнопки просто не срабатывал, и
+// режим визуально "не переключался", пока пользователь не тапал ещё раз спустя
+// паузу. Теперь двойным тапом (блокируем зум) считается только повторный тап ПО
+// ТОМУ ЖЕ элементу — обычная быстрая навигация по разным кнопкам/вкладкам больше
+// не глотается.
 let lastTouchEndTime=0;
+let lastTouchTarget=null;
 document.addEventListener('touchend',(e)=>{
 const now=Date.now();
-if(now-lastTouchEndTime<=300){e.preventDefault()}
+const target=e.target;
+if(now-lastTouchEndTime<=300&&target===lastTouchTarget){e.preventDefault()}
 lastTouchEndTime=now;
+lastTouchTarget=target;
 },{passive:false});
 // Блокировка зума жестом сведения пальцев (на случай если CSS touch-action не сработал)
 document.addEventListener('touchmove',(e)=>{
@@ -5062,6 +5162,7 @@ updateStats();
 renderWeekGrid();
 initQueue();
 positionStickyNextBar();
+updateBackupReminder();
 
 </script>
 </body>
