@@ -328,14 +328,84 @@ header{
 .logo-text span{font-size:.68rem;color:var(--text2);font-weight:600;display:block}
 
 .header-actions{display:flex;align-items:center;gap:.5rem}
+/* ── Стрик-бейдж (кнопка "N дней подряд") ──────────────────────────────
+   Улучшено визуально: градиентный фон вместо плоской заливки, мягкое
+   свечение цвета огня, лёгкая "живая" пульсация пламени, короткая
+   анимация всплытия числа при увеличении стрика (класс .bump добавляется
+   и снимается через updateStreakDisplay()), и отдельное "тревожное"
+   состояние .at-risk — более холодный/приглушённый цвет с медленной
+   пульсацией рамки, когда стрик уже начат, но сегодняшняя дневная цель
+   ещё не выполнена (то есть стрик можно потерять до конца дня). Бейдж
+   остаётся кликабельным — открывает мини-попап со статистикой стрика
+   (см. #streakPopover / toggleStreakPopover()). */
 .streak-badge{
-  display:flex;align-items:center;gap:.3rem;
-  background:var(--orange-bg);border:2px solid var(--orange);
-  padding:.25rem .6rem;border-radius:20px;
+  position:relative;
+  display:flex;align-items:center;gap:.35rem;
+  background:linear-gradient(135deg,#ffb347,var(--orange));
+  border:2px solid transparent;
+  padding:.28rem .7rem;border-radius:20px;
+  box-shadow:0 2px 10px rgba(255,150,0,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  cursor:pointer;user-select:none;
+  transition:transform .15s ease,box-shadow .25s ease;
 }
-.streak-badge .fire{font-size:1rem}
-.streak-badge .days{font-size:.9rem;font-weight:800;color:var(--orange)}
-.streak-badge .label{font-size:.6rem;color:var(--orange);font-weight:700;display:none}
+.streak-badge:active{transform:scale(.94)}
+.streak-badge .fire{font-size:1.05rem;display:inline-block;animation:streakFireFlicker 2.4s ease-in-out infinite}
+.streak-badge .days{font-size:.92rem;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.streak-badge .label{font-size:.6rem;color:#fff;font-weight:700;display:none}
+.streak-badge.bump .days{animation:streakBump .45s cubic-bezier(.34,1.56,.64,1)}
+.streak-badge.bump{animation:streakGlowPulse .6s ease-out}
+.streak-badge.at-risk{
+  background:linear-gradient(135deg,var(--card2),var(--card));
+  border:2px solid var(--orange);
+  box-shadow:0 0 0 0 rgba(255,150,0,.45);
+  animation:streakAtRiskPulse 2.2s ease-in-out infinite;
+}
+.streak-badge.at-risk .fire{animation:streakFireFlicker 2.4s ease-in-out infinite,streakFireDim 2.2s ease-in-out infinite}
+.streak-badge.at-risk .days{color:var(--orange);text-shadow:none}
+@keyframes streakFireFlicker{
+  0%,100%{transform:scale(1) rotate(0deg)}
+  25%{transform:scale(1.08) rotate(-3deg)}
+  50%{transform:scale(.96) rotate(2deg)}
+  75%{transform:scale(1.05) rotate(-1deg)}
+}
+@keyframes streakFireDim{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes streakBump{
+  0%{transform:scale(1)}
+  35%{transform:scale(1.55)}
+  60%{transform:scale(.9)}
+  100%{transform:scale(1)}
+}
+@keyframes streakGlowPulse{
+  0%{box-shadow:0 2px 10px rgba(255,150,0,.35),inset 0 1px 0 rgba(255,255,255,.35)}
+  40%{box-shadow:0 2px 22px rgba(255,150,0,.75),inset 0 1px 0 rgba(255,255,255,.35)}
+  100%{box-shadow:0 2px 10px rgba(255,150,0,.35),inset 0 1px 0 rgba(255,255,255,.35)}
+}
+@keyframes streakAtRiskPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,150,0,.45)}
+  50%{box-shadow:0 0 0 6px rgba(255,150,0,0)}
+}
+/* Попап со статистикой стрика при клике на бейдж */
+.streak-popover{
+  position:absolute;top:calc(100% + 10px);right:0;
+  width:230px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius-sm);box-shadow:var(--shadow-md);
+  padding:.9rem;z-index:200;
+  opacity:0;pointer-events:none;transform:translateY(-6px) scale(.96);
+  transition:opacity .18s ease,transform .18s ease;
+}
+.streak-popover.open{opacity:1;pointer-events:auto;transform:translateY(0) scale(1)}
+.streak-popover::before{
+  content:'';position:absolute;top:-6px;right:18px;
+  width:12px;height:12px;background:var(--card);
+  border-left:1px solid var(--border);border-top:1px solid var(--border);
+  transform:rotate(45deg);
+}
+.streak-popover .sp-title{font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:.6rem;display:flex;align-items:center;gap:.3rem}
+.streak-popover .sp-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--text2);padding:.35rem 0;border-top:1px solid var(--border)}
+.streak-popover .sp-row:first-of-type{border-top:none}
+.streak-popover .sp-row b{color:var(--text);font-weight:800}
+.streak-popover .sp-note{margin-top:.6rem;font-size:.7rem;line-height:1.4;color:var(--orange);font-weight:600;background:var(--orange-bg);padding:.5rem .6rem;border-radius:var(--radius-xs)}
+.streak-popover .sp-note.ok{color:var(--green-dark);background:var(--green-bg)}
 
 .theme-toggle{
   width:34px;height:34px;border-radius:50%;border:2px solid var(--border);
@@ -1010,6 +1080,15 @@ input.s-num{
   color:var(--text);font-family:inherit;font-weight:700;outline:none;
 }
 input.s-num:focus{border-color:var(--blue)}
+/* Оценка "N слов в неделю / M слов в месяц" под полем "Слов в день" в
+   Настройках — считается на лету, см. updateGoalEstimate() в JS. */
+.goal-estimate{
+  width:100%;font-size:.74rem;line-height:1.5;color:var(--text2);font-weight:600;
+  background:var(--card2);border-radius:var(--radius-xs);
+  padding:.5rem .65rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+}
+.goal-estimate b{color:var(--accent);font-weight:800}
+.goal-estimate .ge-sep{color:var(--border2)}
 input.s-pass{
   width:100%;padding:.55rem .7rem;
   border:2px solid var(--border);border-radius:var(--radius-xs);
@@ -1145,9 +1224,10 @@ input.s-pass:focus{border-color:var(--blue)}
       </div>
     </div>
     <div class="header-actions">
-      <div id="streakDisplay" class="streak-badge" style="display:none">
+      <div id="streakDisplay" class="streak-badge" style="display:none" onclick="toggleStreakPopover(event)">
         <span class="fire">🔥</span>
         <span class="days" id="streakDays">0</span>
+        <div id="streakPopover" class="streak-popover" onclick="event.stopPropagation()"></div>
       </div>
       <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Сменить тему">🌙</button>
     </div>
@@ -1420,9 +1500,17 @@ input.s-pass:focus{border-color:var(--blue)}
              там тоже проверка val>=5), а value — начальное отображаемое число,
              оно должно совпадать с реальным дефолтом состояния. -->
         <input type="number" id="dailyGoalInput" value="20" min="5" max="100"
-          class="s-num" onchange="saveCustomDailyGoal()">
+          class="s-num" onchange="saveCustomDailyGoal()" oninput="clampDailyGoalInput();updateGoalEstimate()">
         <span style="font-size:.8rem;color:var(--text2);font-weight:700">слов</span>
       </div>
+    </div>
+    <!-- Оценка "слов в месяц/неделю" при текущем дневном лимите — считается на
+         лету от значения поля #dailyGoalInput (oninput, ещё до сохранения), чтобы
+         пользователь видел эффект настройки сразу, не дожидаясь onchange/blur.
+         См. updateGoalEstimate(). Неделя = 7 дней, месяц условно = 30 дней
+         (примерная оценка, а не точный календарный расчёт). -->
+    <div class="settings-row" id="goalEstimateRow" style="padding-top:0">
+      <div class="goal-estimate" id="goalEstimateText"></div>
     </div>
     <div class="settings-row settings-col">
       <div>
@@ -4392,7 +4480,7 @@ const DIALOGUES=[
 // не создавай отдельный счётчик мимо updateWordProgress() — всегда проводи
 // результат через неё, иначе снова разъедутся "Дневная цель" и getDueWords().
 // ──────────────────────────────────────────────────────────────────────
-let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 const STORAGE_KEY='qazaq_tili_v2';
 
 function loadState(){
@@ -4446,11 +4534,15 @@ const yesterday=new Date(Date.now()-86400000).toDateString();
 const goalWasMet=(state.daily.goalCount||0)>=(state.settings.dailyGoal||20);
 if(state.daily.date===yesterday&&goalWasMet){state.streak=(state.streak||0)+1}
 else if(state.daily.date!==today){state.streak=0}
+// Лучший стрик (рекорд) — отдельное поле, которое никогда не обнуляется,
+// используется в попапе статистики (см. toggleStreakPopover()).
+if((state.streak||0)>(state.bestStreak||0))state.bestStreak=state.streak;
 state.daily={goalCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[]};
 state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 saveState();
 }
 if(!state.streak)state.streak=0;
+if(!state.bestStreak)state.bestStreak=state.streak||0;
 if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
 // Миграция со старого (багованного) поля newCount на новое goalCount: раньше
@@ -4462,6 +4554,24 @@ if(state.daily.goalCount===undefined)state.daily.goalCount=0;
 if(state.daily.repeatCount===undefined)state.daily.repeatCount=0;
 if(state.daily.errorCount===undefined)state.daily.errorCount=0;
 if('newCount' in state.daily)delete state.daily.newCount;
+// БАГФИКС/ЗАЩИТА (жёсткий лимит 100 слов/день): поле dailyGoal обрезается
+// в UI (см. saveCustomDailyGoal/clampDailyGoalInput), но state.settings
+// может попасть в приложение и в обход этого поля — например через
+// "Импорт прогресса" (importProgress) из чужого/ручного отредактированного
+// JSON-файла с любым значением dailyGoal. Раньше ни один из читателей
+// dailyGoal (getDueWords, updateDailyProgress, renderWeekGrid,
+// updateStreakDisplay и т.д.) не проверял верхнюю/нижнюю границу — они
+// просто использовали то, что лежит в state.settings.dailyGoal, с защитой
+// только от undefined/0 (||20). Централизуем ограничение здесь, в
+// loadState() — она выполняется при каждой полной загрузке и сразу после
+// импорта, поэтому одного места достаточно, чтобы лимит 5..100 соблюдался
+// везде в приложении, а не только при ручном вводе в Настройках.
+if(state.settings){
+const g=parseInt(state.settings.dailyGoal);
+if(!Number.isFinite(g)||g<5)state.settings.dailyGoal=20;
+else if(g>100)state.settings.dailyGoal=100;
+else state.settings.dailyGoal=g;
+}
 // Режим "Аудио" (C) временно скрыт из интерфейса (кнопка display:none, см. HTML
 // выше) — если у вернувшегося пользователя в сохранённом состоянии почему-то
 // остался mode:'C' (например, с прошлой сессии до этого изменения), переключаем
@@ -5321,6 +5431,22 @@ showNextWord();
 
 function setMode(m){
 if(state.mode===m)return; // клик по уже активному режиму — ничего не делаем
+// БАГФИКС (найдено при ревизии тренажёра): если слово на текущей карточке
+// УЖЕ отвечено (state.answered===true — результат показан, streak/goalCount
+// уже засчитаны через updateWordProgress), переключение режима раньше всё
+// равно происходило: класс .active перевешивался на новую вкладку, а
+// renderWord() всегда перерисовывает карточку как "неотвеченную"
+// (очищает #feedback, заново показывает поле ввода/варианты, разблокирует
+// answerInput) — независимо от state.answered. Из-за этого можно было
+// ответить на одно и то же слово ВТОРОЙ раз за один и тот же показ: streak
+// слова мог продвинуться (или обнулиться при ошибке) дважды подряд от
+// одного визита карточки, портя интервалы повторения. Простое "не звать
+// renderWord()" тоже не годится — тогда вкладка подсветилась бы новой, а
+// карточка так и осталась бы показывать старый язык/результат, вводя в
+// заблуждение. Поэтому переключение режима теперь просто игнорируется,
+// пока текущая карточка не пройдена — нажмите "Следующее слово", и новое
+// слово откроется уже в выбранном направлении.
+if(state.answered)return;
 state.mode=m;
 // ИСПРАВЛЕНО: переключатель переехал в компактную "таблетку"
 // (.mode-tabs-compact / .mode-tab-c) — селектор обновлён, чтобы снятие/
@@ -5339,11 +5465,8 @@ if(audioEl)audioEl.remove();
 // хотя пользователь не отвечал и не просил следующее слово. Теперь смена
 // режима не трогает очередь и state.current — то же самое слово просто
 // перерисовывается в новом направлении (renderWord() сам показывает нужное
-// поле в зависимости от state.mode). renderWord() всегда рисует карточку
-// как "ещё не отвечена" (очищает #feedback, прячет #nextBtn и т.п.), поэтому
-// state.answered тоже сбрасывается в false: задание в новом направлении
-// (например было Каз→Рус, стало Рус→Каз) — это по сути другой вопрос про то
-// же слово, и на него можно ответить заново, без искусственного запрета.
+// поле в зависимости от state.mode). Это применимо только пока карточка
+// ещё не отвечена (см. защиту state.answered выше).
 state.answered=false;
 state.hintLevel=0;
 state.hintUsed=false;
@@ -6081,17 +6204,95 @@ const goalMetToday=(state.daily.goalCount||0)>=goal;
 return goalMetToday?(state.streak||0)+1:(state.streak||0);
 }
 
+// БАГФИКС/УЛУЧШЕНИЕ (кнопка стрика сверху): раньше innerHTML бейджа
+// перезаписывался целиком на каждый вызов, из-за чего терялся элемент
+// #streakPopover (он лежит внутри того же контейнера) — попап при клике
+// просто пропадал бы из DOM после первого же обновления цифры. Теперь
+// обновляется только текст числа и класс .fire/.days, а сам попап не
+// трогается. Также добавлена короткая "bump"-анимация числа при реальном
+// увеличении стрика (не при каждом рендере — иначе анимация дёргалась бы
+// на каждый updateStats()) и класс .at-risk, когда стрик уже идёт, но
+// сегодняшняя дневная цель ещё не выполнена (стрик можно потерять до
+// конца дня, если не позаниматься).
+let _lastRenderedStreak=null;
 function updateStreakDisplay(){
 const el=document.getElementById('streakDisplay');
-if(el){
+if(!el)return;
 const displayStreak=getDisplayStreak();
+const fireEl=el.querySelector('.fire');
+const daysEl=el.querySelector('.days');
 if(displayStreak>0){
-el.innerHTML=`<span class="fire">🔥</span><span class="days" id="streakDays">${displayStreak}</span>`;
+if(daysEl)daysEl.textContent=displayStreak;
+else{
+const span=document.createElement('span');
+span.className='days';span.id='streakDays';span.textContent=displayStreak;
+el.insertBefore(span,el.querySelector('.streak-popover'));
+}
+if(!fireEl){
+const f=document.createElement('span');f.className='fire';f.textContent='🔥';
+el.insertBefore(f,el.firstChild);
+}
 el.style.display='flex';
-el.title=displayStreak+' дн. подряд';
+const goal=state.settings.dailyGoal||20;
+const goalMetToday=(state.daily.goalCount||0)>=goal;
+// "Под угрозой": стрик уже есть (был вчера/раньше), но сегодня цель ещё
+// не выполнена — то есть если не позаниматься сегодня, стрик обнулится.
+const atRisk=!goalMetToday&&(state.streak||0)>0;
+el.classList.toggle('at-risk',atRisk);
+el.title=atRisk
+?`${displayStreak} дн. подряд — позанимайтесь сегодня, чтобы не потерять стрик!`
+:`${displayStreak} дн. подряд`;
+if(_lastRenderedStreak!==null&&displayStreak>_lastRenderedStreak){
+el.classList.remove('bump');
+void el.offsetWidth; // рестарт CSS-анимации
+el.classList.add('bump');
 }
-else{el.style.display='none'}
+_lastRenderedStreak=displayStreak;
+renderStreakPopover();
 }
+else{
+el.style.display='none';
+el.classList.remove('at-risk','bump');
+_lastRenderedStreak=0;
+}
+}
+
+// Содержимое попапа со статистикой стрика — рекорд, статус сегодняшней
+// цели и короткая мотивационная подсказка.
+function renderStreakPopover(){
+const pop=document.getElementById('streakPopover');
+if(!pop)return;
+const displayStreak=getDisplayStreak();
+const best=Math.max(state.bestStreak||0,displayStreak);
+const goal=state.settings.dailyGoal||20;
+const done=state.daily.goalCount||0;
+const goalMetToday=done>=goal;
+const noteHtml=goalMetToday
+?`<div class="sp-note ok">✓ Цель на сегодня выполнена — стрик в безопасности!</div>`
+:`<div class="sp-note">🔥 Осталось ${Math.max(0,goal-done)} слов, чтобы сохранить стрик сегодня</div>`;
+pop.innerHTML=`
+<div class="sp-title">🔥 Серия дней</div>
+<div class="sp-row"><span>Текущий стрик</span><b>${displayStreak} дн.</b></div>
+<div class="sp-row"><span>Рекорд</span><b>${best} дн.</b></div>
+<div class="sp-row"><span>Сегодня пройдено</span><b>${done} / ${goal}</b></div>
+${noteHtml}
+`;
+}
+
+function toggleStreakPopover(e){
+if(e)e.stopPropagation();
+const pop=document.getElementById('streakPopover');
+if(!pop)return;
+const willOpen=!pop.classList.contains('open');
+pop.classList.toggle('open',willOpen);
+if(willOpen){
+renderStreakPopover();
+document.addEventListener('click',closeStreakPopoverOnce,{once:true});
+}
+}
+function closeStreakPopoverOnce(){
+const pop=document.getElementById('streakPopover');
+if(pop)pop.classList.remove('open');
 }
 
 function saveSettings(){
@@ -6099,13 +6300,68 @@ state.settings.speed=parseFloat(document.getElementById('defaultSpeed').value);
 saveState();
 }
 
+// БАГФИКС/УЛУЧШЕНИЕ (по просьбе пользователя — жёсткий лимит 100 слов/день):
+// раньше значение ВЫШЕ 100 просто игнорировалось (if(val>=5&&val<=100)) —
+// пользователь мог ввести, например, "500", число оставалось в поле как
+// есть, ничего не сохранялось и не менялось на экране, что выглядело как
+// "ничего не произошло" без объяснения причины. Теперь любое введённое
+// значение выше 100 автоматически обрезается до 100 прямо в поле ввода
+// (visуально сразу видно, что 100 — потолок), и именно 100 сохраняется.
+// Значения меньше 5 по-прежнему не сохраняются (нижняя граница цели),
+// поле в этом случае просто не обновляет state.settings.dailyGoal, пока
+// пользователь не введёт число в допустимом диапазоне 5..100.
 function saveCustomDailyGoal(){
-const val=parseInt(document.getElementById('dailyGoalInput').value);
-if(val>=5&&val<=100){
+const input=document.getElementById('dailyGoalInput');
+let val=parseInt(input.value);
+if(Number.isFinite(val)&&val>100){
+val=100;
+input.value=100;
+}
+if(Number.isFinite(val)&&val>=5&&val<=100){
 state.settings.dailyGoal=val;
 saveState();
 updateDailyProgress();
 }
+updateGoalEstimate();
+}
+
+// Обрезает значение поля "Слов в день" до потолка 100 ПРЯМО во время
+// набора (oninput), а не только при потере фокуса — так число выше 100
+// физически невозможно увидеть в поле дольше одного кадра, даже при вставке
+// (paste) многозначного числа или наборе "999" посимвольно.
+function clampDailyGoalInput(){
+const input=document.getElementById('dailyGoalInput');
+if(!input)return;
+if(input.value==='')return; // не мешаем стирать поле перед вводом нового числа
+const val=parseInt(input.value);
+if(Number.isFinite(val)&&val>100)input.value=100;
+}
+
+// Показывает "≈ N слов в неделю / M слов в месяц" под полем дневной цели.
+// Вызывается на oninput (сразу при наборе, до валидации/сохранения) и на
+// showSettings()/загрузке — поэтому читает значение прямо из поля ввода, а
+// не из state.settings.dailyGoal (иначе цифра не менялась бы, пока
+// пользователь печатает).
+// БАГФИКС: раньше любое введённое число МЕНЬШЕ 5 (например 1, 2, 3, 4)
+// отбрасывалось той же проверкой, что и по-настоящему невалидный ввод
+// (val<5||val>100 → откат на старое сохранённое значение) — то есть при
+// вводе "1"-"4" оценка молча продолжала показывать предыдущее число вместо
+// пересчёта под реально введённое значение, хотя 5 — это ограничение на
+// СОХРАНЕНИЕ цели (см. saveCustomDailyGoal), а не на то, какое число можно
+// ввести и увидеть его оценку. Теперь для оценки годится любое
+// положительное целое 1..100 — откат на сохранённое значение происходит
+// только при по-настоящему пустом/нечисловом/отрицательном вводе, а число
+// выше 100 обрезается до 100 (см. также жёсткий лимит в saveCustomDailyGoal).
+function updateGoalEstimate(){
+const el=document.getElementById('goalEstimateText');
+if(!el)return;
+const input=document.getElementById('dailyGoalInput');
+let val=input?parseInt(input.value):NaN;
+if(!Number.isFinite(val)||val<1)val=state.settings.dailyGoal||20;
+if(val>100)val=100;
+const perWeek=val*7;
+const perMonth=val*30;
+el.innerHTML=`≈ <b>${perWeek}</b> слов/нед. <span class="ge-sep">·</span> ≈ <b>${perMonth}</b> слов/мес.`;
 }
 
 function resetProgress(){
@@ -6116,7 +6372,7 @@ localStorage.removeItem(STORAGE_KEY);
 // Если завтра снова понадобится добавить/переименовать поле дневной статистики —
 // правь во всех местах, где создаётся "чистый" state.daily: основное
 // объявление, loadState(), resetProgress(), importProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 saveState();
 updateStats();
 initQueue();
@@ -6211,7 +6467,7 @@ localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
 // и сама выполнит миграцию полей (см. loadState). Форма daily здесь всё
 // равно должна совпадать с основным объявлением state — см. примечание в
 // resetProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 loadState();
 updateStats();
 initQueue();
@@ -6220,6 +6476,13 @@ initQueue();
 // не переключился бы на вкладку и обратно.
 renderWeekGrid();
 renderDialogues();
+// Синхронизируем поле "Слов в день" и оценку под ним с уже обрезанным
+// (5..100) значением после loadState() — иначе после импорта файла с,
+// например, dailyGoal:500 поле в Настройках продолжало бы показывать
+// старое отображаемое число до следующего открытия вкладки Настроек.
+const dgInput=document.getElementById('dailyGoalInput');
+if(dgInput)dgInput.value=state.settings.dailyGoal||20;
+updateGoalEstimate();
 try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
 updateBackupReminder();
 alert('Прогресс восстановлен из файла.');
@@ -6312,8 +6575,16 @@ const input=document.getElementById('chatInput');
 if(input)input.focus();
 }
 
+// БЕЗОПАСНОСТЬ (ужесточено при ревизии): раньше экранировались только &, <, > —
+// этого достаточно для текущих мест использования (везде вставка в ТЕКСТОВОЕ
+// содержимое элемента, не в HTML-атрибут, поэтому кавычки сами по себе не
+// давали способа вырваться из разметки). Тем не менее приводим функцию к
+// тому же полному набору экранируемых символов, что и escHtml() — так любое
+// будущее использование (например, если кто-то вставит результат в
+// data-атрибут по аналогии с renderChoiceOptions) останется безопасным по
+// умолчанию, без необходимости помнить контекст каждый раз заново.
 function escapeChatHtml(s){
-return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 // Преобразует базовую markdown-разметку (жирный текст) в HTML.
@@ -6669,6 +6940,7 @@ updateDailyProgress();
 });
 document.getElementById('defaultSpeed').value=state.settings.speed;
 document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||20;
+updateGoalEstimate();
 loadOpenRouterSettings();
 updateStats();
 renderWeekGrid();
