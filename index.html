@@ -1331,7 +1331,7 @@ input.s-pass:focus{border-color:var(--blue)}
 
     <div class="answer-area">
       <div class="answer-input-row" id="inputRow">
-        <input type="text" class="answer-input" id="answerInput"
+        <input type="text" class="answer-input" id="answerInput" maxlength="100"
           placeholder="Введите перевод..." autocomplete="off"
           onkeydown="if(event.key==='Enter')checkAnswer()">
         <button class="btn btn-check" onclick="checkAnswer()">✓</button>
@@ -1818,9 +1818,9 @@ input.s-pass:focus{border-color:var(--blue)}
 <p style="font-size:.78rem;color:var(--text2);line-height:1.7">
 Правила выше проверены и приведены в соответствие со следующими грамматиками казахского языка:<br>
 • Muhamedowa, R. <em>Kazakh: A Comprehensive Grammar</em>. Routledge, 2016.<br>
-• Dotton, Z. &amp; Doyle Wagner, J. <em>A Grammar of Kazakh</em>. Duke University. <a href="https://slaviccenters.duke.edu/sites/slaviccenters.duke.edu/files/file-attachments/kazakh-grammar.pdf" target="_blank" rel="noopener" style="color:var(--blue)">PDF</a><br>
-• Krippes, K. <em>Kazakh (Qazaq) Grammatical Sketch with Affix List</em>, 1993. <a href="https://eric.ed.gov/?id=ED404842" target="_blank" rel="noopener" style="color:var(--blue)">ERIC ED404842</a><br>
-• <a href="https://en.wikipedia.org/wiki/Kazakh_language" target="_blank" rel="noopener" style="color:var(--blue)">Kazakh language — Wikipedia</a> (раздел «Grammar»/«Cases»)
+• Dotton, Z. &amp; Doyle Wagner, J. <em>A Grammar of Kazakh</em>. Duke University. <a href="https://slaviccenters.duke.edu/sites/slaviccenters.duke.edu/files/file-attachments/kazakh-grammar.pdf" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">PDF</a><br>
+• Krippes, K. <em>Kazakh (Qazaq) Grammatical Sketch with Affix List</em>, 1993. <a href="https://eric.ed.gov/?id=ED404842" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">ERIC ED404842</a><br>
+• <a href="https://en.wikipedia.org/wiki/Kazakh_language" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">Kazakh language — Wikipedia</a> (раздел «Grammar»/«Cases»)
 </p>
 </div>
 
@@ -4578,7 +4578,19 @@ else state.settings.dailyGoal=g;
 // на 'A', иначе ни одна кнопка режима не подсветится как активная.
 if(state.mode==='C')state.mode='A';
 // Миграция со старой версии: раньше прогресс слова хранился только в level (без streak/lastSeen)
-Object.values(state.words||{}).forEach(ws=>{
+// БАГФИКС/ЗАЩИТА (аудит): раньше цикл ожидал, что ЛЮБОЕ значение state.words[id] —
+// это объект прогресса. Специально сформированный (или просто повреждённый)
+// файл импорта мог пройти валидацию importProgress() (она проверяет только,
+// что incoming.words — объект, но не форму его ЗНАЧЕНИЙ) и положить в
+// state.words запись вида null/строка/число. Тогда ws.streak=... падало с
+// TypeError вне try/catch — а loadState() вызывается не только при загрузке
+// страницы, но и на каждый visibilitychange (см. обработчик в конце файла),
+// поэтому приложение переставало открываться вообще, до ручной очистки
+// localStorage. Теперь такие битые записи просто отбрасываются, а не роняют
+// всё приложение.
+if(!state.words||typeof state.words!=='object')state.words={};
+Object.entries(state.words).forEach(([id,ws])=>{
+if(!ws||typeof ws!=='object'||Array.isArray(ws)){delete state.words[id];return}
 if(ws.streak===undefined)ws.streak=Math.min(ws.level||0,STREAK_TO_LEARN);
 if(ws.lastSeen===undefined)ws.lastSeen=0;
 if(ws.nextReview===undefined)ws.nextReview=0;
@@ -4619,7 +4631,11 @@ const ws=state.words[w.id];
 if(!ws){
 if(state.daily.goalCount<goal)newWords.push(w);
 }else{
-if(ws.nextReview<=now)due.push(w);
+// ЗАЩИТА: nextReview может отсутствовать/быть не числом у ещё не
+// мигрированной или битой записи — трактуем это как "готово к показу",
+// а не роняем сравнение в NaN (NaN<=now всегда false, слово просто
+// никогда бы не попало due).
+if((ws.nextReview||0)<=now)due.push(w);
 }
 });
 const remaining=goal-state.daily.goalCount;
@@ -4659,7 +4675,7 @@ showNextWord();
 }
 
 function showSleepingMessage(){
-const next=Object.values(state.words).filter(w=>w.nextReview>Date.now()).sort((a,b)=>a.nextReview-b.nextReview)[0];
+const next=Object.values(state.words).filter(w=>w&&typeof w==='object'&&w.nextReview>Date.now()).sort((a,b)=>a.nextReview-b.nextReview)[0];
 const minutesLeft=next?Math.max(1,Math.ceil((next.nextReview-Date.now())/60000)):null;
 document.getElementById('mainWord').textContent='😴';
 document.getElementById('wordTopic').textContent='Все слова сейчас отдыхают';
@@ -5004,7 +5020,11 @@ return prev[b.length];
 
 function checkAnswer(){
 if(state.answered||!state.current)return;
-const input=document.getElementById('answerInput').value.trim().toLowerCase();
+// ЗАЩИТА: HTML maxlength="100" не спасает от программной вставки значения
+// (например, через консоль или автозаполнение) — здесь дополнительно
+// обрезаем строку перед тяжёлым посимвольным сравнением (levenshteinDistance),
+// чтобы вставка мегабайтного текста не подвешивала вкладку.
+const input=document.getElementById('answerInput').value.trim().toLowerCase().slice(0,200);
 // Направление проверки зависит от режима: "Рус → Каз" (A) — вводим казахское
 // слово, "Каз → Рус" (B) — вводим русское. Раньше режим B был только с выбором
 // из вариантов, теперь тоже свободный ввод, поэтому проверяем по нужному полю.
@@ -5647,7 +5667,7 @@ listEl.innerHTML=html;
 function renderDialogues(){
 const list=document.getElementById('dialoguesList');
 list.innerHTML=DIALOGUES.map(d=>{
-const lines=d.lines.map(l=>`<div class="dialogue-line"><span class="speaker">${l.s}:</span> ${l.t}</div>`).join('');
+const lines=d.lines.map(l=>`<div class="dialogue-line"><span class="speaker">${escHtml(l.s)}:</span> ${escHtml(l.t)}</div>`).join('');
 // БАГФИКС: renderDialogues() перерисовывает список заново при каждом входе на
 // вкладку "Диалоги" (см. showSection('dialogues')) — кнопки ответов создавались
 // "с нуля", без классов correct-opt/wrong-opt, даже если пользователь уже
@@ -5661,9 +5681,9 @@ const alreadyAnswered=!!state.dialogueState[d.id];
 const opts=d.a.map((o,i)=>{
 const cls=alreadyAnswered&&i===d.c?'dopt correct-opt':'dopt';
 const dis=alreadyAnswered?'disabled style="pointer-events:none"':'';
-return`<button class="${cls}" onclick="checkDialogue(${d.id},${i},this)" ${dis}>${o}</button>`;
+return`<button class="${cls}" onclick="checkDialogue(${d.id},${i},this)" ${dis}>${escHtml(o)}</button>`;
 }).join('');
-return`<div class="dialogue-item"><h3>${d.id}. ${d.title}</h3>${lines}<div class="dialogue-quiz"><p style="font-weight:600;margin-bottom:.3rem">Вопрос: ${d.q}</p><div id="dq${d.id}">${opts}</div></div></div>`;
+return`<div class="dialogue-item"><h3>${d.id}. ${escHtml(d.title)}</h3>${lines}<div class="dialogue-quiz"><p style="font-weight:600;margin-bottom:.3rem">Вопрос: ${escHtml(d.q)}</p><div id="dq${d.id}">${opts}</div></div></div>`;
 }).join('');
 }
 
@@ -5692,7 +5712,7 @@ localHtml=`<div style="font-size:.72rem;color:var(--text2);font-weight:800;text-
 found.map(w=>{
 const status=getWordStatus(w.id);
 const badge=status==='learned'?'<span style="font-size:.65rem;background:var(--green-bg);color:var(--green-dark);padding:.1rem .4rem;border-radius:8px;font-weight:800">✓ выучено</span>':status==='learning'?'<span style="font-size:.65rem;background:var(--blue-bg);color:var(--blue);padding:.1rem .4rem;border-radius:8px;font-weight:800">в процессе</span>':'';
-return`<div class="search-item"><span class="kz">${w.kz} — ${w.ru} ${badge}</span><span class="ru">${TOPICS.find(t=>t.id===w.topic)?.name||''}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">🔊</button></div>`;
+return`<div class="search-item"><span class="kz">${escHtml(w.kz)} — ${escHtml(w.ru)} ${badge}</span><span class="ru">${escHtml(TOPICS.find(t=>t.id===w.topic)?.name||'')}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">🔊</button></div>`;
 }).join('');
 }else{
 localHtml='<p style="color:var(--text3);font-size:.85rem">Не найдено в вашей базе</p>';
@@ -6022,7 +6042,7 @@ if(results&&results.length>0){
 let sourceLink='';
 if(sourceLabel==='ru.wiktionary.org'||sourceLabel==='kk.wiktionary.org'){
 const articleUrl=`https://${sourceLabel}/wiki/${encodeURIComponent(query)}`;
-sourceLink=` — <a href="${articleUrl}" target="_blank" rel="noopener" style="color:var(--blue,#3b82f6);text-decoration:underline">проверить статью</a>`;
+sourceLink=` — <a href="${articleUrl}" target="_blank" rel="noopener noreferrer" style="color:var(--blue,#3b82f6);text-decoration:underline">проверить статью</a>`;
 }else if(sourceLabel==='kk.wiktionary.org (поиск)'){
 sourceLink='';
 }
@@ -6451,8 +6471,15 @@ const incoming=parsed&&parsed.state?parsed.state:parsed;
 // ключевых полей, от которых реально зависит работа приложения —
 // это не защищает от абсолютно любой порчи данных, но отсекает явно
 // не подходящие файлы до того, как они попадут в localStorage.
+// БАГФИКС/ЗАЩИТА (аудит): раньше проверялась только форма КОНТЕЙНЕРА words
+// (что это объект, не массив), но не форма его отдельных значений — файл вида
+// {"words":{"5":null}} проходил эту проверку и позже ронял loadState() (см.
+// комментарий у миграции state.words). Теперь дополнительно проверяем, что
+// каждая запись внутри words — это тоже объект (а не null/строка/число/массив).
+const wordsShapeOk=incoming&&incoming.words&&typeof incoming.words==='object'&&!Array.isArray(incoming.words)
+&&Object.values(incoming.words).every(w=>w&&typeof w==='object'&&!Array.isArray(w));
 const isValid=incoming&&typeof incoming==='object'
-&&incoming.words&&typeof incoming.words==='object'&&!Array.isArray(incoming.words)
+&&wordsShapeOk
 &&incoming.daily&&typeof incoming.daily==='object'
 &&typeof incoming.daily.goalCount==='number'
 &&incoming.settings&&typeof incoming.settings==='object';
