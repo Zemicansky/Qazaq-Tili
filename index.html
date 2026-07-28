@@ -329,46 +329,112 @@ header{
 
 .header-actions{display:flex;align-items:center;gap:.5rem}
 /* ── Стрик-бейдж (кнопка "N дней подряд") ──────────────────────────────
-   Улучшено визуально: градиентный фон вместо плоской заливки, мягкое
-   свечение цвета огня, лёгкая "живая" пульсация пламени, короткая
-   анимация всплытия числа при увеличении стрика (класс .bump добавляется
-   и снимается через updateStreakDisplay()), и отдельное "тревожное"
-   состояние .at-risk — более холодный/приглушённый цвет с медленной
-   пульсацией рамки, когда стрик уже начат, но сегодняшняя дневная цель
-   ещё не выполнена (то есть стрик можно потерять до конца дня). Бейдж
-   остаётся кликабельным — открывает мини-попап со статистикой стрика
-   (см. #streakPopover / toggleStreakPopover()). */
+   РЕДИЗАЙН (по просьбе пользователя — "слишком просто сделано"):
+   1) Огонёк теперь сидит в собственном круглом "медальоне" с кольцом
+      прогресса вокруг него (conic-gradient на псевдоэлементе ::before),
+      которое на лету показывает % выполнения сегодняшней цели — тот же
+      прогресс, что и на прогресс-баре ниже, но прямо в шапке, без
+      необходимости открывать попап. Кольцо заполняется через CSS-переменную
+      --ring, которую выставляет updateStreakDisplay() инлайн-стилем.
+   2) Капсула стала темнее и "глубже" (тёмный подслой + цветной контур и
+      многослойное свечение) вместо плоского светлого градиента — так
+      огонь и число читаются контрастнее на любой теме.
+   3) Добавлена градация по значимости серии — 4 тира начиная с 3, 7, 30
+      дней (класс .tier-2/.tier-3/.tier-4, назначается в JS), каждый со
+      своей цветовой гаммой (оранжевый → красно-розовый → фиолетовый →
+      золотой), чтобы длинная серия выглядела заметно "весомее" короткой,
+      а не одинаковым огоньком все 365 дней.
+   4) .at-risk остаётся отдельным приглушённым состоянием поверх любого
+      тира — предупреждает, что стрик можно потерять сегодня.
+   Бейдж остаётся кликабельным — открывает мини-попап со статистикой
+   стрика (см. #streakPopover / toggleStreakPopover()). */
 .streak-badge{
+  --ring:0deg;
+  --tier-a:#ff9d3d;--tier-b:var(--orange);
   position:relative;
-  display:flex;align-items:center;gap:.35rem;
-  background:linear-gradient(135deg,#ffb347,var(--orange));
-  border:2px solid transparent;
-  padding:.28rem .7rem;border-radius:20px;
-  box-shadow:0 2px 10px rgba(255,150,0,.35),inset 0 1px 0 rgba(255,255,255,.35);
+  display:flex;align-items:center;gap:.42rem;
+  background:linear-gradient(135deg,#2a1608,#1a0e05);
+  border:1px solid rgba(255,159,61,.35);
+  padding:.24rem .74rem .24rem .26rem;border-radius:22px;
+  box-shadow:0 2px 12px rgba(255,120,0,.28),inset 0 1px 0 rgba(255,255,255,.06);
   cursor:pointer;user-select:none;
-  transition:transform .15s ease,box-shadow .25s ease;
+  transition:transform .15s ease,box-shadow .3s ease,border-color .3s ease;
 }
 .streak-badge:active{transform:scale(.94)}
-.streak-badge .fire{font-size:1.05rem;display:inline-block;animation:streakFireFlicker 2.4s ease-in-out infinite}
-.streak-badge .days{font-size:.92rem;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.streak-badge .fire-ring{
+  position:relative;
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  background:conic-gradient(var(--tier-a) var(--ring),rgba(255,255,255,.14) 0);
+  transition:background .5s ease;
+}
+.streak-badge .fire-ring::before{
+  content:'';position:absolute;inset:3px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.1),rgba(0,0,0,.18));
+}
+.streak-badge .fire{
+  position:relative;z-index:1;
+  font-size:.92rem;line-height:1;display:inline-block;
+  animation:streakFireFlicker 2.4s ease-in-out infinite;
+  filter:drop-shadow(0 0 4px rgba(255,150,50,.7));
+}
+.streak-badge .days{font-size:1rem;font-weight:900;color:#fff;letter-spacing:-.2px;text-shadow:0 1px 3px rgba(0,0,0,.4)}
 .streak-badge .label{font-size:.6rem;color:#fff;font-weight:700;display:none}
 .streak-badge.bump .days{animation:streakBump .45s cubic-bezier(.34,1.56,.64,1)}
 .streak-badge.bump{animation:streakGlowPulse .6s ease-out}
+/* ── Тиры серии (7 уровней) ─────────────────────────────────────────
+   Пороги и цвета назначаются в JS (см. STREAK_TIERS в updateStreakDisplay):
+   1-2 дн. база (оранжевый) → 3 дн. tier-2 (красно-розовый) → 7 дн. tier-3
+   (фиолетовый) → 30 дн. tier-4 (золото) → 60 дн. tier-5 (изумрудный) →
+   120 дн. tier-6 (сапфировый) → 240 дн. tier-7 (розовый неон) → 365 дн.
+   tier-8 (радужный/платиновый, анимированный градиент). Каждый уровень
+   уникален по цвету, чтобы длинная серия ощутимо выделялась. */
+.streak-badge.tier-2{--tier-a:#ff6b4a;border-color:rgba(255,107,74,.45);box-shadow:0 2px 14px rgba(255,90,60,.32),inset 0 1px 0 rgba(255,255,255,.06)}
+.streak-badge.tier-3{--tier-a:#c04dff;border-color:rgba(192,77,255,.5);box-shadow:0 2px 16px rgba(180,70,255,.38),inset 0 1px 0 rgba(255,255,255,.08)}
+.streak-badge.tier-4{--tier-a:#ffd23d;border-color:rgba(255,210,61,.55);box-shadow:0 2px 18px rgba(255,205,50,.42),inset 0 1px 0 rgba(255,255,255,.1)}
+.streak-badge.tier-4 .days{background:linear-gradient(135deg,#ffe89a,#ffb100);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.streak-badge.tier-5{--tier-a:#2fe6a0;border-color:rgba(47,230,160,.55);box-shadow:0 2px 18px rgba(40,220,150,.42),inset 0 1px 0 rgba(255,255,255,.1)}
+.streak-badge.tier-5 .days{background:linear-gradient(135deg,#b6ffe3,#20d69a);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.streak-badge.tier-6{--tier-a:#3d9bff;border-color:rgba(61,155,255,.55);box-shadow:0 2px 18px rgba(50,140,255,.42),inset 0 1px 0 rgba(255,255,255,.1)}
+.streak-badge.tier-6 .days{background:linear-gradient(135deg,#bfe0ff,#3d9bff);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.streak-badge.tier-7{--tier-a:#ff4dc4;border-color:rgba(255,77,196,.55);box-shadow:0 2px 20px rgba(255,60,190,.45),inset 0 1px 0 rgba(255,255,255,.12)}
+.streak-badge.tier-7 .days{background:linear-gradient(135deg,#ffc4ec,#ff4dc4);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
+.streak-badge.tier-8{
+  --tier-a:#ffd23d;
+  border-color:rgba(255,255,255,.6);
+  background:linear-gradient(135deg,#241a30,#150e1c);
+  box-shadow:0 2px 22px rgba(200,150,255,.5),inset 0 1px 0 rgba(255,255,255,.15);
+  animation:streakRainbowBorder 6s linear infinite;
+}
+.streak-badge.tier-8 .fire-ring{background:conic-gradient(from 0deg,#ff4d4d,#ffd23d,#2fe6a0,#3d9bff,#c04dff,#ff4dc4,#ff4d4d)}
+.streak-badge.tier-8 .days{background:linear-gradient(90deg,#ff9d3d,#ffd23d,#2fe6a0,#3d9bff,#c04dff,#ff4dc4,#ff9d3d);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;animation:streakRainbowText 4s linear infinite}
+@keyframes streakRainbowBorder{
+  0%,100%{box-shadow:0 2px 22px rgba(255,120,120,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+  16%{box-shadow:0 2px 22px rgba(255,210,60,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+  33%{box-shadow:0 2px 22px rgba(47,230,160,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+  50%{box-shadow:0 2px 22px rgba(61,155,255,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+  66%{box-shadow:0 2px 22px rgba(192,77,255,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+  83%{box-shadow:0 2px 22px rgba(255,77,196,.5),inset 0 1px 0 rgba(255,255,255,.15)}
+}
+@keyframes streakRainbowText{0%{background-position:0% 50%}100%{background-position:300% 50%}}
 .streak-badge.at-risk{
   background:linear-gradient(135deg,var(--card2),var(--card));
-  border:2px solid var(--orange);
+  border:1px solid var(--orange);
   box-shadow:0 0 0 0 rgba(255,150,0,.45);
   animation:streakAtRiskPulse 2.2s ease-in-out infinite;
 }
+.streak-badge.at-risk .fire-ring{background:conic-gradient(var(--orange) var(--ring),rgba(255,255,255,.14) 0)}
+.streak-badge.at-risk .fire-ring::before{background:radial-gradient(circle at 35% 30%,var(--card2),var(--card))}
 .streak-badge.at-risk .fire{animation:streakFireFlicker 2.4s ease-in-out infinite,streakFireDim 2.2s ease-in-out infinite}
-.streak-badge.at-risk .days{color:var(--orange);text-shadow:none}
+.streak-badge.at-risk .days{color:var(--orange);text-shadow:none;background:none;-webkit-background-clip:unset;background-clip:unset;animation:none}
 @keyframes streakFireFlicker{
   0%,100%{transform:scale(1) rotate(0deg)}
-  25%{transform:scale(1.08) rotate(-3deg)}
-  50%{transform:scale(.96) rotate(2deg)}
-  75%{transform:scale(1.05) rotate(-1deg)}
+  25%{transform:scale(1.1) rotate(-4deg)}
+  50%{transform:scale(.94) rotate(3deg)}
+  75%{transform:scale(1.06) rotate(-2deg)}
 }
-@keyframes streakFireDim{0%,100%{opacity:1}50%{opacity:.55}}
+@keyframes streakFireDim{0%,100%{opacity:1}50%{opacity:.5}}
 @keyframes streakBump{
   0%{transform:scale(1)}
   35%{transform:scale(1.55)}
@@ -376,9 +442,9 @@ header{
   100%{transform:scale(1)}
 }
 @keyframes streakGlowPulse{
-  0%{box-shadow:0 2px 10px rgba(255,150,0,.35),inset 0 1px 0 rgba(255,255,255,.35)}
-  40%{box-shadow:0 2px 22px rgba(255,150,0,.75),inset 0 1px 0 rgba(255,255,255,.35)}
-  100%{box-shadow:0 2px 10px rgba(255,150,0,.35),inset 0 1px 0 rgba(255,255,255,.35)}
+  0%{box-shadow:0 2px 12px rgba(255,120,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
+  40%{box-shadow:0 2px 26px rgba(255,140,0,.85),inset 0 1px 0 rgba(255,255,255,.06)}
+  100%{box-shadow:0 2px 12px rgba(255,120,0,.3),inset 0 1px 0 rgba(255,255,255,.06)}
 }
 @keyframes streakAtRiskPulse{
   0%,100%{box-shadow:0 0 0 0 rgba(255,150,0,.45)}
@@ -563,7 +629,7 @@ nav#mainNav{
    чуть толще, с более мягким скруглением и лёгким свечением заливки —
    без лишней сложности (никаких колец/иконок), просто аккуратнее. */
 .goal-mode-row{
-  display:flex;flex-direction:column;gap:.7rem;
+  display:flex;flex-direction:row;align-items:flex-end;gap:.6rem;
   margin-bottom:.5rem;
   background:var(--card2);
   border:1px solid var(--border);
@@ -571,7 +637,7 @@ nav#mainNav{
   padding:.75rem .85rem;
 }
 .goal-mode-row .goal-mini{
-  width:100%;
+  flex:1;min-width:0;
 }
 .goal-mode-row .goal-mini-label{
   display:flex;align-items:baseline;justify-content:space-between;
@@ -603,12 +669,11 @@ nav#mainNav{
    фоновая подпись — при этом активная кнопка по-прежнему выделяется явно
    заливкой и тенью. */
 .goal-mode-row .mode-tabs-compact{
-  margin-bottom:0;width:100%;
+  margin-bottom:0;width:auto;align-self:flex-end;
   background:var(--bg3);
   border:1px solid var(--border);
 }
 .goal-mode-row .mode-tabs-compact .mode-tab-c{
-  flex:1;
   border:1px solid transparent;
   color:var(--text);
 }
@@ -645,21 +710,21 @@ nav#mainNav{
    и тенью — тот же принцип, что у полноразмерного .mode-tabs, просто в
    компактных пропорциях, чтобы помещаться в одну строку с прогресс-баром. */
 .mode-tabs-compact{
-  display:flex;gap:.15rem;
+  display:flex;gap:.1rem;
   background:var(--bg3);border-radius:20px;
-  padding:.2rem;flex-shrink:0;
+  padding:.15rem;flex-shrink:0;
 }
 .mode-tab-c{
-  padding:.55rem .8rem;
+  padding:.4rem .6rem;
   background:transparent;color:var(--text2);
   border:none;border-radius:16px;
-  font-size:.78rem;font-weight:800;cursor:pointer;
+  font-size:.68rem;font-weight:700;cursor:pointer;
   transition:all .18s;font-family:inherit;white-space:nowrap;
 }
 .mode-tab-c:active{transform:scale(.95)}
 .mode-tab-c.active{
   background:var(--blue);color:#fff;
-  box-shadow:0 2px 6px rgba(0,0,0,.2);
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
 }
 
 /* ── UTILITY ROW (Повторить аудио / Ввести слово вручную) ─────
@@ -689,14 +754,18 @@ nav#mainNav{
   white-space:normal;line-height:1.25;
   display:flex;align-items:center;justify-content:center;
   text-align:center;
+  background:transparent;border-color:transparent;
+  color:var(--text3);font-weight:600;font-size:.74rem;
+  padding:.35rem .5rem;
 }
+.utility-row .btn-sm:active{background:var(--bg3)}
 /* Если в ряду только одна кнопка (например режим Каз→Рус без переключателя
    ввода), не растягиваем её на всю ширину — оставляем компактной. */
 .utility-row .btn-sm:only-child{flex:0 1 auto}
 
 /* ── WORD CARD ─────────────────────────────────────────────── */
 .word-card{
-  text-align:center;padding:1rem 1rem .8rem;
+  text-align:center;padding:1.35rem 1rem 1rem;
   position:relative;
 }
 .word-topic-chip{
@@ -704,11 +773,11 @@ nav#mainNav{
   background:var(--blue-bg);color:var(--blue);
   font-size:.68rem;font-weight:800;
   padding:.2rem .6rem;border-radius:20px;
-  margin-bottom:.75rem;letter-spacing:.3px;text-transform:uppercase
+  margin-bottom:.85rem;letter-spacing:.3px;text-transform:uppercase
 }
 [data-theme="dark"] .word-topic-chip{color:var(--blue)}
 .main-word{
-  font-size:2rem;font-weight:900;
+  font-size:2.2rem;font-weight:900;
   color:var(--text);line-height:1.2;
   word-break:break-word;margin-bottom:.4rem;
 }
@@ -773,7 +842,7 @@ nav#mainNav{
   gap:.5rem;margin-top:.4rem
 }
 .quiz-opt{
-  padding:.7rem .6rem;
+  padding:.75rem .6rem;
   border:2px solid var(--border);
   border-radius:var(--radius-sm);
   background:var(--card);
@@ -834,14 +903,18 @@ nav#mainNav{
    через showStickyNext()/hideStickyNext(). */
 .sticky-next-bar{
   position:fixed;left:0;right:0;
-  /* ИСПРАВЛЕНО: раньше позиция считалась как "64px + safe-area" в предположении,
-     что нижняя навигация всегда ровно 64px высотой. На деле высота nav#mainNav
-     зависит от padding и содержимого — на многих телефонах панель оказывалась
-     либо частично под навигацией, либо с некрасивым зазором. Теперь высота
-     nav измеряется в JS (см. positionStickyNextBar()) и передаётся сюда через
-     CSS-переменную --nav-h, поэтому панель всегда встаёт ровно над навигацией.
-     z-index поднят выше навигации (400 > 300), чтобы панель точно не могла
-     оказаться перекрытой чем-либо снизу. */
+  /* ИСПРАВЛЕНО (третья итерация): ручная оценка высоты навигации через
+     CSS calc() (.4rem + 48px + 2px + safe-area) дважды оказывалась неточной
+     — то давала зазор с белой полосой, то давала слишком большое значение,
+     из-за чего кнопка почти сливалась с навигацией и создавала эффект
+     "двойной полосы". Причина — в расчёте нельзя достоверно учесть все
+     мелочи рендера (line-height текста внутри nav-btn, gap, subpixel-
+     округления). Вернулись к JS-измерению как источнику истины, но
+     исправили исходную проблему с таймингом: раньше offsetHeight мог
+     замеряться до завершения layout. Теперь используется
+     getBoundingClientRect() (точнее offsetHeight) и вызывается через
+     requestAnimationFrame прямо перед показом панели — на этот момент
+     браузер гарантированно уже завершил layout навигации. */
   bottom:var(--nav-h,64px);
   z-index:400;
   display:none;
@@ -863,10 +936,11 @@ nav#mainNav{
 
 .btn-skip{
   background:transparent;color:var(--text3);
-  border:2px solid var(--border);
-  width:100%;padding:.55rem;font-size:.82rem;
+  border:2px solid transparent;
+  width:100%;padding:.5rem;font-size:.76rem;font-weight:600;
   margin-top:.4rem;border-radius:var(--radius-sm);
 }
+.btn-skip:active{background:var(--bg3)}
 
 .btn-hint{
   background:transparent;color:var(--yellow);
@@ -1225,7 +1299,7 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div class="header-actions">
       <div id="streakDisplay" class="streak-badge" style="display:none" onclick="toggleStreakPopover(event)">
-        <span class="fire">🔥</span>
+        <span class="fire-ring"><span class="fire">🔥</span></span>
         <span class="days" id="streakDays">0</span>
         <div id="streakPopover" class="streak-popover" onclick="event.stopPropagation()"></div>
       </div>
@@ -3744,7 +3818,7 @@ const WORDS=[
 {id:2228,kz:"Естен тану",ru:"Потерять сознание",topic:"health",example_kz:"Естен танып қалды",example_ru:"Потерял сознание"},
 {id:2229,kz:"Есті",ru:"Умный, разумный",topic:"emotion",example_kz:"Есті бала",example_ru:"Разумный ребёнок"},
 {id:2230,kz:"Естіру",ru:"Заставлять слышать, сообщать",topic:"daily",example_kz:"Хабарды естіртті",example_ru:"Сообщил новость"},
-{id:2231,kz:"Есту",ru:"Слышать",topic:"daily",example_kz:"Музыка естідім",example_ru:"Услышал музыку"},
+{id:2231,kz:"Есту",ru:"Слышать",topic:"daily",example_kz:"Музыканы естідім",example_ru:"Услышал музыку"},
 {id:2232,kz:"Естігеніңді айту",ru:"Рассказывать то, что слышал",topic:"daily",example_kz:"Естігенін айтты",example_ru:"Рассказал то, что слышал"},
 {id:2233,kz:"Есу",ru:"Беситься, сходить с ума",topic:"emotion",example_kz:"Есіп кетті",example_ru:"Обезумел"},
 {id:2234,kz:"Есік",ru:"Дверь",topic:"home",example_kz:"Есікті ашты",example_ru:"Открыл дверь"},
@@ -3858,7 +3932,7 @@ const WORDS=[
 {id:2348,kz:"Жысу",ru:"Сближаться, придвигаться",topic:"movement",example_kz:"Бір-біріне жысты",example_ru:"Придвинулись друг к другу"},
 {id:2349,kz:"Жыу",ru:"Мыть, стирать",topic:"home",example_kz:"Ыдысты жуды",example_ru:"Помыл посуду"},
 {id:2350,kz:"Сығу",ru:"Отжимать (бельё)",topic:"home",example_kz:"Көйлекті сықты",example_ru:"Отжал платье"},
-{id:2351,kz:"Жыю",ru:"Собирать, складывать",topic:"home",example_kz:"Кітаптарды жиды",example_ru:"Собрал книги"},
+{id:2351,kz:"Жию",ru:"Собирать, складывать",topic:"home",example_kz:"Кітаптарды жиды",example_ru:"Собрал книги"},
 {id:2352,kz:"Жылтыр",ru:"Блестящий, сверкающий",topic:"daily",example_kz:"Жылтыр беті",example_ru:"Блестящая поверхность"},
 {id:2353,kz:"Жылтырау",ru:"Сверкать, блестеть",topic:"nature",example_kz:"Жұлдыз жылтырады",example_ru:"Звезда сверкала"},
 {id:2354,kz:"Жабдық",ru:"Оборудование, оснащение",topic:"work",example_kz:"Зауыт жабдығы",example_ru:"Заводское оборудование"},
@@ -4052,7 +4126,7 @@ const WORDS=[
 {id:2544,kz:"Іспетті",ru:"Подобный, вроде",topic:"daily",example_kz:"Аюға іспетті",example_ru:"Подобный медведю"},
 {id:2545,kz:"Істелу",ru:"Быть сделанным, выполняться",topic:"work",example_kz:"Жоба істелуде",example_ru:"Проект выполняется"},
 {id:2546,kz:"Істеу",ru:"Делать, выполнять",topic:"work",example_kz:"Тапсырманы істеді",example_ru:"Выполнил задание"},
-{id:2547,kz:"Іште",ru:"Внутри, в середине",topic:"daily",example_kz:"Үйдің іште",example_ru:"Внутри дома"},
+{id:2547,kz:"Іште",ru:"Внутри, в середине",topic:"daily",example_kz:"Үйдің ішінде",example_ru:"Внутри дома"},
 {id:2548,kz:"Іштей",ru:"Внутренне, скрыто",topic:"emotion",example_kz:"Іштей қуанды",example_ru:"Внутренне радовался"},
 {id:2549,kz:"Ішу",ru:"Пить, употреблять",topic:"food",example_kz:"Су ішті",example_ru:"Пил воду"},
 {id:2550,kz:"Кінә",ru:"Вина, виновность",topic:"emotion",example_kz:"Кінәсін мойындады",example_ru:"Признал свою вину"},
@@ -4480,7 +4554,7 @@ const DIALOGUES=[
 // не создавай отдельный счётчик мимо updateWordProgress() — всегда проводи
 // результат через неё, иначе снова разъедутся "Дневная цель" и getDueWords().
 // ──────────────────────────────────────────────────────────────────────
-let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 const STORAGE_KEY='qazaq_tili_v2';
 
 function loadState(){
@@ -4530,14 +4604,28 @@ const yesterday=new Date(Date.now()-86400000).toDateString();
 // чем реально подсвечено зелёным в календаре (ровно то, что видно на
 // скриншоте пользователя: 3 дня подряд по страйку, но только 2 зелёных
 // дня). Теперь оба места считают "выполнено" одинаково — по достижению
-// state.daily.goalCount дневной цели, а не по факту хотя бы одного ответа.
-const goalWasMet=(state.daily.goalCount||0)>=(state.settings.dailyGoal||20);
+// state.daily.progressCount дневной цели, а не по факту хотя бы одного ответа.
+// БАГФИКС (цель дня "перестала засчитывать слова"): раньше здесь (и везде в
+// UI/попапе/недельном календаре) читался goalCount — а он растёт ТОЛЬКО от
+// верных ответов на слова, которых пользователь видит впервые. Как только
+// запас по-настоящему новых слов на сегодня заканчивался (или пользователь
+// просто повторял уже знакомые слова), goalCount переставал расти вообще —
+// хотя пользователь продолжал активно и верно отвечать. Со стороны это
+// выглядело как "слова перестали засчитываться в цель". Теперь для ВСЕГО,
+// что видит пользователь (прогресс-бар, попап стрика, недельный календарь,
+// сам страйк), используется отдельное поле progressCount — оно растёт при
+// КАЖДОМ верном ответе, и на новые, и на уже знакомые слова (см.
+// updateWordProgress). Поле goalCount никуда не делось и продолжает жить —
+// оно по-прежнему считает только новые слова и используется ИСКЛЮЧИТЕЛЬНО
+// внутри getDueWords() как лимит того, сколько новых слов выдавать за день,
+// не влияя больше ни на что видимое пользователю.
+const goalWasMet=(state.daily.progressCount||0)>=(state.settings.dailyGoal||20);
 if(state.daily.date===yesterday&&goalWasMet){state.streak=(state.streak||0)+1}
 else if(state.daily.date!==today){state.streak=0}
 // Лучший стрик (рекорд) — отдельное поле, которое никогда не обнуляется,
 // используется в попапе статистики (см. toggleStreakPopover()).
 if((state.streak||0)>(state.bestStreak||0))state.bestStreak=state.streak;
-state.daily={goalCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[]};
+state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[]};
 state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 saveState();
 }
@@ -4551,6 +4639,14 @@ if(!state.daily.answeredIds)state.daily.answeredIds=[];
 // уже играл со старой версией. За "сегодня" оно и так пересчитается по факту
 // новых верных ответов, ничего не теряется, кроме самого счётчика ошибок дня.
 if(state.daily.goalCount===undefined)state.daily.goalCount=0;
+// Миграция для тех, кто уже играл с версией, где видимый прогресс дня
+// считался через goalCount (только новые слова) — см. подробности в
+// комментарии над updateWordProgress(). Если progressCount ещё не
+// существует, разумной стартовой точкой служит текущий goalCount (а не 0),
+// чтобы пользователь не увидел, что его прогресс за сегодня "обнулился" в
+// момент обновления версии — дальше progressCount уже растёт правильно, от
+// любого верного ответа.
+if(state.daily.progressCount===undefined)state.daily.progressCount=state.daily.goalCount||0;
 if(state.daily.repeatCount===undefined)state.daily.repeatCount=0;
 if(state.daily.errorCount===undefined)state.daily.errorCount=0;
 if('newCount' in state.daily)delete state.daily.newCount;
@@ -4594,6 +4690,23 @@ if(!ws||typeof ws!=='object'||Array.isArray(ws)){delete state.words[id];return}
 if(ws.streak===undefined)ws.streak=Math.min(ws.level||0,STREAK_TO_LEARN);
 if(ws.lastSeen===undefined)ws.lastSeen=0;
 if(ws.nextReview===undefined)ws.nextReview=0;
+// МИГРАЦИЯ (переход на SM-2-подобный алгоритм интервалов, см. подробный
+// комментарий над updateWordProgress): раньше интервал между показами слова
+// зависел ТОЛЬКО от streak — одна и та же лестница 10мин/4ч/2дня/7дней/21день
+// для абсолютно всех слов, независимо от того, легко они даются или нет.
+// Теперь у каждого слова есть свой "фактор лёгкости" ease (стартует с 2.5,
+// как в SM-2/Anki) и текущий interval в днях — они постепенно расходятся:
+// слово, которое пользователь путает, получает ease пониже и после этого
+// растёт медленнее и возвращается чаще, а слово, которое даётся легко,
+// быстро уходит в длинные интервалы, не отнимая время у пользователя.
+// Для уже существующих слов ease стартует с дефолта 2.5, а interval — с
+// величины, примерно соответствующей уже накопленному streak, чтобы никто
+// не почувствовал, будто прогресс слов "обнулился" при обновлении версии.
+if(ws.ease===undefined)ws.ease=2.5;
+if(ws.interval===undefined){
+const legacyDays=[0,0,1/6,1/3][Math.min(ws.streak||0,3)]||1;
+ws.interval=ws.streak>=STREAK_TO_LEARN?Math.max(2,legacyDays):legacyDays;
+}
 });
 }
 
@@ -4645,11 +4758,59 @@ return[...due,...shuffled];
 
 function shuffleArray(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
 
+// ── ИНТЕРЛИВИНГ (по просьбе пользователя — "чтобы реально запоминал слова") ──
+// РЕАЛИЗОВАНО: раньше очередь тренировки собиралась через shuffleArray —
+// обычное случайное перемешивание. У чистого случайного шаффла нет защиты от
+// того, что несколько слов подряд окажутся из одной и той же темы (особенно
+// когда due-слова уже отсортированы по теме в самой базе WORDS) — при чистом
+// Fisher-Yates это совершенно нормальный исход, но для запоминания это хуже:
+// когда подряд идут слова одной темы, мозг угадывает следующее слово по
+// контексту темы, а не действительно вспоминает конкретное слово — это
+// называется "блочная" (blocked) практика, и исследования по интерливингу
+// показывают, что чередование тем/материала заставляет каждый раз заново
+// извлекать нужное слово из памяти, а не полагаться на инерцию контекста,
+// и в долгосрочной перспективе запоминание получается прочнее, хотя в моменте
+// кажется чуть сложнее. Здесь это реализовано как round-robin по темам:
+// слова группируются по topic, внутри каждой группы перемешиваются, а затем
+// финальная очередь собирается "по одному слову из каждой темы по кругу" —
+// так у одной темы физически не может оказаться двух слов подряд, пока в
+// очереди есть слова хотя бы ещё одной другой темы.
+function interleaveByTopic(words){
+if(words.length<=2)return shuffleArray([...words]);
+const byTopic={};
+words.forEach(w=>{
+const t=w.topic||'__notopic__';
+if(!byTopic[t])byTopic[t]=[];
+byTopic[t].push(w);
+});
+// Перемешиваем слова внутри каждой темы и порядок самих тем — иначе
+// round-robin каждый раз шёл бы в одном и том же порядке тем.
+const topicKeys=shuffleArray(Object.keys(byTopic));
+topicKeys.forEach(t=>shuffleArray(byTopic[t]));
+const result=[];
+let remaining=true;
+while(remaining){
+remaining=false;
+for(const t of topicKeys){
+if(byTopic[t].length){
+result.push(byTopic[t].shift());
+remaining=true;
+}
+}
+}
+return result;
+}
+
 function initQueue(){
 state.topicSession=false;
 state.currentTopic=null;
 const due=getDueWords();
-state.queue=shuffleArray([...due]);
+// ИНТЕРЛИВИНГ: очередь собирается round-robin по темам (см. interleaveByTopic
+// выше), а не чистым случайным шаффлом — так слова разных тем гарантированно
+// чередуются, вместо того чтобы изредка выстраиваться в длинные "блоки" одной
+// темы подряд, что ослабляет эффект от тренировки (см. подробности в
+// комментарии над interleaveByTopic).
+state.queue=interleaveByTopic(due);
 if(state.queue.length===0){
 // БАГФИКС: раньше при пустой очереди сначала проверялись "сложные" слова
 // (errors>=3), и если такие находились — очередь состояла ТОЛЬКО из них,
@@ -4664,7 +4825,7 @@ if(state.queue.length===0){
 const hard=getHardWords();
 const fresh=WORDS.filter(w=>!state.words[w.id]);
 if(fresh.length>0||hard.length>0){
-state.queue=shuffleArray([...hard,...fresh.slice(0,20)]);
+state.queue=interleaveByTopic([...hard,...fresh.slice(0,20)]);
 }else{
 // Совсем новых слов нет и сложных тоже нет — все слова уже встречались и сейчас спят.
 showSleepingMessage();
@@ -4710,21 +4871,27 @@ return ws&&ws.errors>=3;
 // в паре с обычной #nextBtn везде, где раньше включалось только inline-button,
 // чтобы кнопка перехода к следующему слову была видна сразу после ответа,
 // без прокрутки экрана вниз.
-// Измеряет реальную высоту нижней навигации (nav#mainNav) и прокидывает её
-// в CSS-переменную --nav-h, чтобы .sticky-next-bar (bottom:var(--nav-h))
-// всегда вставала ровно над навигацией, независимо от реальных отступов/
-// safe-area на конкретном устройстве. Вызывается при загрузке, при повороте
-// экрана/ресайзе и прямо перед показом панели.
+// ИСПРАВЛЕНО (третья итерация): пробовали заменить это измерение на
+// ручную оценку в CSS calc() — она дважды оказалась неточной (то белая
+// полоса из-за зазора, то слияние с навигацией из-за завышенной оценки).
+// Вернули измерение реальной высоты через getBoundingClientRect (точнее
+// offsetHeight на дробных масштабах экрана). Главное отличие от первой
+// версии — вызов теперь всегда идёт из showStickyNext() через
+// requestAnimationFrame, то есть строго после того, как браузер уже
+// отрисовал текущий кадр и посчитал финальный layout навигации, а не
+// в тот же тик, где могли быть неприменённые изменения DOM.
 function positionStickyNextBar(){
 const nav=document.getElementById('mainNav');
 if(!nav)return;
-document.documentElement.style.setProperty('--nav-h',nav.offsetHeight+'px');
+const h=nav.getBoundingClientRect().height;
+document.documentElement.style.setProperty('--nav-h',h+'px');
 }
 window.addEventListener('resize',positionStickyNextBar);
 window.addEventListener('orientationchange',positionStickyNextBar);
 
 function showStickyNext(){
 positionStickyNextBar();
+requestAnimationFrame(positionStickyNextBar);
 const bar=document.getElementById('stickyNextBar');
 if(bar)bar.classList.add('show');
 }
@@ -5186,7 +5353,7 @@ function updateWordProgress(id,correct,hintAssisted){
 // "Новое" здесь = ровно то же условие, что использует getDueWords() —
 // у слова ещё нет записи в state.words вообще (никогда не встречалось).
 const isNewWord=!state.words[id];
-if(!state.words[id])state.words[id]={streak:0,nextReview:0,errors:0,total:0,correct:0,level:0,lastSeen:0};
+if(!state.words[id])state.words[id]={streak:0,nextReview:0,errors:0,total:0,correct:0,level:0,lastSeen:0,ease:2.5,interval:0};
 const ws=state.words[id];
 ws.total++;
 ws.lastSeen=Date.now();
@@ -5200,6 +5367,23 @@ state.sessionStats.total++;
 if(correct&&hintAssisted){
 ws.correct++;
 state.sessionStats.correct++;
+// SM-2: ответ "с подсказкой" — это фактически неудача с точки зрения
+// памяти (пользователь не вспомнил слово сам), поэтому слегка снижаем
+// ease (не так резко, как настоящая ошибка) и возвращаем слово через
+// короткий learning-интервал, а не в обычный SM-2-цикл.
+// БАГФИКС: раньше interval здесь обнулялся в 0 полностью, а streak при
+// hint-assisted ответе НЕ трогается (в отличие от настоящей ошибки, где
+// streak тоже сбрасывается). Из-за этого для уже "зрелого" слова (например
+// streak=7, накопленный interval=13 дней) один ответ с подсказкой обнулял
+// interval, но streak оставался 7 — при следующем обычном верном ответе
+// код попадал в ветку streak>3, где base=interval||2, и раз interval стал
+// 0, base откатывался к 2 дням: слово, которое явно уже хорошо закрепилось,
+// внезапно прыгало назад к базовому интервалу вместо роста от своих 13
+// дней. Теперь interval не обнуляется, а лишь уменьшается вдвое — так
+// подсказка ощутимо "штрафует" интервал (слово вернётся раньше), но не
+// отбрасывает весь накопленный SM-2-прогресс слова целиком.
+ws.ease=Math.max(1.3,(ws.ease||2.5)-0.15);
+ws.interval=(ws.interval||0)/2;
 ws.nextReview=Date.now()+15*60000;
 saveState();
 updateStats();
@@ -5211,23 +5395,55 @@ ws.correct++;
 state.sessionStats.correct++;
 ws.streak=(ws.streak||0)+1;
 ws.level=ws.streak; // level отражает streak для совместимости со старым прогрессом/статистикой
-// Интервалы "сна" между показами растут с каждым верным ответом подряд,
-// чтобы слово не считалось выученным с первого раза и проверялось повторно.
-let intervalMs;
-if(ws.streak===1)intervalMs=10*60000;        // 1-й верный ответ -> вернётся через ~10 минут
-else if(ws.streak===2)intervalMs=4*3600000;  // 2-й верный ответ -> вернётся через ~4 часа
-else if(ws.streak===3)intervalMs=2*86400000; // 3-й верный ответ -> слово "выучено", вернётся через 2 дня для закрепления
-else if(ws.streak===4)intervalMs=7*86400000; // дальше — обычные интервалы повторения
-else intervalMs=21*86400000;
-ws.nextReview=Date.now()+intervalMs;
+// ── SM-2-ПОДОБНЫЙ АЛГОРИТМ ИНТЕРВАЛОВ ─────────────────────────────
+// РЕАЛИЗОВАНО (по просьбе пользователя — "чтобы реально запоминал слова"):
+// раньше интервал зависел ТОЛЬКО от streak — одна и та же лестница
+// 10мин/4ч/2дня/7дней/21день для абсолютно всех слов, независимо от того,
+// легко слово даётся или постоянно путается. Теперь у каждого слова есть
+// свой ease factor (множитель роста интервала, как в SM-2/Anki, диапазон
+// 1.3–3.0, старт 2.5) — он растёт при лёгких верных ответах и падает при
+// ошибках, из-за чего интервалы у разных слов постепенно расходятся:
+// лёгкое слово быстро уходит в долгие интервалы и не отнимает время,
+// а трудное продолжает возвращаться часто, пока не закрепится по-настоящему.
+//
+// Первые 2 ответа — это "обучающая" стадия (learning steps), как в Anki:
+// фиксированные короткие интервалы, чтобы новое слово гарантированно
+// осело в кратковременной памяти, прежде чем на него начнёт влиять ease.
+// С 3-го верного ответа подряд слово входит в SM-2-цикл: следующий
+// интервал = текущий_интервал × ease (в днях), округлённый и с разумным
+// минимумом, чтобы даже низкий ease не давал вырожденно короткие шаги.
+let intervalDays;
+if(ws.streak===1){
+intervalDays=10/1440; // 1-й верный ответ -> ~10 минут (learning step)
+}else if(ws.streak===2){
+intervalDays=4/24; // 2-й верный ответ -> ~4 часа (learning step)
+}else{
+// 3-й и далее верный ответ подряд -> полноценный SM-2: интервал растёт
+// умножением на индивидуальный ease слова. База для 3-го ответа — 2 дня
+// (совпадает с прежним поведением "слово выучено, вернётся через 2 дня"),
+// дальше каждый следующий верный ответ умножает текущий interval на ease.
+const base=ws.interval&&ws.interval>0?ws.interval:2;
+intervalDays=ws.streak===3?2:base*(ws.ease||2.5);
+// Ease растёт медленно при каждом обычном верном ответе (без опечаток и
+// подсказок) — совсем как в классическом SM-2, где "идеальный" ответ
+// (качество 5) добавляет к ease фиксированную небольшую прибавку.
+ws.ease=Math.min(3.0,(ws.ease||2.5)+0.05);
+}
+ws.interval=intervalDays;
+ws.nextReview=Date.now()+intervalDays*86400000;
 if(!state.daily.goalCount)state.daily.goalCount=0;
+if(!state.daily.progressCount)state.daily.progressCount=0;
 if(!state.daily.repeatCount)state.daily.repeatCount=0;
-// ВАЖНО: "Дневная цель" и лимит новых слов в getDueWords() двигает ТОЛЬКО
-// goalCount, и растёт он ТОЛЬКО когда правильно отвечено на слово, которое
-// пользователь видит первый раз в жизни (isNewWord). Верный ответ на слово,
-// которое уже встречалось раньше (повтор/закрепление), в цель не засчитывается
-// — иначе цель "новых слов" на самом деле считала бы и повторы, что не то же
-// самое, что показывает подпись в UI ("X / Y новых слов").
+// БАГФИКС/УЛУЧШЕНИЕ (цель дня "перестала засчитывать слова"): раньше видимая
+// пользователю "Дневная цель" двигалась ТОЛЬКО от goalCount, а тот рос только
+// на действительно новых словах (isNewWord). Из-за этого как только новые
+// слова на сегодня заканчивались — или пользователь просто повторял уже
+// знакомые слова — прогресс замирал, хотя занятие продолжалось и ответы были
+// верными. Теперь видимый прогресс (progressCount) растёт при КАЖДОМ верном
+// ответе — и на новое слово, и на повтор. goalCount по-прежнему считается
+// отдельно и используется ТОЛЬКО внутри getDueWords() как внутренний лимит
+// "сколько новых слов выдать за день" — на UI и на страйк он больше не влияет.
+state.daily.progressCount++;
 if(isNewWord)state.daily.goalCount++;
 else state.daily.repeatCount++;
 }else{
@@ -5235,6 +5451,14 @@ ws.errors=(ws.errors||0)+1;
 state.sessionStats.wrong++;
 ws.streak=0; // ошибка обнуляет счётчик — слово снова нужно назвать 3 раза подряд
 ws.level=0;
+// SM-2: неверный ответ ощутимо снижает ease (слово явно даётся труднее,
+// чем считалось) и сбрасывает interval — при следующей правильной серии
+// слово снова пройдёт через короткие learning-шаги, но с уже более низким
+// ease, поэтому в долгосрочном SM-2-цикле будет расти медленнее, чем
+// слова, которые пользователь не путает — то есть будет возвращаться
+// на проверку чаще, пока не закрепится по-настоящему.
+ws.ease=Math.max(1.3,(ws.ease||2.5)-0.2);
+ws.interval=0;
 ws.nextReview=Date.now()+15*60000; // вернётся через 15 минут на дополнительную тренировку
 // БАГФИКС: раньше неверный ответ увеличивал ТОТ ЖЕ счётчик, что двигает
 // "Дневную цель" (старое поле newCount) — из-за этого цель росла от ошибок,
@@ -5258,7 +5482,7 @@ if(!state.daily.answeredIds.includes(id))state.daily.answeredIds.push(id);
 // обе места (renderWeekGrid и loadState) используют goalCount.
 if(!state.activityHistory)state.activityHistory={};
 const todayKey=new Date().toDateString();
-state.activityHistory[todayKey]=state.daily.goalCount;
+state.activityHistory[todayKey]=state.daily.progressCount;
 saveState();
 updateStats();
 updateStreakDisplay();
@@ -5413,7 +5637,7 @@ if(!state.answered){
 // делает updateWordProgress() для обычного неверного ответа, чтобы "Пропустить"
 // одинаково работало и для новых, и для уже встречавшихся слов.
 if(!state.words[state.current.id]){
-state.words[state.current.id]={streak:0,nextReview:0,errors:0,total:0,correct:0,level:0,lastSeen:0};
+state.words[state.current.id]={streak:0,nextReview:0,errors:0,total:0,correct:0,level:0,lastSeen:0,ease:2.5,interval:0};
 }
 const ws=state.words[state.current.id];
 ws.total=(ws.total||0)+1;
@@ -5421,6 +5645,18 @@ ws.lastSeen=Date.now();
 ws.errors=(ws.errors||0)+1;
 ws.streak=0;
 ws.level=0;
+// БАГФИКС (SM-2): раньше "Пропустить" сбрасывал только streak, но не трогал
+// ease/interval — а именно они управляют реальным ростом интервалов между
+// показами слова (см. updateWordProgress). Из-за этого слово с уже
+// накопленным высоким ease (то есть считавшееся "лёгким") после явного
+// "Пропустить/Не знаю" сохраняло этот высокий ease — и при следующем же
+// случайном правильном ответе снова начинало быстро уходить в длинные
+// интервалы, как будто пользователь его хорошо знает, хотя он только что
+// явно показал обратное. Теперь "Пропустить" наказывает ease точно так же,
+// как обычная ошибка в updateWordProgress() — слово честно возвращается в
+// разряд "трудных" и будет впредь расти в интервалах медленнее.
+ws.ease=Math.max(1.3,(ws.ease||2.5)-0.2);
+ws.interval=0;
 ws.nextReview=Date.now()+15*60000;
 saveState();
 updateStats();
@@ -6148,7 +6384,7 @@ const goalMet=wordsCount>=goal;
 let cls='week-day';
 if(isToday)cls+=' today';
 if(goalMet)cls+=' goal-met';
-weekHtml+=`<div class="${cls}" title="${wordsCount>0?wordsCount+' новых слов':''}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div></div>`;
+weekHtml+=`<div class="${cls}" title="${wordsCount>0?wordsCount+' слов':''}"><div class="day-name">${dayName}</div><div class="day-val">${d.getDate()}</div></div>`;
 }
 el.innerHTML=weekHtml;
 }
@@ -6178,11 +6414,12 @@ updateStreakDisplay();
 }
 
 function updateDailyProgress(){
-// БАГФИКС: раньше читалось state.daily.newCount, которое ошибочно росло от
-// НЕВЕРНЫХ ответов (см. комментарий у объявления state.daily выше) — то есть
-// прогресс-бар "Дневная цель" двигался от ошибок, а не от выученных новых
-// слов. Теперь читаем goalCount — растёт только от верных ответов на новые
-// слова, что и обещает подпись "X / Y новых слов".
+// БАГФИКС (цель дня "перестала засчитывать слова"): раньше читался goalCount,
+// который растёт ТОЛЬКО от верных ответов на действительно новые слова. Как
+// только новые слова на сегодня заканчивались (или пользователь повторял уже
+// знакомые), прогресс-бар замирал, хотя пользователь продолжал верно
+// отвечать. Теперь читаем progressCount — он растёт при КАЖДОМ верном
+// ответе, и на новые слова, и на повторы (см. updateWordProgress).
 // БАГФИКС: во всех остальных местах, где читается state.settings.dailyGoal
 // (getDueWords, loadState, renderWeekGrid, инициализация поля настроек), есть
 // защита ||20 на случай отсутствующего/нулевого значения — здесь её не было.
@@ -6190,7 +6427,7 @@ function updateDailyProgress(){
 // импорта, будущая ошибка миграции), done/goal*100 давало бы NaN/Infinity,
 // и прогресс-бар "Дневная цель" сломался бы визуально (ширина NaN%).
 const goal=state.settings.dailyGoal||20;
-const done=state.daily.goalCount||0;
+const done=state.daily.progressCount||0;
 const pct=Math.min(100,Math.round(done/goal*100));
 document.getElementById('dailyProgress').style.width=pct+'%';
 const displayStreak=getDisplayStreak();
@@ -6220,7 +6457,7 @@ document.getElementById('dailyLabel').textContent=`${done} / ${goal} слов${s
 // это чисто отображаемая величина, а не подмена хранимого состояния.
 function getDisplayStreak(){
 const goal=state.settings.dailyGoal||20;
-const goalMetToday=(state.daily.goalCount||0)>=goal;
+const goalMetToday=(state.daily.progressCount||0)>=goal;
 return goalMetToday?(state.streak||0)+1:(state.streak||0);
 }
 
@@ -6234,11 +6471,34 @@ return goalMetToday?(state.streak||0)+1:(state.streak||0);
 // на каждый updateStats()) и класс .at-risk, когда стрик уже идёт, но
 // сегодняшняя дневная цель ещё не выполнена (стрик можно потерять до
 // конца дня, если не позаниматься).
+// РЕДИЗАЙН: огонёк теперь внутри .fire-ring (круглый медальон с кольцом
+// прогресса вокруг него — CSS-переменная --ring, conic-gradient в CSS).
+// Кольцо показывает % выполнения сегодняшней цели прямо в шапке. Плюс
+// назначается один из тиров .tier-2/.tier-3/.tier-4 по длине серии —
+// чем длиннее стрик, тем ярче и "дороже" выглядит бейдж.
+// РАСШИРЕНО (по просьбе пользователя): полноценная лестница уровней серии —
+// каждый порог даёт бейджу уникальный цвет (см. .tier-2..tier-8 в CSS).
+// 365 дней (tier-8) — верхний "платиновый/радужный" уровень с анимированной
+// рамкой и переливающимся текстом числа.
+const STREAK_TIERS=[
+{days:365,cls:'tier-8'},
+{days:240,cls:'tier-7'},
+{days:120,cls:'tier-6'},
+{days:60,cls:'tier-5'},
+{days:30,cls:'tier-4'},
+{days:7,cls:'tier-3'},
+{days:3,cls:'tier-2'}
+];
+function getStreakTierClass(days){
+for(const t of STREAK_TIERS){if(days>=t.days)return t.cls}
+return null;
+}
 let _lastRenderedStreak=null;
 function updateStreakDisplay(){
 const el=document.getElementById('streakDisplay');
 if(!el)return;
 const displayStreak=getDisplayStreak();
+const ringEl=el.querySelector('.fire-ring');
 const fireEl=el.querySelector('.fire');
 const daysEl=el.querySelector('.days');
 if(displayStreak>0){
@@ -6249,12 +6509,23 @@ span.className='days';span.id='streakDays';span.textContent=displayStreak;
 el.insertBefore(span,el.querySelector('.streak-popover'));
 }
 if(!fireEl){
+const ring=ringEl||(()=>{const r=document.createElement('span');r.className='fire-ring';el.insertBefore(r,el.firstChild);return r;})();
 const f=document.createElement('span');f.className='fire';f.textContent='🔥';
-el.insertBefore(f,el.firstChild);
+ring.appendChild(f);
 }
 el.style.display='flex';
 const goal=state.settings.dailyGoal||20;
-const goalMetToday=(state.daily.goalCount||0)>=goal;
+const done=state.daily.progressCount||0;
+const goalMetToday=done>=goal;
+// Кольцо прогресса вокруг огонька — тот же % выполнения дневной цели,
+// что показывает прогресс-бар ниже, только видно сразу в шапке.
+const ringPct=Math.min(100,Math.round(done/goal*100));
+el.style.setProperty('--ring',ringPct*3.6+'deg');
+// Тир серии по количеству дней — сбрасываем предыдущий тир перед
+// назначением нового, чтобы не накапливались старые классы.
+el.classList.remove('tier-2','tier-3','tier-4','tier-5','tier-6','tier-7','tier-8');
+const tierCls=getStreakTierClass(displayStreak);
+if(tierCls)el.classList.add(tierCls);
 // "Под угрозой": стрик уже есть (был вчера/раньше), но сегодня цель ещё
 // не выполнена — то есть если не позаниматься сегодня, стрик обнулится.
 const atRisk=!goalMetToday&&(state.streak||0)>0;
@@ -6285,16 +6556,24 @@ if(!pop)return;
 const displayStreak=getDisplayStreak();
 const best=Math.max(state.bestStreak||0,displayStreak);
 const goal=state.settings.dailyGoal||20;
-const done=state.daily.goalCount||0;
+const done=state.daily.progressCount||0;
 const goalMetToday=done>=goal;
 const noteHtml=goalMetToday
 ?`<div class="sp-note ok">✓ Цель на сегодня выполнена — стрик в безопасности!</div>`
 :`<div class="sp-note">🔥 Осталось ${Math.max(0,goal-done)} слов, чтобы сохранить стрик сегодня</div>`;
+// Подсказка про следующий уровень серии (тир) — небольшая мотивация,
+// показывает сколько дней осталось до следующего "оформления" бейджа
+// (см. STREAK_TIERS/getStreakTierClass в updateStreakDisplay).
+const nextTier=[...STREAK_TIERS].reverse().find(t=>displayStreak<t.days);
+const tierHtml=nextTier
+?`<div class="sp-row"><span>До след. уровня</span><b>${nextTier.days-displayStreak} дн.</b></div>`
+:'';
 pop.innerHTML=`
 <div class="sp-title">🔥 Серия дней</div>
 <div class="sp-row"><span>Текущий стрик</span><b>${displayStreak} дн.</b></div>
 <div class="sp-row"><span>Рекорд</span><b>${best} дн.</b></div>
 <div class="sp-row"><span>Сегодня пройдено</span><b>${done} / ${goal}</b></div>
+${tierHtml}
 ${noteHtml}
 `;
 }
@@ -6392,7 +6671,7 @@ localStorage.removeItem(STORAGE_KEY);
 // Если завтра снова понадобится добавить/переименовать поле дневной статистики —
 // правь во всех местах, где создаётся "чистый" state.daily: основное
 // объявление, loadState(), resetProgress(), importProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 saveState();
 updateStats();
 initQueue();
@@ -6494,7 +6773,7 @@ localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
 // и сама выполнит миграцию полей (см. loadState). Форма daily здесь всё
 // равно должна совпадать с основным объявлением state — см. примечание в
 // resetProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 loadState();
 updateStats();
 initQueue();
