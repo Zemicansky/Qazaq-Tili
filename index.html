@@ -2781,7 +2781,7 @@ const WORDS=[
 {id:1116,kz:"Туысым",ru:"Мой родственник",topic:"family",example_kz:"Туысым маған қоңырау шалды.",example_ru:"Мой родственник позвонил мне."},
 {id:1117,kz:"Ынтымақ",ru:"Единство",topic:"family",example_kz:"Отбасыда ынтымақ болсын.",example_ru:"Пусть в семье будет единство."},
 {id:1118,kz:"Тату",ru:"Дружный",topic:"family",example_kz:"Тату өмір сүріңіздер.",example_ru:"Живите дружно."},
-{id:1119,kz:"Қызылша",ru:"Корь",topic:"health",example_kz:"Оның жүзі қызылшадай қызарды.",example_ru:"Её лицо покраснело от кори."}, // Исправлено
+{id:1119,kz:"Қызылша",ru:"Свёкла",topic:"food",example_kz:"Қызылшадан салат жасадым.",example_ru:"Я сделал салат из свёклы."},
 {id:1120,kz:"Өмір серігі",ru:"Спутник жизни",topic:"family",example_kz:"Ол менің өмір серігім.",example_ru:"Он мой спутник жизни."},
 {id:1122,kz:"Жоғары оқу орны",ru:"Высшее учебное заведение",topic:"education",example_kz:"Жоғары оқу орнына түстім.",example_ru:"Я поступил в высшее учебное заведение."},
 {id:1123,kz:"Оқу",ru:"Учиться",topic:"education",example_kz:"Мен кітап оқимын.",example_ru:"Я читаю книгу."},
@@ -5197,6 +5197,12 @@ const input=document.getElementById('answerInput').value.trim().toLowerCase().sl
 // из вариантов, теперь тоже свободный ввод, поэтому проверяем по нужному полю.
 const isModeB=state.mode==='B';
 const correct=(isModeB?state.current.ru:state.current.kz).toLowerCase();
+// ПРИМЕЧАНИЕ: alts/ru_alts — задел на будущее для слов с несколькими законными
+// вариантами перевода/написания (сейчас ни у одного слова в базе WORDS эти поля
+// не заданы — см. п.17 changelog, где решили проблему иначе, оставив один основной
+// вариант перевода). Код ниже намеренно не удалён: он безопасен (пустой массив
+// ничего не меняет) и позволит добавить альтернативы конкретным словам в будущем,
+// не трогая checkAnswer().
 const altsSource=isModeB?(state.current.ru_alts||[]):(state.current.alts||[]);
 const alts=altsSource.map(a=>a.toLowerCase());
 const candidates=[correct,...alts];
@@ -5584,11 +5590,19 @@ fb.textContent=msg.startsWith('⚠')?msg:`⚠ ${msg}`;
 fb.style.display='block';
 }
 
-function setSpeed(s){
+// БАГФИКС: раньше функция полагалась на глобальный/неявный browser-объект `event`
+// (window.event) вместо явного параметра — устаревший, ненадёжный паттерн: в строгом
+// режиме (`'use strict'`) или при вызове не напрямую из inline on-click атрибута
+// `event` мог быть undefined, и клик по кнопке скорости уронил бы обработчик с
+// TypeError. Функция сейчас не используется в интерфейсе (кнопки скорости озвучки
+// убраны с экрана тренировки, см. п.6 changelog) — оставлена на случай, если понадобится
+// вернуть переключатель, поэтому вызывающая сторона должна передавать сам элемент
+// кнопки явным вторым аргументом, например: onclick="setSpeed(1, this)".
+function setSpeed(s,btnEl){
 state.settings.speed=s;
 saveState();
 document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
-event.target.classList.add('active');
+if(btnEl)btnEl.classList.add('active');
 }
 
 function nextWord(){
@@ -7038,14 +7052,58 @@ const suspiciouslyShort=text.trim().length<2;
 return suspiciouslyShort||refusalPhrases.some(p=>t.includes(p));
 }
 
+// Очищаем артефакты бесплатных моделей: технические токены, странные вставки, лишние пробелы
+function cleanReply(text){
+if(!text)return text;
+return text
+// Убираем токен-артефакты вида "баTmp", "▁слово", "##слово" — признак плохого tokenizer
+.replace(/\b([а-яёА-ЯЁa-zA-Z]+Tmp\b)/g,'')
+.replace(/▁/g,'')
+.replace(/##/g,'')
+// Убираем управляющие символы и нулевые байты
+.replace(/[\u0000-\u001F\u007F\u200B\u200C\u200D\uFEFF]/g,'')
+// Схлопываем множественные пробелы и переводы строк
+.replace(/ {2,}/g,' ')
+.replace(/\n{3,}/g,'\n\n')
+.trim();
+}
+// Strip <think>...</think> blocks produced by reasoning models (DeepSeek R1, o1, etc.)
+function stripThinkBlocks(text){
+if(!text)return text;
+// Remove full <think>...</think> blocks (can be multiline)
+text=text.replace(/<think>[\s\S]*?<\/think>/gi,'');
+// Remove orphaned opening tag if closing tag is missing
+text=text.replace(/<think>[\s\S]*/gi,'');
+// Remove /think artifact that some models output
+text=text.replace(/^\s*\/think\s*/,'').replace(/\n\s*\/think\s*/g,'');
+return text.trim();
+}
+// БАГФИКС: раньше containsForeignScript()/looksLikeFalseRefusal() проверяли СЫРОЙ
+// ответ модели, ДО применения stripThinkBlocks()/cleanReply(). Рассуждающие модели
+// (DeepSeek R1 и т.п.) нередко возвращают полностью нормальный казахский ответ, но
+// с англоязычными рассуждениями внутри <think>...</think> — латиница в этом блоке
+// (4+ буквы подряд) ложно засчитывалась как "посторонний язык", и совершенно
+// нормальный ответ отбраковывался: приложение зря перебирало все fallback-модели
+// или в итоге показывало пользователю ошибку "не удалось получить чистый ответ",
+// хотя после обычной очистки текст был бы чистым с первого раза. Теперь очистка
+// (cleanReply + stripThinkBlocks) применяется к КАЖДОМУ полученному ответу СРАЗУ,
+// и уже очищенный текст проверяется на посторонний язык/ложный отказ.
+function extractContent(resp,json){
+return resp.ok?(json&&json.choices&&json.choices[0]&&json.choices[0].message&&json.choices[0].message.content):null;
+}
+function cleanupReply(text){
+if(!text)return text;
+return cleanReply(stripThinkBlocks(text));
+}
+
 const chosenModel=getOpenRouterModel();
 let{resp:response,json:data}=await callOpenRouter(chosenModel);
-let reply=response.ok?(data&&data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content):null;
+let reply=cleanupReply(extractContent(response,data));
 
 const triedModels=[chosenModel];
 // cleanReplyFound=true означает, что хотя бы одна из перебранных моделей дала
-// ответ БЕЗ постороннего языка и без признаков ложного отказа — то есть reply
-// в этот момент действительно годен для показа пользователю.
+// (уже очищенный) ответ БЕЗ постороннего языка и без признаков ложного отказа —
+// то есть reply в этот момент действительно годен для показа пользователю.
 let cleanReplyFound=response.ok&&!containsForeignScript(reply)&&!looksLikeFalseRefusal(reply);
 // Если запрос не удался, ИЛИ ответ содержит посторонний язык, ИЛИ похоже на ложный отказ —
 // пробуем следующую модель. Бесплатные модели иногда излишне осторожничают с обычными
@@ -7055,7 +7113,7 @@ for(const fallbackModel of FALLBACK_MODELS){
 if(triedModels.includes(fallbackModel))continue;
 triedModels.push(fallbackModel);
 const attempt=await callOpenRouter(fallbackModel);
-const attemptReply=attempt.resp.ok?(attempt.json&&attempt.json.choices&&attempt.json.choices[0]&&attempt.json.choices[0].message&&attempt.json.choices[0].message.content):null;
+const attemptReply=cleanupReply(extractContent(attempt.resp,attempt.json));
 if(attempt.resp.ok&&!containsForeignScript(attemptReply)&&!looksLikeFalseRefusal(attemptReply)){
 response=attempt.resp;data=attempt.json;reply=attemptReply;
 cleanReplyFound=true;
@@ -7080,34 +7138,8 @@ reply=null;
 
 const typing=document.getElementById('chatTypingIndicator');
 if(typing)typing.remove();
-// Очищаем артефакты бесплатных моделей: технические токены, странные вставки, лишние пробелы
-function cleanReply(text){
-if(!text)return text;
-return text
-// Убираем токен-артефакты вида "баTmp", "▁слово", "##слово" — признак плохого tokenizer
-.replace(/\b([а-яёА-ЯЁa-zA-Z]+Tmp\b)/g,'')
-.replace(/▁/g,'')
-.replace(/##/g,'')
-// Убираем управляющие символы и нулевые байты
-.replace(/[\u0000-\u001F\u007F\u200B\u200C\u200D\uFEFF]/g,'')
-// Схлопываем множественные пробелы и переводы строк
-.replace(/ {2,}/g,' ')
-.replace(/\n{3,}/g,'\n\n')
-.trim();
-}
-if(reply)reply=cleanReply(reply);
-// Strip <think>...</think> blocks produced by reasoning models (DeepSeek R1, o1, etc.)
-function stripThinkBlocks(text){
-if(!text)return text;
-// Remove full <think>...</think> blocks (can be multiline)
-text=text.replace(/<think>[\s\S]*?<\/think>/gi,'');
-// Remove orphaned opening tag if closing tag is missing
-text=text.replace(/<think>[\s\S]*/gi,'');
-// Remove /think artifact that some models output
-text=text.replace(/^\s*\/think\s*/,'').replace(/\n\s*\/think\s*/g,'');
-return text.trim();
-}
-if(reply)reply=stripThinkBlocks(reply);
+// reply уже полностью очищен (cleanupReply применён выше к каждому кандидату
+// до проверки на чистоту) — повторно чистить здесь не нужно.
 if(!response.ok){
 const errMsg=(data&&data.error&&data.error.message)?data.error.message:`Ошибка запроса (${response.status})`;
 chatHistory.push({role:'assistant',content:`⚠ Не удалось получить ответ: ${errMsg}. Проверьте ключ OpenRouter в Настройках.`});
