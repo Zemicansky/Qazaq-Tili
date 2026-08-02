@@ -7286,6 +7286,16 @@ initQueue();
 positionStickyNextBar();
 updateBackupReminder();
 
+// Офлайн-режим (Service Worker). Требует HTTPS — GitHub Pages это даёт
+// автоматически. При открытии без интернета отдаёт закэшированную копию сайта.
+if('serviceWorker' in navigator){
+window.addEventListener('load',()=>{
+navigator.serviceWorker.register('./sw.js').catch((e)=>{
+console.warn('[SW] регистрация не удалась:',e);
+});
+});
+}
+
 </script>
 </body>
 </html>
