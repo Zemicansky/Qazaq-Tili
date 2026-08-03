@@ -350,7 +350,7 @@ header{
    стрика (см. #streakPopover / toggleStreakPopover()). */
 .streak-badge{
   --ring:0deg;
-  --tier-a:#ff9d3d;--tier-b:var(--orange);
+  --tier-a:#ff9d3d;
   position:relative;
   display:flex;align-items:center;gap:.42rem;
   background:linear-gradient(135deg,#2a1608,#1a0e05);
@@ -506,12 +506,6 @@ nav#mainNav{
 .nav-btn:active{transform:scale(.9)}
 .nav-btn.active{color:var(--nav-active)}
 .nav-btn.active svg{filter:drop-shadow(0 0 4px var(--accent-glow))}
-.nav-badge{
-  position:absolute;top:2px;right:8px;
-  background:var(--red);color:white;
-  font-size:.52rem;font-weight:800;
-  padding:1px 4px;border-radius:8px;min-width:16px;text-align:center
-}
 
 /* ── CONTAINER ─────────────────────────────────────────────── */
 .container{
@@ -603,11 +597,6 @@ nav#mainNav{
 
 
 /* ── DAILY GOAL ────────────────────────────────────────────── */
-.goal-row{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:.5rem;font-size:.82rem;font-weight:700;color:var(--text2)
-}
-.goal-row .done{color:var(--accent);font-weight:800}
 .progress-track{
   width:100%;height:12px;background:var(--bg3);
   border-radius:6px;overflow:hidden;margin:.5rem 0
@@ -1015,8 +1004,8 @@ nav#mainNav{
 .topic-card .tc-row{display:flex;align-items:center;justify-content:space-between;gap:.65rem}
 .topic-card:active{transform:scale(.98)}
 .topic-card.active{border-color:var(--accent);background:var(--accent-glow)}
-.topic-card .tc-name,.topic-card .name{font-weight:800;font-size:.88rem;flex:1;color:var(--text)}
-.topic-card .tc-count,.topic-card .count{font-size:.72rem;color:var(--text2);white-space:nowrap}
+.topic-card .name{font-weight:800;font-size:.88rem;flex:1;color:var(--text)}
+.topic-card .count{font-size:.72rem;color:var(--text2);white-space:nowrap}
 .topic-card .progress-bar{width:100%;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;flex:none}
 .topic-card .progress-fill{height:100%;background:var(--accent);border-radius:3px}
 
@@ -1059,10 +1048,9 @@ nav#mainNav{
   border-bottom:1.5px solid var(--border)
 }
 .dialogue-line{padding:.2rem 0;font-size:.82rem;color:var(--text);line-height:1.5}
-.dialogue-speaker{font-weight:800;color:var(--blue);margin-right:.35rem}
+.speaker{font-weight:800;color:var(--blue);margin-right:.35rem}
 .dialogue-quiz{margin-top:.6rem;padding-top:.6rem;border-top:1.5px solid var(--border)}
 .dialogue-quiz p{font-weight:700;margin-bottom:.4rem;font-size:.82rem;color:var(--text)}
-.dialogue-opts{display:flex;flex-direction:column;gap:.3rem}
 .dopt{
   padding:.5rem .7rem;border:2px solid var(--border);
   border-radius:var(--radius-xs);background:var(--card2);
@@ -1122,22 +1110,16 @@ nav#mainNav{
 .chat-typing{align-self:flex-start;color:var(--text3);font-size:.8rem;padding:.3rem .75rem;font-weight:600}
 
 /* ── HARD WORDS ────────────────────────────────────────────── */
-.hard-item{
-  display:flex;justify-content:space-between;
-  align-items:center;padding:.5rem .25rem;
-  border-bottom:1px solid var(--border);font-size:.85rem
-}
-.hard-item .hw{font-weight:700;color:var(--text)}
-.hard-item .err{color:var(--red);font-size:.75rem;font-weight:700}
-
 /* ── SETTINGS ──────────────────────────────────────────────── */
 .settings-row{
   display:flex;align-items:center;justify-content:space-between;
   padding:.65rem 0;border-bottom:1.5px solid var(--border);gap:.5rem
 }
 .settings-row:last-child{border-bottom:none}
+.settings-row.no-top-pad{padding-top:0}
 .settings-label{font-size:.86rem;font-weight:700;flex:1;color:var(--text)}
 .settings-sub{font-size:.72rem;color:var(--text2);margin-top:.2rem;line-height:1.4;font-weight:400}
+.settings-sub.tight{margin-top:-.3rem}
 .settings-col{flex-direction:column;align-items:stretch !important;gap:.45rem}
 select.s-select{
   padding:.4rem .55rem;border:2px solid var(--border);
@@ -1178,6 +1160,20 @@ input.s-pass:focus{border-color:var(--blue)}
 }
 .btn-sm:active{transform:scale(.95)}
 .btn-danger{border-color:var(--red);color:var(--red);background:var(--red-bg)}
+.s-num-group{display:flex;align-items:center;gap:.4rem}
+.s-num-unit{font-size:.8rem;color:var(--text2);font-weight:700}
+#importDropZone{
+  border:2px dashed var(--border);border-radius:var(--radius-xs);
+  padding:.9rem;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;
+}
+#importDropZone .idz-title{font-size:.85rem;color:var(--text2)}
+#importDropZone .idz-hint{font-size:.72rem;color:var(--text3);margin-top:.2rem}
+#importDropZone.drop-active{border-color:var(--blue);background:rgba(80,140,255,.08)}
+.import-box{margin-top:.4rem;padding:.75rem;border-radius:var(--radius-xs);background:var(--card2)}
+.import-box-title{font-size:.8rem;font-weight:700;margin-bottom:.35rem;color:var(--text)}
+.import-box-body{font-size:.78rem;color:var(--text2);line-height:1.6}
+.import-box-actions{display:flex;gap:.5rem;margin-top:.6rem}
+.import-error{margin-top:.4rem;padding:.6rem .75rem;border-radius:var(--radius-xs);background:var(--red-bg);color:var(--red);font-size:.78rem}
 
 /* ── GRAMMAR ───────────────────────────────────────────────── */
 #sec-grammar .card{margin-bottom:.65rem}
@@ -1551,9 +1547,7 @@ input.s-pass:focus{border-color:var(--blue)}
   <div class="card">
     <p class="card-title">Настройки</p>
     <div class="settings-row">
-      <div>
-        <div class="settings-label">Скорость озвучки</div>
-      </div>
+      <div class="settings-label">Скорость озвучки</div>
       <select id="defaultSpeed" class="s-select" onchange="saveSettings()">
         <option value="0.5">Медленно</option>
         <option value="1" selected>Нормально</option>
@@ -1562,7 +1556,7 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div class="settings-row">
       <div class="settings-label">Слов в день</div>
-      <div style="display:flex;align-items:center;gap:.4rem">
+      <div class="s-num-group">
         <!-- БАГФИКС: атрибут value был "5", а реальное значение по умолчанию в
              JS (state.settings.dailyGoal) — 20 (см. объявление state). Это
              значение всё равно перезаписывается функцией renderSettings/при
@@ -1575,7 +1569,7 @@ input.s-pass:focus{border-color:var(--blue)}
              оно должно совпадать с реальным дефолтом состояния. -->
         <input type="number" id="dailyGoalInput" value="20" min="5" max="100"
           class="s-num" onchange="saveCustomDailyGoal()" oninput="clampDailyGoalInput();updateGoalEstimate()">
-        <span style="font-size:.8rem;color:var(--text2);font-weight:700">слов</span>
+        <span class="s-num-unit">слов</span>
       </div>
     </div>
     <!-- Оценка "слов в месяц/неделю" при текущем дневном лимите — считается на
@@ -1583,7 +1577,7 @@ input.s-pass:focus{border-color:var(--blue)}
          пользователь видел эффект настройки сразу, не дожидаясь onchange/blur.
          См. updateGoalEstimate(). Неделя = 7 дней, месяц условно = 30 дней
          (примерная оценка, а не точный календарный расчёт). -->
-    <div class="settings-row" id="goalEstimateRow" style="padding-top:0">
+    <div class="settings-row no-top-pad">
       <div class="goal-estimate" id="goalEstimateText"></div>
     </div>
     <div class="settings-row settings-col">
@@ -1620,17 +1614,31 @@ input.s-pass:focus{border-color:var(--blue)}
     <div class="settings-sub">Прогресс хранится только в этом браузере. Чтобы не потерять его или перенести на другое устройство — скачайте файл резервной копии и сохраните его (например, в облачное хранилище файлов или почту).</div>
     <div class="settings-row">
       <div class="settings-label">Резервная копия</div>
-      <button class="btn-sm" onclick="exportProgress()">📥 Скачать</button>
+      <button class="btn-sm" onclick="exportProgress()">📥 Скачать файл копии</button>
     </div>
-    <div class="settings-row">
-      <div class="settings-label">Восстановить</div>
-      <div>
-        <input type="file" id="importFileInput" accept="application/json"
-          style="display:none" onchange="importProgress(event)">
-        <button class="btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Загрузить</button>
+    <div id="backupReminder" class="settings-sub tight"></div>
+    <div class="settings-row settings-col">
+      <div class="settings-label">Восстановить из файла</div>
+      <div id="importDropZone"
+        ondragover="event.preventDefault();this.classList.add('drop-active')"
+        ondragleave="if(!this.contains(event.relatedTarget)){this.classList.remove('drop-active')}"
+        ondrop="handleImportDrop(event)"
+        onclick="document.getElementById('importFileInput').click()">
+        <div class="idz-title">📤 Перетащите файл сюда или нажмите, чтобы выбрать</div>
+        <div class="idz-hint">Файл вида qazaq-tili-progress-ГГГГ-ММ-ДД.json</div>
+      </div>
+      <input type="file" id="importFileInput" accept="application/json,.json"
+        style="display:none" onchange="handleImportFileSelected(event.target.files&&event.target.files[0])">
+    </div>
+    <div id="importPreview" class="import-box" style="display:none">
+      <div class="import-box-title">Что в этом файле:</div>
+      <div id="importPreviewBody" class="import-box-body"></div>
+      <div class="import-box-actions">
+        <button class="btn-sm" onclick="confirmImport()">✅ Восстановить</button>
+        <button class="btn-sm" onclick="cancelImportPreview()">Отмена</button>
       </div>
     </div>
-    <div id="backupReminder" class="settings-sub" style="margin-top:-.3rem"></div>
+    <div id="importError" class="import-error" style="display:none"></div>
     <div class="settings-row">
       <div class="settings-label">Сбросить прогресс</div>
       <button class="btn-sm btn-danger" onclick="resetProgress()">Сбросить</button>
@@ -2333,7 +2341,7 @@ const WORDS=[
 {id:468,kz:"Кесе",ru:"Чашка",topic:"food",example_kz:"Кеседе шәй.",example_ru:"В чашке чай."},
 {id:469,kz:"Электр шәйнегі",ru:"Электрочайник",topic:"food",example_kz:"Электр шәйнегі жылдам қайнайды.",example_ru:"Электрочайник быстро кипятит воду."},
 {id:470,kz:"Қысымды қазан",ru:"Скороварка",topic:"food",example_kz:"Қысымды қазанда тез пісіреді.",example_ru:"В скороварке готовится быстро."},
-{id:471,kz:"Пеш",ru:"Плита",topic:"food",example_kz:"Пешті қосыңыз.",example_ru:"Включите плиту."},
+{id:471,kz:"Пеш",ru:"Духовка",topic:"food",example_kz:"Пешті қосыңыз.",example_ru:"Включите духовку."}, // исправлено: "пеш" означает "духовка/печь", а не "плита"
 {id:472,kz:"Микротолқынды",ru:"Микроволновка",topic:"food",example_kz:"Микротолқындыда қыздырыңыз.",example_ru:"Подогрейте в микроволновке."},
 {id:473,kz:"Жиынтық тоңазытқыш",ru:"Комбинированный холодильник",topic:"food",example_kz:"Жиынтық тоңазытқыш үлкен.",example_ru:"Комбинированный холодильник большой."},
 {id:475,kz:"Жарамды",ru:"Годный",topic:"food",example_kz:"Тамақ жарамды.",example_ru:"Еда годная."},
@@ -2590,7 +2598,7 @@ const WORDS=[
 {id:832,kz:"Суыту",ru:"Охлаждать",topic:"home",example_kz:"Тамақты суытыңыз.",example_ru:"Остудите еду."},
 {id:834,kz:"Тастау",ru:"Выбросить",topic:"home",example_kz:"Ескі киімді тастаңыз.",example_ru:"Выбросьте старую одежду."},
 {id:836,kz:"Қолдану",ru:"Использовать",topic:"home",example_kz:"Техниканы дұрыс қолданыңыз.",example_ru:"Правильно используйте технику."},
-{id:837,kz:"Жұмсау",ru:"Тратить",topic:"home",example_kz:"Ақшаны үнемдеу керек.",example_ru:"Нужно экономить деньги."},
+{id:837,kz:"Жұмсау",ru:"Тратить",topic:"home",example_kz:"Ақшаны ақылмен жұмсау керек.",example_ru:"Деньги нужно тратить разумно."}, // исправлено: пример иллюстрировал слово "үнемдеу" (экономить), а не "жұмсау" (тратить)
 {id:841,kz:"Желі",ru:"Сеть",topic:"tech",example_kz:"Желі жұмыс істеп тұр.",example_ru:"Сеть работает."},
 {id:842,kz:"Құрылғы",ru:"Устройство",topic:"tech",example_kz:"Жаңа құрылғы сатып алдым.",example_ru:"Я купил новое устройство."},
 {id:843,kz:"Қосымша",ru:"Приложение",topic:"tech",example_kz:"Қосымшаны жүктедім.",example_ru:"Я скачал приложение."},
@@ -4296,7 +4304,7 @@ const WORDS=[
 {id:2718,kz:"Қарсы алу",ru:"Встречать",topic:"daily",example_kz:"Қонақты қарсы алды",example_ru:"Встретил гостя"},
 {id:2719,kz:"Қарсылық",ru:"Возражение",topic:"emotion",example_kz:"Жоспарға қарсылық білдірді",example_ru:"Выразил возражение против плана"},
 {id:2720,kz:"Қарсылық білдіру",ru:"Выражать возражение",topic:"emotion",example_kz:"Ол қарсылық білдірді",example_ru:"Он высказал возражение"},
-{id:2721,kz:"Қарсылыссыз",ru:"Без возражений",topic:"emotion",example_kz:"Қарсылықсыз келісті",example_ru:"Согласился без возражений"},
+{id:2721,kz:"Қарсылықсыз",ru:"Без возражений",topic:"emotion",example_kz:"Қарсылықсыз келісті",example_ru:"Согласился без возражений"}, // исправлено: опечатка в заголовке слова ("Қарсылыссыз" → "Қарсылықсыз", ср. "Қарсылық" — возражение)
 {id:2722,kz:"Қарсылас",ru:"Соперник",topic:"sport",example_kz:"Спорттағы қарсылас",example_ru:"Соперник в спорте"},
 {id:2723,kz:"Қарта",ru:"Карта (географическая); старческая",topic:"travel",example_kz:"Дүние қартасы",example_ru:"Карта мира"},
 {id:2724,kz:"Қартаю",ru:"Стареть",topic:"health",example_kz:"Ол тез қартайды",example_ru:"Он быстро постарел"},
@@ -6748,9 +6756,32 @@ alert('Не удалось создать файл резервной копии
 }
 }
 
-function importProgress(event){
-const file=event.target.files&&event.target.files[0];
-if(!file)return;
+// === ВОССТАНОВЛЕНИЕ ИЗ ФАЙЛА: двухшаговый процесс (предпросмотр → подтверждение) ===
+// Раньше файл сразу применялся после единственного window.confirm() без
+// подробностей — пользователь не видел, ЧТО именно восстановится (сколько
+// слов, дата копии, серия дней), и мог случайно перезаписать свежий прогресс
+// старым файлом. Теперь: 1) файл выбирается (кликом или drag-and-drop),
+// 2) читается и проверяется, 3) показывается человекочитаемая сводка в
+// #importPreview, 4) прогресс применяется только по явному нажатию кнопки
+// "Восстановить" в этой сводке. pendingImportData хранит проверенные данные
+// между шагами 2 и 4.
+let pendingImportData=null;
+
+function handleImportDrop(event){
+event.preventDefault();
+document.getElementById('importDropZone').classList.remove('drop-active');
+const file=event.dataTransfer&&event.dataTransfer.files&&event.dataTransfer.files[0];
+handleImportFileSelected(file);
+}
+
+function handleImportFileSelected(file){
+if(!file){showImportError('Не удалось распознать файл. Перетащите именно файл резервной копии или нажмите на зону, чтобы выбрать его.');return}
+hideImportError();
+if(file.type&&file.type!=='application/json'&&!file.name.toLowerCase().endsWith('.json')){
+showImportError('Это не JSON-файл. Нужен файл, который вы ранее скачали кнопкой «Скачать файл копии» — обычно называется qazaq-tili-progress-ГГГГ-ММ-ДД.json.');
+document.getElementById('importFileInput').value='';
+return;
+}
 const reader=new FileReader();
 reader.onload=()=>{
 try{
@@ -6777,10 +6808,69 @@ const isValid=incoming&&typeof incoming==='object'
 &&typeof incoming.daily.goalCount==='number'
 &&incoming.settings&&typeof incoming.settings==='object';
 if(!isValid){
-alert('Файл не похож на резервную копию прогресса этого приложения — проверьте, что выбран правильный файл.');
+showImportError('Файл не похож на резервную копию прогресса этого приложения — проверьте, что выбран правильный файл.');
+document.getElementById('importFileInput').value='';
 return;
 }
-if(!confirm('Текущий прогресс будет заменён данными из файла. Продолжить?'))return;
+pendingImportData={incoming,exportedAt:parsed&&parsed.exportedAt?parsed.exportedAt:null};
+showImportPreview(pendingImportData);
+}catch(e){
+showImportError('Не удалось прочитать файл. Убедитесь, что это корректный JSON, экспортированный из этого приложения (кнопка «Скачать файл копии»).');
+}finally{
+document.getElementById('importFileInput').value='';
+}
+};
+reader.onerror=()=>{
+showImportError('Не удалось прочитать файл. Попробуйте выбрать его ещё раз.');
+document.getElementById('importFileInput').value='';
+};
+reader.readAsText(file);
+}
+
+function showImportError(message){
+const el=document.getElementById('importError');
+el.textContent=message;
+el.style.display='block';
+document.getElementById('importPreview').style.display='none';
+}
+
+function hideImportError(){
+document.getElementById('importError').style.display='none';
+}
+
+function showImportPreview(payload){
+hideImportError();
+const incoming=payload.incoming;
+const wordCount=Object.keys(incoming.words||{}).length;
+const learnedCount=Object.values(incoming.words||{}).filter(w=>w&&w.correct>0).length;
+const streak=incoming.streak||0;
+const bestStreak=incoming.bestStreak||0;
+const dailyGoal=(incoming.settings&&incoming.settings.dailyGoal)||20;
+let exportedLabel='неизвестна';
+if(payload.exportedAt){
+const d=new Date(payload.exportedAt);
+if(!isNaN(d))exportedLabel=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})+', '+d.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+}
+const currentWordCount=Object.keys((state&&state.words)||{}).length;
+const body=document.getElementById('importPreviewBody');
+body.innerHTML=`
+📅 Дата резервной копии: <b>${exportedLabel}</b><br>
+📚 Слов в прогрессе: <b>${wordCount}</b> (выучено: ${learnedCount})<br>
+🔥 Серия дней подряд: <b>${streak}</b> (рекорд: ${bestStreak})<br>
+🎯 Дневная цель: <b>${dailyGoal} слов</b><br>
+<span style="color:var(--orange)">⚠️ Текущий прогресс в этом браузере (${currentWordCount} слов) будет полностью заменён этими данными.</span>`;
+document.getElementById('importPreview').style.display='block';
+}
+
+function cancelImportPreview(){
+pendingImportData=null;
+document.getElementById('importPreview').style.display='none';
+hideImportError();
+}
+
+function confirmImport(){
+if(!pendingImportData){cancelImportPreview();return}
+const incoming=pendingImportData.incoming;
 localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
 // Тут state временно пересоздаётся "с нуля" только как заготовка перед
 // loadState(), которая тут же перечитает реальные данные из localStorage
@@ -6805,14 +6895,9 @@ if(dgInput)dgInput.value=state.settings.dailyGoal||20;
 updateGoalEstimate();
 try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
 updateBackupReminder();
+pendingImportData=null;
+document.getElementById('importPreview').style.display='none';
 alert('Прогресс восстановлен из файла.');
-}catch(e){
-alert('Не удалось прочитать файл. Убедитесь, что это корректный JSON, экспортированный из этого приложения.');
-}finally{
-event.target.value='';
-}
-};
-reader.readAsText(file);
 }
 
 /* === AI CHAT (OpenRouter) === */
