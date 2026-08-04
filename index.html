@@ -1113,6 +1113,12 @@ nav#mainNav{
 
 /* ── HARD WORDS ────────────────────────────────────────────── */
 /* ── SETTINGS ──────────────────────────────────────────────── */
+.settings-group-title{
+  font-size:.68rem;font-weight:800;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.5px;
+  margin:1rem 0 .3rem;
+}
+.settings-group-title:first-child{margin-top:0}
 .settings-row{
   display:flex;align-items:center;justify-content:space-between;
   padding:.65rem 0;border-bottom:1.5px solid var(--border);gap:.5rem
@@ -1164,6 +1170,13 @@ input.s-pass:focus{border-color:var(--blue)}
 .btn-danger{border-color:var(--red);color:var(--red);background:var(--red-bg)}
 .s-num-group{display:flex;align-items:center;gap:.4rem}
 .s-num-unit{font-size:.8rem;color:var(--text2);font-weight:700}
+.dict-loading{display:flex;align-items:center;gap:.5rem;color:var(--text3);font-size:.83rem}
+.dict-spinner{
+  width:14px;height:14px;flex:0 0 auto;border-radius:50%;
+  border:2px solid var(--border);border-top-color:var(--blue);
+  animation:dict-spin .7s linear infinite;
+}
+@keyframes dict-spin{to{transform:rotate(360deg)}}
 .import-box{margin-top:.4rem;padding:.75rem;border-radius:var(--radius-xs);background:var(--card2)}
 .import-box-title{font-size:.8rem;font-weight:700;margin-bottom:.35rem;color:var(--text)}
 .import-box-body{font-size:.78rem;color:var(--text2);line-height:1.6}
@@ -1524,7 +1537,7 @@ input.s-pass:focus{border-color:var(--blue)}
       <button class="btn-sm" onclick="clearChatHistory()" style="font-size:.72rem">Очистить</button>
     </div>
     <div id="chatKeyNotice" class="chat-notice">
-      Для работы ИИ-чата нужен бесплатный ключ OpenRouter (не путать с озвучкой слов — это разные сервисы). Добавьте его в разделе «Ещё → Настройки → Ключ OpenRouter».
+      Сейчас работает простой перевод без ИИ. Для полноценного чата (объяснения, диалог) добавьте бесплатный ключ OpenRouter в «Ещё → Настройки».
     </div>
     <div class="chat-window" id="chatWindow"></div>
     <div class="chat-input-row">
@@ -1542,6 +1555,7 @@ input.s-pass:focus{border-color:var(--blue)}
   <div class="card">
     <p class="card-title">Настройки</p>
 
+    <div class="settings-group-title">Обучение</div>
     <div class="settings-row">
       <div class="settings-label">Скорость озвучки</div>
       <select id="defaultSpeed" class="s-select" onchange="saveSettings()">
@@ -1553,34 +1567,21 @@ input.s-pass:focus{border-color:var(--blue)}
     <div class="settings-row">
       <div class="settings-label">Слов в день</div>
       <div class="s-num-group">
-        <!-- БАГФИКС: атрибут value был "5", а реальное значение по умолчанию в
-             JS (state.settings.dailyGoal) — 20 (см. объявление state). Это
-             значение всё равно перезаписывается функцией renderSettings/при
-             открытии настроек (document.getElementById('dailyGoalInput').value=
-             state.settings.dailyGoal||20), так что бага в поведении по факту не
-             было, но до первой такой перерисовки в разметке было "5", что вводит
-             в заблуждение при чтении/редактировании кода. value и min здесь —
-             разные вещи: min=5 это нижняя граница ввода (см. saveCustomDailyGoal,
-             там тоже проверка val>=5), а value — начальное отображаемое число,
-             оно должно совпадать с реальным дефолтом состояния. -->
-        <input type="number" id="dailyGoalInput" value="20" min="5" max="100"
+        <input type="number" id="dailyGoalInput" value="5" min="5" max="100"
           class="s-num" onchange="saveCustomDailyGoal()" oninput="clampDailyGoalInput();updateGoalEstimate()">
         <span class="s-num-unit">слов</span>
       </div>
     </div>
-    <!-- Оценка "слов в месяц/неделю" при текущем дневном лимите — считается на
-         лету от значения поля #dailyGoalInput (oninput, ещё до сохранения), чтобы
-         пользователь видел эффект настройки сразу, не дожидаясь onchange/blur.
-         См. updateGoalEstimate(). Неделя = 7 дней, месяц условно = 30 дней
-         (примерная оценка, а не точный календарный расчёт). -->
+    <!-- Оценка "слов в месяц/неделю" — считается на лету, см. updateGoalEstimate(). -->
     <div class="settings-row no-top-pad">
       <div class="goal-estimate" id="goalEstimateText"></div>
     </div>
 
+    <div class="settings-group-title">ИИ-чат</div>
     <div class="settings-row settings-col">
       <div>
-        <div class="settings-label">Ключ OpenRouter (для ИИ-чата)</div>
-        <div class="settings-sub">Отвечает только за ИИ-чат (перевод/исправление текста), не за озвучку слов. Бесплатный ключ — openrouter.ai (без карты). Хранится только в браузере.</div>
+        <div class="settings-label">Ключ OpenRouter</div>
+        <div class="settings-sub">Бесплатно на openrouter.ai, хранится только в браузере.</div>
       </div>
       <input type="password" id="openrouterKeyInput" placeholder="sk-or-v1-..."
         class="s-pass" onchange="saveOpenRouterKey()">
@@ -1595,45 +1596,31 @@ input.s-pass:focus{border-color:var(--blue)}
         <option value="openrouter/free">Авто</option>
       </select>
     </div>
-
     <div class="settings-row settings-col">
       <div>
-        <div class="settings-label">Озвучка слов</div>
-        <!-- Раньше здесь было подключение платного стороннего сервиса (ElevenLabs) —
-             убрано: у него нет официальной поддержки казахского языка, поэтому
-             произношение звучало с посторонним акцентом (см. обсуждение с
-             пользователем). Теперь озвучка — только через голос браузера/ОС
-             (Web Speech API, kk-KZ) — см. playWithBrowserVoice(). Это бесплатно,
-             не требует ключей, и на устройствах с казахским голосом ОС звучит
-             точнее любого стороннего "мультиязычного" сервиса. -->
-        <div class="settings-sub">Используется казахский голос браузера/ОС (kk-KZ), если он установлен на устройстве. Ключи сторонних сервисов не нужны.</div>
+        <div class="settings-label">Без ключа</div>
+        <div class="settings-sub">Если ключа нет — чат сам переключится на встроенный переводчик (проще, без ИИ).</div>
       </div>
     </div>
 
-    <div class="settings-sub">Прогресс хранится только в этом браузере. Чтобы не потерять его или перенести на другое устройство — скачайте файл резервной копии и сохраните его (например, в облачное хранилище файлов или почту).</div>
+    <div class="settings-group-title">Озвучка слов</div>
+    <div class="settings-row settings-col">
+      <!-- Только голос браузера/ОС (Web Speech API, kk-KZ) — бесплатно, без ключей. -->
+      <div class="settings-sub">Голос браузера/ОС (kk-KZ), если установлен на устройстве. Ключи не нужны.</div>
+    </div>
+
+    <div class="settings-group-title">Данные</div>
     <div class="settings-row">
       <div class="settings-label">Резервная копия</div>
-      <button class="btn-sm" onclick="exportProgress()">📥 Скачать файл копии</button>
+      <button class="btn-sm" onclick="exportProgress()">📥 Скачать</button>
     </div>
     <div id="backupReminder" class="settings-sub tight"></div>
-
-    <!-- БАГФИКС (дизайн, по просьбе пользователя): раньше здесь была большая
-         зона "Перетащите файл сюда или нажмите" (drag-and-drop drop-zone) —
-         визуально она сильно выделялась на фоне остальных строк настроек
-         (пунктирная рамка, две строки текста, свой отдельный стиль), из-за
-         чего ломался единый стиль страницы. Теперь это обычная кнопка в
-         строке "Восстановить из файла", как и остальные действия в
-         настройках (см. "Резервная копия", "Сбросить прогресс" рядом).
-         Функциональность не потеряна: клик по кнопке всё так же открывает
-         системный выбор файла (см. handleImportFileSelected) — просто без
-         визуальной зоны под drag-and-drop. -->
     <div class="settings-row">
-      <div class="settings-label">Восстановить из файла</div>
+      <div class="settings-label">Восстановить</div>
       <button class="btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Выбрать файл</button>
       <input type="file" id="importFileInput" accept="application/json,.json"
         style="display:none" onchange="handleImportFileSelected(event.target.files&&event.target.files[0])">
     </div>
-    <div class="settings-sub tight">Файл вида qazaq-tili-progress-ГГГГ-ММ-ДД.json</div>
     <div id="importPreview" class="import-box" style="display:none">
       <div class="import-box-title">Что в этом файле:</div>
       <div id="importPreviewBody" class="import-box-body"></div>
@@ -4567,7 +4554,7 @@ const DIALOGUES=[
 // не создавай отдельный счётчик мимо updateWordProgress() — всегда проводи
 // результат через неё, иначе снова разъедутся "Дневная цель" и getDueWords().
 // ──────────────────────────────────────────────────────────────────────
-let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:5},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 const STORAGE_KEY='qazaq_tili_v2';
 
 function loadState(){
@@ -4632,7 +4619,7 @@ const yesterday=new Date(Date.now()-86400000).toDateString();
 // оно по-прежнему считает только новые слова и используется ИСКЛЮЧИТЕЛЬНО
 // внутри getDueWords() как лимит того, сколько новых слов выдавать за день,
 // не влияя больше ни на что видимое пользователю.
-const goalWasMet=(state.daily.progressCount||0)>=(state.settings.dailyGoal||20);
+const goalWasMet=(state.daily.progressCount||0)>=(state.settings.dailyGoal||5);
 if(state.daily.date===yesterday&&goalWasMet){state.streak=(state.streak||0)+1}
 else if(state.daily.date!==today){state.streak=0}
 // Лучший стрик (рекорд) — отдельное поле, которое никогда не обнуляется,
@@ -4677,7 +4664,7 @@ if('newCount' in state.daily)delete state.daily.newCount;
 // везде в приложении, а не только при ручном вводе в Настройках.
 if(state.settings){
 const g=parseInt(state.settings.dailyGoal);
-if(!Number.isFinite(g)||g<5)state.settings.dailyGoal=20;
+if(!Number.isFinite(g)||g<5)state.settings.dailyGoal=5;
 else if(g>100)state.settings.dailyGoal=100;
 else state.settings.dailyGoal=g;
 }
@@ -4751,7 +4738,7 @@ const newWords=[];
 // "все слова уже пройдены", хотя реально пользователь просто не может
 // начать. В остальных местах чтения dailyGoal уже стоит защита ||20 —
 // добавляем её и сюда для единообразия.
-const goal=state.settings.dailyGoal||20;
+const goal=state.settings.dailyGoal||5;
 WORDS.forEach(w=>{
 const ws=state.words[w.id];
 if(!ws){
@@ -5991,7 +5978,7 @@ const prevExt=document.getElementById('extDictResult');
 results.innerHTML=localHtml+(prevExt?prevExt.outerHTML:'<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" style="color:var(--text3);font-size:.83rem">Печатайте, поиск начнётся, когда вы остановитесь...</div></div>');
 return;
 }
-results.innerHTML=localHtml+`<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" style="color:var(--text3);font-size:.83rem">Поиск...</div></div>`;
+results.innerHTML=localHtml+`<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" class="dict-loading"><span class="dict-spinner"></span>Идёт поиск, обычно занимает пару секунд...</div></div>`;
 fetchExternalDict(query);
 }
 
@@ -6201,6 +6188,27 @@ const unique=[...new Set(results)].slice(0,6);
 return unique.length>0?unique:null;
 }
 
+// ── Резервный перевод для чата без ИИ-ключа ──────────────────────────────
+// Используется в sendChatMessage(), когда ключ OpenRouter не задан. Это не
+// полноценный ИИ-чат (нет объяснений, грамматики, диалога) — просто прямой
+// перевод введённой фразы через MyMemory (бесплатно, без ключа, тот же
+// сервис, что уже используется во внешнем словаре — см. tryMyMemoryLookup()).
+// Направление определяем эвристикой: если в тексте есть казахские спецбуквы
+// (ә,і,ң,ғ,ү,ұ,қ,ө,һ) — считаем, что это kk->ru, иначе ru->kk.
+function detectChatLang(text){
+return /[әіңғүұқөһ]/i.test(text)?'kk':'ru';
+}
+async function plainTranslateFallback(text){
+const fromLang=detectChatLang(text);
+const toLang=fromLang==='kk'?'ru':'kk';
+const results=await tryMyMemoryLookup(text,fromLang,toLang);
+if(!results||results.length===0){
+return'⚠ Не удалось найти перевод для этой фразы через бесплатный переводчик. Попробуйте более короткую или простую фразу, либо добавьте ключ OpenRouter в Настройках для полноценного ИИ-чата.';
+}
+const langLabel=fromLang==='kk'?'kk → ru':'ru → kk';
+return`🌐 Перевод (${langLabel}): ${results[0]}\n\nℹ️ Это простой перевод без ИИ (работает без ключа). Для объяснений и диалога добавьте бесплатный ключ OpenRouter в Настройках.`;
+}
+
 async function fetchExternalDict(query){
 const el=document.getElementById('extDictLoading');
 if(!el)return;
@@ -6406,7 +6414,7 @@ const wordsCount=history[dateKey]||0;
 // зелёный означает конкретно "дневная цель выполнена" — то есть в этот
 // день пройдено слов не меньше, чем задано в Настройках → Дневная цель
 // (state.settings.dailyGoal). Точки-индикаторы убраны — не нужны.
-const goal=state.settings.dailyGoal||20;
+const goal=state.settings.dailyGoal||5;
 const goalMet=wordsCount>=goal;
 let cls='week-day';
 if(isToday)cls+=' today';
@@ -6453,7 +6461,7 @@ function updateDailyProgress(){
 // Если dailyGoal когда-либо окажется undefined или 0 (повреждённый файл
 // импорта, будущая ошибка миграции), done/goal*100 давало бы NaN/Infinity,
 // и прогресс-бар "Дневная цель" сломался бы визуально (ширина NaN%).
-const goal=state.settings.dailyGoal||20;
+const goal=state.settings.dailyGoal||5;
 const done=state.daily.progressCount||0;
 const pct=Math.min(100,Math.round(done/goal*100));
 document.getElementById('dailyProgress').style.width=pct+'%';
@@ -6486,7 +6494,7 @@ document.getElementById('dailyLabel').textContent=`${done} / ${goal} слов`;
 // в loadState() при переходе на следующий день (см. комментарий там). Так что
 // это чисто отображаемая величина, а не подмена хранимого состояния.
 function getDisplayStreak(){
-const goal=state.settings.dailyGoal||20;
+const goal=state.settings.dailyGoal||5;
 const goalMetToday=(state.daily.progressCount||0)>=goal;
 return goalMetToday?(state.streak||0)+1:(state.streak||0);
 }
@@ -6544,7 +6552,7 @@ const f=document.createElement('span');f.className='fire';f.textContent='🔥';
 ring.appendChild(f);
 }
 el.style.display='flex';
-const goal=state.settings.dailyGoal||20;
+const goal=state.settings.dailyGoal||5;
 const done=state.daily.progressCount||0;
 const goalMetToday=done>=goal;
 // Кольцо прогресса вокруг огонька — тот же % выполнения дневной цели,
@@ -6585,7 +6593,7 @@ const pop=document.getElementById('streakPopover');
 if(!pop)return;
 const displayStreak=getDisplayStreak();
 const best=Math.max(state.bestStreak||0,displayStreak);
-const goal=state.settings.dailyGoal||20;
+const goal=state.settings.dailyGoal||5;
 const done=state.daily.progressCount||0;
 const goalMetToday=done>=goal;
 const noteHtml=goalMetToday
@@ -6686,7 +6694,7 @@ const el=document.getElementById('goalEstimateText');
 if(!el)return;
 const input=document.getElementById('dailyGoalInput');
 let val=input?parseInt(input.value):NaN;
-if(!Number.isFinite(val)||val<1)val=state.settings.dailyGoal||20;
+if(!Number.isFinite(val)||val<1)val=state.settings.dailyGoal||5;
 if(val>100)val=100;
 const perWeek=val*7;
 const perMonth=val*30;
@@ -6701,7 +6709,7 @@ localStorage.removeItem(STORAGE_KEY);
 // Если завтра снова понадобится добавить/переименовать поле дневной статистики —
 // правь во всех местах, где создаётся "чистый" state.daily: основное
 // объявление, loadState(), resetProgress(), importProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:5},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 saveState();
 updateStats();
 initQueue();
@@ -6885,7 +6893,7 @@ localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
 // и сама выполнит миграцию полей (см. loadState). Форма daily здесь всё
 // равно должна совпадать с основным объявлением state — см. примечание в
 // resetProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:20},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:5},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 loadState();
 updateStats();
 initQueue();
@@ -6899,7 +6907,7 @@ renderDialogues();
 // например, dailyGoal:500 поле в Настройках продолжало бы показывать
 // старое отображаемое число до следующего открытия вкладки Настроек.
 const dgInput=document.getElementById('dailyGoalInput');
-if(dgInput)dgInput.value=state.settings.dailyGoal||20;
+if(dgInput)dgInput.value=state.settings.dailyGoal||5;
 updateGoalEstimate();
 try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
 updateBackupReminder();
@@ -7044,19 +7052,6 @@ if(!input)return;
 const text=input.value.trim();
 if(!text)return;
 const apiKey=getOpenRouterKey();
-if(!apiKey){
-// БАГ (мелкий, некритичный): showSection('settings') сама корректно подсвечивает
-// нужную кнопку — см. showSection(), блок про moreSheet. Строки ниже пытались
-// сделать то же самое вручную, но искали кнопку "Настройки" внутри #mainNav —
-// а она находится в #moreSheet (открывается через "Ещё"), поэтому find()
-// всегда возвращал undefined и весь блок ничего не делал. Убрано как мёртвый
-// код; showSection('settings') и так подсвечивает нужный пункт в шторке "Ещё".
-showSection('settings');
-const keyInput=document.getElementById('openrouterKeyInput');
-if(keyInput)keyInput.focus();
-alert('Сначала добавьте бесплатный ключ OpenRouter в Настройках, чтобы пользоваться ИИ-чатом.');
-return;
-}
 
 chatHistory.push({role:'user',content:text});
 saveChatHistory();
@@ -7074,6 +7069,28 @@ if(win){win.appendChild(typingEl);win.scrollTop=win.scrollHeight}
 chatSending=true;
 const sendBtn=document.getElementById('chatSendBtn');
 if(sendBtn)sendBtn.disabled=true;
+
+// Без ключа OpenRouter — используем встроенный переводчик без ИИ (MyMemory,
+// бесплатный, без ключа). Это не полноценный чат, а простой перевод фразы
+// туда-обратно kk<->ru, но он работает "из коробки" для всех.
+if(!apiKey){
+try{
+const reply=await plainTranslateFallback(text);
+const typing=document.getElementById('chatTypingIndicator');
+if(typing)typing.remove();
+chatHistory.push({role:'assistant',content:reply});
+}catch(e){
+const typing=document.getElementById('chatTypingIndicator');
+if(typing)typing.remove();
+chatHistory.push({role:'assistant',content:'⚠ Не удалось перевести фразу (нет интернета или сервис перевода недоступен). Попробуйте ещё раз, либо добавьте бесплатный ключ OpenRouter в Настройках для полноценного ИИ-чата.'});
+}finally{
+chatSending=false;
+if(sendBtn)sendBtn.disabled=false;
+saveChatHistory();
+renderChatMessages();
+}
+return;
+}
 
 try{
 const messages=[
@@ -7321,7 +7338,7 @@ updateDailyProgress();
 }
 });
 document.getElementById('defaultSpeed').value=state.settings.speed;
-document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||20;
+document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||5;
 updateGoalEstimate();
 loadOpenRouterSettings();
 updateStats();
