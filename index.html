@@ -975,6 +975,18 @@ nav#mainNav{
   background:var(--yellow-bg);color:#92600e;
   border:2px solid var(--yellow);display:block;
 }
+/* Предупреждения об озвучке (см. showAudioWarning() в JS) — визуально похож
+   на .feedback.hint, но это отдельный, самостоятельный блок: не связан с
+   результатом ответа на слово и может появляться независимо от того,
+   отвечено ли уже на текущую карточку. */
+.audio-warning{
+  padding:.75rem;border-radius:var(--radius-sm);
+  margin-top:.6rem;font-weight:700;
+  text-align:center;font-size:.88rem;
+  line-height:1.45;
+  background:var(--yellow-bg);color:#92600e;
+  border:2px solid var(--yellow);
+}
 
 /* ── STATS SECTION ─────────────────────────────────────────── */
 .stats-grid{
@@ -1437,6 +1449,9 @@ input.s-pass:focus{border-color:var(--blue)}
     <div id="replayAudioRow" class="utility-row" style="display:none">
       <button class="btn-sm" id="replayAudioBtn" onclick="playAudio()" style="display:none">🔊 Повторить аудио</button>
     </div>
+    <!-- Отдельный блок для предупреждений об озвучке (см. showAudioWarning()) —
+         не путать с #feedback, который показывает только результат ответа. -->
+    <div class="audio-warning" id="audioWarning" style="display:none"></div>
     <div class="feedback" id="feedback"></div>
     <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
     <button class="btn btn-skip" id="skipBtn" onclick="skipWord()" title="Слово не будет засчитано как выученное">Не знаю / Пропустить</button>
@@ -4852,6 +4867,7 @@ document.getElementById('feedback').style.display='';
 document.getElementById('feedback').textContent=minutesLeft?`Следующее слово вернётся на проверку примерно через ${minutesLeft} мин. Зайдите чуть позже!`:'Возвращайтесь чуть позже для повторения.';
 document.getElementById('nextBtn').style.display='none';
 hideStickyNext();
+hideAudioWarning();
 const quizEl=document.getElementById('quizOptions');if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');if(audioEl)audioEl.remove();
 const toggleEl=document.getElementById('inputModeToggle');if(toggleEl)toggleEl.remove();
@@ -4936,15 +4952,14 @@ const w=state.current;
 const topic=TOPICS.find(t=>t.id===w.topic);
 document.getElementById('wordTopic').textContent=topic?topic.name:'';
 document.getElementById('wordExample').style.display='none';
-// БАГФИКС: блок #feedback используется и для подсказки (showHint), и для
-// предупреждения об озвучке (showAudioWarning) — обе функции задают ему
-// НЕ через класс, а напрямую через style.background/color/display (см. их
-// код). Сброс одного только className здесь эти инлайн-стили не убирал,
-// поэтому если на предыдущей карточке успела показаться подсказка или
-// предупреждение "казахский голос недоступен", пустая жёлтая плашка молча
-// оставалась видна поверх новой карточки слова, пока пользователь не отвечал
-// (только тогда showFeedback() принудительно скрывает #feedback). Теперь при
-// показе новой карточки инлайн-стили сбрасываются полностью, а не только класс.
+// БАГФИКС: блок #feedback используется и для подсказки (showHint) — она
+// задаёт стили НЕ через класс, а напрямую через style.background/color/display
+// (см. её код). Сброс одного только className здесь эти инлайн-стили не убирал,
+// поэтому если на предыдущей карточке успела показаться подсказка, пустая
+// жёлтая плашка молча оставалась видна поверх новой карточки слова, пока
+// пользователь не отвечал (только тогда showFeedback() принудительно скрывает
+// #feedback). Теперь при показе новой карточки инлайн-стили сбрасываются
+// полностью, а не только класс.
 const fbReset=document.getElementById('feedback');
 fbReset.className='feedback';
 fbReset.textContent='';
@@ -4953,6 +4968,10 @@ fbReset.style.background='';
 fbReset.style.color='';
 const trReset=document.getElementById('wordTranslation');
 if(trReset){trReset.style.display='none';trReset.textContent='';}
+// Предупреждение об озвучке (showAudioWarning) теперь живёт в отдельном
+// #audioWarning (см. её код) — сбрасываем и его, чтобы оно не осталось видно
+// на новой карточке, если было показано на предыдущей.
+hideAudioWarning();
 document.getElementById('nextBtn').style.display='none';
 hideStickyNext();
 document.getElementById('answerInput').value='';
@@ -5479,13 +5498,16 @@ if(!state.daily.answeredIds.includes(id))state.daily.answeredIds.push(id);
 // Записываем активность за сегодня в историю (для корректного отображения недели)
 // БАГФИКС: раньше сюда писалось answeredIds.length — число ВСЕХ уникальных
 // отвеченных слов за день (включая повторы и даже слова, на которые в итоге
-// ответили неверно). Это НЕ то же самое, что goalCount (только новые слова,
-// отвеченные ВЕРНО — именно это число показано пользователю как "Дневная
-// цель: X/Y слов" в самом интерфейсе тренировки). Из-за расхождения
-// недельный календарь мог закрашивать день как "цель выполнена" по одной
-// метрике, а страйк — считать по другой, и они расходились (см. фидбэк
-// пользователя: страйк 3 дня, а зелёных дней в календаре только 2). Теперь
-// обе места (renderWeekGrid и loadState) используют goalCount.
+// ответили неверно). Это НЕ то же самое, что progressCount (растёт только от
+// ВЕРНЫХ ответов, и на новые слова, и на повторы — именно это число показано
+// пользователю как "Дневная цель: X/Y слов" в самом интерфейсе тренировки).
+// Из-за расхождения недельный календарь мог закрашивать день как "цель
+// выполнена" по одной метрике, а страйк — считать по другой, и они расходились
+// (см. фидбэк пользователя: страйк 3 дня, а зелёных дней в календаре только 2).
+// Теперь обе места (renderWeekGrid и loadState) используют progressCount —
+// НЕ goalCount, у которого другое назначение (см. комментарий над state.daily
+// в объявлении состояния выше — goalCount считает только новые слова и служит
+// исключительно внутренним лимитом внутри getDueWords()).
 if(!state.activityHistory)state.activityHistory={};
 const todayKey=new Date().toDateString();
 state.activityHistory[todayKey]=state.daily.progressCount;
@@ -5580,14 +5602,28 @@ showAudioWarning('Казахский голос недоступен на это
 window.speechSynthesis.speak(u);
 }
 
+// БАГФИКС: раньше предупреждение об аудио ("казахский голос недоступен" и
+// т.п.) показывалось через #feedback — тот же блок, который showFeedback()
+// использует для результата ответа (✓/✗) и который явно скрыт до ответа на
+// слово (display:none, см. showFeedback()). Если пользователь нажимал
+// "Прослушать"/"Повторить аудио" ДО того как ответил на текущее слово,
+// #feedback внезапно появлялся в том месте, где обычно вообще ничего нет до
+// ответа — это выглядело так, будто уже показан какой-то результат ответа,
+// хотя пользователь ещё не отвечал. Также при следующем ответе на это же
+// слово showFeedback() перезаписывал #feedback реальным результатом, из-за
+// чего предупреждение об аудио тут же пропадало, даже если проблема с
+// голосом никуда не делась. Теперь у аудио-предупреждения отдельный, всегда
+// самостоятельный блок #audioWarning — не конфликтует ни с результатом
+// ответа, ни с видимостью #feedback.
 function showAudioWarning(msg){
-const fb=document.getElementById('feedback');
-if(!fb)return;
-fb.className='feedback';
-fb.style.background='var(--yellow-bg)';
-fb.style.color='var(--yellow)';
-fb.textContent=msg.startsWith('⚠')?msg:`⚠ ${msg}`;
-fb.style.display='block';
+const aw=document.getElementById('audioWarning');
+if(!aw)return;
+aw.textContent=msg.startsWith('⚠')?msg:`⚠ ${msg}`;
+aw.style.display='block';
+}
+function hideAudioWarning(){
+const aw=document.getElementById('audioWarning');
+if(aw){aw.style.display='none';aw.textContent='';}
 }
 
 // БАГФИКС: раньше функция полагалась на глобальный/неявный browser-объект `event`
@@ -7349,12 +7385,53 @@ updateBackupReminder();
 
 // Офлайн-режим (Service Worker). Требует HTTPS — GitHub Pages это даёт
 // автоматически. При открытии без интернета отдаёт закэшированную копию сайта.
+// ДОБАВЛЕНО: раньше при выходе новой версии на GitHub Pages пользователь мог
+// продолжать видеть старую закэшированную страницу и не понимать, почему
+// изменения "не применились" — единственным очевидным способом это исправить
+// казалось вручную почистить "данные сайта" в браузере, а это заодно стирает
+// localStorage (стрики/прогресс/бэкапы), хотя кэш Service Worker и
+// localStorage — это два независимых хранилища и чистка одного никогда не
+// требовала чистки другого. Теперь sw.js после установки новой версии сам
+// шлёт сообщение SW_UPDATED — здесь мы его ловим и показываем маленькое
+// ненавязчивое уведомление с кнопкой "Обновить", по нажатию на которую просто
+// перезагружаем страницу (localStorage при этом не трогается вообще).
 if('serviceWorker' in navigator){
 window.addEventListener('load',()=>{
 navigator.serviceWorker.register('./sw.js').catch((e)=>{
 console.warn('[SW] регистрация не удалась:',e);
 });
 });
+// БАГФИКС: 'controllerchange' срабатывает не только при обновлении версии,
+// но и при самой первой установке Service Worker у нового пользователя
+// (когда self.clients.claim() первый раз берёт вкладку под контроль) — без
+// этой проверки тост "Доступна новая версия" ошибочно показывался бы при
+// первом же визите на сайт, хотя никакого обновления не было. Признак
+// настоящего обновления — на странице уже был активный controller ДО смены.
+let hadControllerBefore=!!navigator.serviceWorker.controller;
+let swUpdateReloaded=false;
+navigator.serviceWorker.addEventListener('message',(event)=>{
+if(event.data&&event.data.type==='SW_UPDATED'&&hadControllerBefore){
+showSwUpdateToast();
+}
+});
+navigator.serviceWorker.addEventListener('controllerchange',()=>{
+if(swUpdateReloaded)return;
+if(!hadControllerBefore){hadControllerBefore=true;return}
+showSwUpdateToast();
+});
+function showSwUpdateToast(){
+if(document.getElementById('swUpdateToast'))return;
+const toast=document.createElement('div');
+toast.id='swUpdateToast';
+toast.style.cssText='position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;background:#1db954;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.25);font-size:14px;display:flex;align-items:center;gap:10px;max-width:92vw;';
+toast.innerHTML='<span>Доступна новая версия сайта</span>';
+const btn=document.createElement('button');
+btn.textContent='Обновить';
+btn.style.cssText='background:#fff;color:#1db954;border:none;border-radius:6px;padding:6px 10px;font-weight:600;cursor:pointer;';
+btn.onclick=()=>{swUpdateReloaded=true;location.reload()};
+toast.appendChild(btn);
+document.body.appendChild(toast);
+}
 }
 
 </script>
