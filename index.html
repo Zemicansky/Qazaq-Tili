@@ -299,7 +299,7 @@ html{touch-action:pan-x pan-y}
 body{
   font-family:'Nunito',system-ui,-apple-system,sans-serif;
   background:var(--bg);color:var(--text);
-  line-height:1.5;min-height:100vh;
+  line-height:1.5;min-height:100vh;min-height:100dvh;
   -webkit-tap-highlight-color:transparent;
   overflow-x:hidden
 }
@@ -1320,6 +1320,7 @@ input.s-pass:focus{border-color:var(--blue)}
         <div id="streakPopover" class="streak-popover" onclick="event.stopPropagation()"></div>
       </div>
       <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Сменить тему">🌙</button>
+      <span id="storageWarningBadge" style="display:none;cursor:pointer;font-size:1.1rem;margin-left:.3rem" title="Не удалось сохранить данные в этом браузере — прогресс может не сохраниться. Нажмите, чтобы узнать больше." onclick="alert('Браузер не даёт сохранить данные (возможно, закончилось место в хранилище или включён приватный режим). Прогресс/чат могут не сохраниться при закрытии вкладки. Рекомендуем экспортировать прогресс файлом в Настройках → Резервная копия.')">⚠️</span>
     </div>
   </div>
 </header>
@@ -1677,6 +1678,36 @@ input.s-pass:focus{border-color:var(--blue)}
 <p style="font-size:.9rem;opacity:.9;color:rgba(255,255,255,.85)">Эти 7 правил — 80% всего, что нужно для разговора. Всё объяснено на пальцах, с реальными примерами из жизни.</p>
 </div>
 
+<div class="card" style="border-left:3px solid var(--purple)">
+<h2>Алфавит: 9 звуков, которых нет в русском</h2>
+<div style="background:rgba(156,100,247,.12);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--purple);color:var(--text)">
+<strong>Зачем это здесь:</strong> дальше в примерах эти буквы будут встречаться постоянно, поэтому полезно один раз увидеть их все вместе, прежде чем переходить к правилам.
+</div>
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.85rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.4rem;width:15%"><strong>Буква</strong></td><td style="padding:.4rem"><strong>Как примерно звучит</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">ә</td><td style="padding:.4rem">мягкое «а», как в англ. cat</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">ғ</td><td style="padding:.4rem">«г», произнесённое глубже в горле (похоже на украинское «г»)</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">қ</td><td style="padding:.4rem">твёрдое, глубокое «к», тоже из горла</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">ң</td><td style="padding:.4rem">носовое «н», как окончание -ng в англ. sing</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">ө</td><td style="padding:.4rem">округлённое «о», как немецкое ö или французское eu</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">ұ</td><td style="padding:.4rem">короткое глубокое «у», как в англ. book</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">ү</td><td style="padding:.4rem">мягкое «у», как немецкое ü или французское u</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">і</td><td style="padding:.4rem">короткое, мягкое «и»</td></tr>
+<tr><td style="padding:.4rem">һ</td><td style="padding:.4rem">лёгкий выдох, как англ. h в hello</td></tr>
+</table>
+</div>
+<p style="font-size:.85rem;color:var(--text2);margin-top:.5rem"><strong>Не старайтесь произнести идеально с первого раза</strong> — на слух они хорошо различимы в контексте фразы. А для правил ниже важнее другое: является гласный «передним» (ә, е, і, ө, ү) или «задним» (а, о, ұ, ы) — это и определяет, какой вариант суффикса выбрать.</p>
+</div>
+
+<div class="card" style="border-left:3px solid var(--blue)">
+<h2>Прежде чем начать: что такое «суффикс»</h2>
+<p style="font-size:.9rem;line-height:1.7">
+В казахском почти вся грамматика — это маленькие «приклейки» (суффиксы) в конце слова, а не отдельные слова, как в русском предлоги или местоимения. В русском такое тоже есть: «дом» → «дом<strong>ик</strong>», «читал» → «читал<strong>и</strong>» — к основе слова добавляется кусочек, который меняет смысл. В казахском на одно слово таких приклеек может «нанизаться» сразу несколько подряд — например, «дом» → «мой дом» → «в моём доме» — и это совершенно нормально, не путаница и не исключение.
+</p>
+<p style="font-size:.85rem;color:var(--text2)">Дальше в тексте слово <strong>«суффикс»</strong> (иногда — «аффикс», это то же самое) будет встречаться очень часто. Смысл всегда один: это кусочек, приклеенный к концу слова, который меняет его значение — «где?», «чей?», «не» и так далее.</p>
+</div>
+
 <div class="card" style="border-left:3px solid var(--blue)">
 <h2>1. ГЛАВНОЕ ПРАВИЛО: Глагол в конце</h2>
 <div style="background:var(--yellow-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--yellow);color:var(--text)">
@@ -1696,11 +1727,42 @@ input.s-pass:focus{border-color:var(--blue)}
 <p style="font-size:.85rem;color:var(--text2)"><strong>Запомните:</strong> Русский — СВО- порядок (сказуемое в середине). Казахский — ПОД-ДОП-СВО (глагол в конце). Просто переверните порядок слов.</p>
 </div>
 
+<div class="card" style="border-left:3px solid var(--blue)">
+<h2>Личные окончания глагола: -мын/-мін и другие</h2>
+<div style="background:var(--blue-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--blue);color:var(--text)">
+<strong>Правило:</strong> Раз глагол всегда в конце (Правило 1), то и подсказка «кто делает» тоже приклеена к нему в конце — отдельное слово-подлежащее вроде «я»/«ты» часто вообще не нужно.
+</div>
+<p style="font-size:.9rem;margin-bottom:.5rem"><strong>Настоящее/будущее время</strong> (на примере «бару» — идти):</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
+<table style="width:100%;font-size:.88rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.4rem"><strong>Лицо</strong></td><td style="padding:.4rem"><strong>Окончание</strong></td><td style="padding:.4rem"><strong>Пример</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Мен (я)</td><td style="padding:.4rem">-амын/-емін</td><td style="padding:.4rem">бар<strong>амын</strong> — я иду</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Сен (ты)</td><td style="padding:.4rem">-асың/-есің</td><td style="padding:.4rem">бар<strong>асың</strong> — ты идёшь</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Ол (он/она)</td><td style="padding:.4rem">-ады/-еді</td><td style="padding:.4rem">бар<strong>ады</strong> — он идёт</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Біз (мы)</td><td style="padding:.4rem">-амыз/-еміз</td><td style="padding:.4rem">бар<strong>амыз</strong> — мы идём</td></tr>
+<tr><td style="padding:.4rem">Олар (они)</td><td style="padding:.4rem">-ады/-еді</td><td style="padding:.4rem">бар<strong>ады</strong> — они идут</td></tr>
+</table>
+</div>
+<p style="font-size:.9rem;margin-bottom:.5rem"><strong>Прошедшее время</strong> (уже встречалось выше: бардық, келдім):</p>
+<div style="background:var(--bg);padding:1rem;border-radius:8px">
+<table style="width:100%;font-size:.88rem;border-collapse:collapse">
+<tr style="border-bottom:2px solid var(--accent)"><td style="padding:.4rem"><strong>Лицо</strong></td><td style="padding:.4rem"><strong>Окончание</strong></td><td style="padding:.4rem"><strong>Пример</strong></td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Мен (я)</td><td style="padding:.4rem">-дым/-дім/-тым/-тім</td><td style="padding:.4rem">кел<strong>дім</strong> — я пришёл</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Сен (ты)</td><td style="padding:.4rem">-дың/-дің/-тың/-тің</td><td style="padding:.4rem">кел<strong>дің</strong> — ты пришёл</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Ол (он/она)</td><td style="padding:.4rem">-ды/-ді/-ты/-ті</td><td style="padding:.4rem">кел<strong>ді</strong> — он пришёл</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:.4rem">Біз (мы)</td><td style="padding:.4rem">-дық/-дік/-тық/-тік</td><td style="padding:.4rem">бар<strong>дық</strong> — мы пошли</td></tr>
+<tr><td style="padding:.4rem">Олар (они)</td><td style="padding:.4rem">-ды/-ді/-ты/-ті</td><td style="padding:.4rem">кір<strong>ді</strong> — они зашли</td></tr>
+</table>
+</div>
+<p style="font-size:.85rem;color:var(--text2);margin-top:.5rem"><strong>Замечаете закономерность?</strong> Буква д/т в начале окончания выбирается по тому же принципу, что и в Правиле 2 ниже: после глухой согласной — «т», в остальных случаях — «д». Это тот же самый механизм, просто применённый к другому суффиксу.</p>
+</div>
+
 <div class="card" style="border-left:3px solid var(--green)">
 <h2>2. Слова-подставки: «в», «куда», «откуда»</h2>
 <div style="background:var(--green-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--green);color:var(--text)">
 <strong>Правило:</strong> Чтобы сказать «В школе», «В школу», «Из школы» — просто добавь суффикс к слову.
 </div>
+<p style="font-size:.85rem;color:var(--text2)">Похожая идея есть и в русском: «в школ<strong>е</strong>» (где?), «в школ<strong>у</strong>» (куда?), «из школ<strong>ы</strong>» (откуда?) — только у нас при этом меняется всё окончание слова. В казахском проще: слово не меняется, к нему просто приклеивается один и тот же тип суффикса с тремя вариантами звучания.</p>
 <p style="font-size:.9rem;margin-bottom:.5rem"><strong>Запомни 3 суффикса — и ты уже можешь говорить о местах:</strong></p>
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px;margin-bottom:.75rem">
@@ -1763,6 +1825,7 @@ input.s-pass:focus{border-color:var(--blue)}
 <div style="background:var(--blue-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--blue);color:var(--text)">
 <strong>Правило:</strong> В казахском нет слов «мой», «твой», «его». Вместо этого суффикс приклеивается к слову.
 </div>
+<p style="font-size:.85rem;color:var(--text2)">Похожая идея мелькает и в русском — например, «мам<strong>ин</strong> дом» вместо «дом мамы»: кусочек «-ин» приклеен прямо к слову и сам означает «принадлежит кому-то». В казахском так работает не только с именами, а с любым словом — и это как раз новый суффикс, отдельный от того, что был в Правиле 2.</p>
 <p style="font-size:.9rem;margin-bottom:.5rem"><strong>Запомни 3 суффикса:</strong></p>
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
@@ -1808,6 +1871,7 @@ input.s-pass:focus{border-color:var(--blue)}
 <div style="background:var(--red-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--red);color:var(--text)">
 <strong>Правило:</strong> Чтобы сделать глагол отрицательным, вставь перед окончанием один из трёх вариантов суффикса — <strong>-ма/-ме</strong> (после гласных и л/р/у/й), <strong>-ба/-бе</strong> (после м/н/ң и ж/з) или <strong>-па/-пе</strong> (после глухих согласных к/қ/п/с/т/ш и др.).
 </div>
+<p style="font-size:.85rem;color:var(--text2)">Это та же самая идея «приклейки», что и в Правилах 2–3, только здесь суффикс встраивается не в самый конец слова, а перед личным окончанием (Мен барамын → Мен бар<strong>ма</strong>ймын).</p>
 <p style="font-size:.9rem;margin-bottom:.5rem"><strong>Как это работает:</strong></p>
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
@@ -1832,6 +1896,7 @@ input.s-pass:focus{border-color:var(--blue)}
 <div style="background:rgba(167,139,250,.12);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid #a78bfa;color:var(--text)">
 <strong>Правило:</strong> Чтобы задать вопрос «да/нет», поставь <strong>-ма/-ме/-ба/-бе/-па/-пе</strong> в конец предложения.
 </div>
+<p style="font-size:.85rem;color:var(--text2)">По смыслу похоже на частицу «ли» в русском вопросе («пришёл <strong>ли</strong> он?»). Только в казахском это тот же принцип суффикса, что и выше: одна и та же частица, просто с вариантом звучания под конкретное слово.</p>
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
@@ -1848,6 +1913,10 @@ input.s-pass:focus{border-color:var(--blue)}
 <p style="font-size:.88rem">❓ <em>Тамақ дәмді ме?</em> — Еда вкусная?</p>
 <p style="font-size:.88rem">❓ <em>Ол келді ме?</em> — Он пришёл?</p>
 <p style="font-size:.88rem">❓ <em>Бұл қанша тұрады?</em> — Сколько это стоит?</p>
+</div>
+
+<div style="background:var(--card2);padding:.65rem 1rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.85rem;color:var(--text2);border-left:3px solid var(--text3)">
+🔗 <strong>Прежде чем читать дальше:</strong> держите в голове два суффикса из Правил 2 и 3 — падежный (где?/куда?/откуда?) и притяжательный (мой/твой/его). В следующем правиле они просто клеятся друг за другом на одно и то же слово.
 </div>
 
 <div class="card" style="border-left:3px solid var(--yellow)">
@@ -1883,6 +1952,7 @@ input.s-pass:focus{border-color:var(--blue)}
 <div style="background:var(--green-bg);padding:.65rem;border-radius:var(--radius-sm);margin-bottom:.65rem;font-size:.88rem;border-left:3px solid var(--green);color:var(--text)">
 <strong>Правило:</strong> Чтобы сказать «много», добавь один из трёх вариантов окончания — <strong>-лар/-лер</strong> (после гласных и р/у/й), <strong>-дар/-дер</strong> (после ж/з и м/н/ң) или <strong>-тар/-тер</strong> (после глухих согласных к/қ/п/с/т/ш и др.) — гласная (а или е) выбирается как обычно по последнему гласному звуку слова.
 </div>
+<p style="font-size:.85rem;color:var(--text2)">В русском тоже есть окончания множественного числа — «дом<strong>а</strong>», «стол<strong>ы</strong>», «книг<strong>и</strong>» — но их выбор зависит от рода слова. В казахском рода вообще нет, а вариант суффикса зависит только от последнего звука слова — по тому же принципу, что и во всех суффиксах выше.</p>
 
 <div style="background:var(--bg);padding:1rem;border-radius:8px">
 <table style="width:100%;font-size:.9rem;border-collapse:collapse">
@@ -1939,6 +2009,18 @@ input.s-pass:focus{border-color:var(--blue)}
 // Счётчик запросов внешнего словаря — используется fetchExternalDict() для
 // защиты от гонки при быстром вводе в поиске (см. подробный комментарий там).
 let dictRequestCounter=0;
+// БАГФИКС: раньше все сбои localStorage.setItem/getItem (например при
+// переполнении квоты браузера ~5-10МБ или в приватном режиме Safari) молча
+// проглатывались пустым catch(e){} — пользователь мог потерять прогресс,
+// ключ OpenRouter или историю чата и никогда об этом не узнать. Теперь любой
+// такой сбой один раз показывает ненавязчивый значок ⚠️ в шапке (без alert
+// "из коробки" — только по клику пользователя), не меняя саму архитектуру
+// сохранения. Вызывается из catch{} всех мест, где теряются реальные данные
+// пользователя (saveState/loadState/saveChatHistory/saveOpenRouterKey).
+function flagStorageError(){
+const badge=document.getElementById('storageWarningBadge');
+if(badge)badge.style.display='inline';
+}
 // ── THEME TOGGLE ──────────────────────────────────────────────
 function toggleTheme(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
@@ -4623,7 +4705,7 @@ delete saved.hintUsed;
 delete saved.cardInputMode;
 state={...state,...saved};
 }
-}catch(e){}
+}catch(e){flagStorageError()}
 const today=new Date().toDateString();
 if(state.daily.date!==today){
 const yesterday=new Date(Date.now()-86400000).toDateString();
@@ -4743,7 +4825,7 @@ ws.interval=ws.streak>=STREAK_TO_LEARN?Math.max(2,legacyDays):legacyDays;
 });
 }
 
-function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){}}
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){flagStorageError()}}
 
 const STREAK_TO_LEARN=3; // сколько раз подряд нужно правильно назвать слово, чтобы оно считалось выученным
 
@@ -7028,7 +7110,7 @@ try{return localStorage.getItem(OPENROUTER_MODEL_STORAGE)||DEFAULT_OPENROUTER_MO
 function saveOpenRouterKey(){
 const input=document.getElementById('openrouterKeyInput');
 if(!input)return;
-try{localStorage.setItem(OPENROUTER_KEY_STORAGE,input.value.trim())}catch(e){}
+try{localStorage.setItem(OPENROUTER_KEY_STORAGE,input.value.trim())}catch(e){flagStorageError()}
 }
 
 function saveOpenRouterModel(){
@@ -7038,7 +7120,7 @@ try{localStorage.setItem(OPENROUTER_MODEL_STORAGE,select.value)}catch(e){}
 }
 
 function saveChatHistory(){
-try{localStorage.setItem(CHAT_HISTORY_STORAGE,JSON.stringify(chatHistory.slice(-40)))}catch(e){}
+try{localStorage.setItem(CHAT_HISTORY_STORAGE,JSON.stringify(chatHistory.slice(-40)))}catch(e){flagStorageError()}
 }
 
 function renderChatSection(){
@@ -7560,12 +7642,12 @@ function closeOpenRouterGuide() {
 
 <!-- Модалка "Как подключить ИИ-чат" -->
 <div id="openrouterGuideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeOpenRouterGuide()">
-  <div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
+  <div style="background:var(--card);border-radius:16px;max-width:440px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <div style="font-size:18px;font-weight:800;">🤖 Как подключить полноценный ИИ-чат</div>
-      <button onclick="closeOpenRouterGuide()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;line-height:1;">×</button>
+      <button onclick="closeOpenRouterGuide()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
     </div>
-    <div style="font-size:15px;line-height:1.5;color:#333;">
+    <div style="font-size:15px;line-height:1.5;color:var(--text);">
       <div class="install-step">
         Без ключа чат уже работает — просто переводит фразу через бесплатный сервис MyMemory. Но с ключом OpenRouter вы получаете настоящего ИИ-собеседника: он объясняет грамматику, поддерживает разговор и понимает контекст.
       </div>
@@ -7581,18 +7663,18 @@ function closeOpenRouterGuide() {
 
 <!-- Модалка "Установить приложение" -->
 <div id="installGuideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeInstallGuide()">
-  <div style="background:#fff;border-radius:16px;max-width:420px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
+  <div style="background:var(--card);border-radius:16px;max-width:420px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
       <div style="font-size:18px;font-weight:800;">📲 Установка на главный экран</div>
-      <button onclick="closeInstallGuide()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;line-height:1;">×</button>
+      <button onclick="closeInstallGuide()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
     </div>
-    <div id="installGuideBody" style="font-size:15px;line-height:1.5;color:#333;"></div>
+    <div id="installGuideBody" style="font-size:15px;line-height:1.5;color:var(--text);"></div>
   </div>
 </div>
 <style>
-.install-step{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #eee;}
+.install-step{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);}
 .install-step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.install-note{color:#1db954;font-weight:600;border-bottom:none;}
+.install-note{color:var(--green);font-weight:600;border-bottom:none;}
 .install-icon{font-size:16px;}
 #androidInstallBtn{display:none;}
 </style>
