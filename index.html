@@ -1339,10 +1339,10 @@ input.s-pass:focus{border-color:var(--blue)}
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
     <span>Словарь</span>
   </button>
-  <button class="nav-btn" onclick="showSection('settings')" data-section="settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span>Настройки</span>
-  </button>
+  <!-- По просьбе пользователя: кнопка "Настройки" убрана из нижней панели —
+       остаётся только 4 иконки (Тренажёр, ИИ-чат, Словарь, Ещё). Сам раздел
+       Настроек никуда не делся, просто доступ к нему перенесён в шторку
+       "Ещё" (см. .more-grid ниже, кнопка showSectionFromMore('settings')). -->
   <button class="nav-btn" onclick="toggleMoreSheet()" id="moreNavBtn">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
     <span>Ещё</span>
@@ -1369,6 +1369,10 @@ input.s-pass:focus{border-color:var(--blue)}
     <button class="more-item" onclick="showSectionFromMore('stats')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Прогресс
+    </button>
+    <button class="more-item" onclick="showSectionFromMore('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Настройки
     </button>
   </div>
 </div>
@@ -1621,12 +1625,15 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div class="settings-row">
       <div class="settings-label">Модель ИИ-чата</div>
+      <!-- По просьбе пользователя: в выборе модели оставлена только Gemini Flash 1.5,
+           остальные варианты (Gemini 2.0 Flash, Qwen, Llama, Авто) убраны из UI.
+           Сам select оставлен (а не просто текст), чтобы saveOpenRouterModel()/
+           значение #openrouterModelSelect.value продолжали работать без изменений
+           в остальном коде. FALLBACK_MODELS ниже по файлу не тронут — это отдельный
+           внутренний механизм автоматического повтора при сбое ответа, а не выбор
+           пользователя. -->
       <select id="openrouterModelSelect" class="s-select" onchange="saveOpenRouterModel()">
-        <option value="google/gemini-flash-1.5:free">Gemini Flash 1.5 (рек.)</option>
-        <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash</option>
-        <option value="qwen/qwen-2.5-72b-instruct:free">Qwen 2.5 72B</option>
-        <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B</option>
-        <option value="openrouter/free">Авто</option>
+        <option value="google/gemini-flash-1.5:free">Gemini Flash 1.5</option>
       </select>
     </div>
     <div class="settings-row settings-col">
@@ -4734,13 +4741,28 @@ const yesterday=new Date(Date.now()-86400000).toDateString();
 // оно по-прежнему считает только новые слова и используется ИСКЛЮЧИТЕЛЬНО
 // внутри getDueWords() как лимит того, сколько новых слов выдавать за день,
 // не влияя больше ни на что видимое пользователю.
-const goalWasMet=(state.daily.progressCount||0)>=(state.settings.dailyGoal||5);
+// БАГФИКС (страйк сбрасывался при смене дневной цели, например на 10 слов):
+// раньше цель "была ли выполнена вчера" проверялась сравнением вчерашнего
+// progressCount с СЕГОДНЯШНИМ state.settings.dailyGoal. Если пользователь
+// менял цель в Настройках (скажем, с 5 на 10), это задним числом делало
+// вчерашний (и вообще любой прошлый) день "невыполненным", даже если по
+// цели, которая реально действовала вчера, он был выполнен — и страйк
+// сбрасывался в 0 без причины. Теперь берём цель, которая была сохранена
+// ИМЕННО для вчерашнего дня (state.daily.dailyGoalAtDate) — если её нет
+// (миграция со старой версии, где это не сохранялось), используем текущую
+// как разумный fallback только в этом случае.
+const goalForThatDay=state.daily.dailyGoalAtDate||state.settings.dailyGoal||5;
+const goalWasMet=(state.daily.progressCount||0)>=goalForThatDay;
 if(state.daily.date===yesterday&&goalWasMet){state.streak=(state.streak||0)+1}
 else if(state.daily.date!==today){state.streak=0}
 // Лучший стрик (рекорд) — отдельное поле, которое никогда не обнуляется,
 // используется в попапе статистики (см. toggleStreakPopover()).
 if((state.streak||0)>(state.bestStreak||0))state.bestStreak=state.streak;
-state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[]};
+// dailyGoalAtDate фиксирует цель дня НА МОМЕНТ начала этого дня — используется
+// при проверке "выполнена ли цель" этого дня в будущем (см. goalForThatDay
+// выше), чтобы последующая смена цели в Настройках не переписывала задним
+// числом уже прожитые дни.
+state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[],dailyGoalAtDate:state.settings.dailyGoal||5};
 state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 saveState();
 }
@@ -4748,6 +4770,10 @@ if(!state.streak)state.streak=0;
 if(!state.bestStreak)state.bestStreak=state.streak||0;
 if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
+// Миграция для тех, у кого сегодняшний state.daily уже был создан старой
+// версией без dailyGoalAtDate — берём текущую цель как разумный старт
+// (она и так совпадает с текущей на момент миграции).
+if(state.daily.dailyGoalAtDate===undefined)state.daily.dailyGoalAtDate=state.settings.dailyGoal||5;
 // Миграция со старого (багованного) поля newCount на новое goalCount: раньше
 // newCount рос от ошибок, поэтому его значение бессмысленно переносить как есть
 // — просто гарантируем, что новое поле существует и стартует с 0 у всех, кто
@@ -5610,7 +5636,19 @@ if(!state.daily.answeredIds.includes(id))state.daily.answeredIds.push(id);
 // исключительно внутренним лимитом внутри getDueWords()).
 if(!state.activityHistory)state.activityHistory={};
 const todayKey=new Date().toDateString();
-state.activityHistory[todayKey]=state.daily.progressCount;
+// БАГФИКС (стрик сбрасывается при смене дневной цели в Настройках): раньше
+// в activityHistory сохранялось только число пройденных слов за день, а
+// "выполнена ли цель" пересчитывалось задним числом при каждой проверке —
+// СРАВНЕНИЕМ с ТЕКУЩИМ state.settings.dailyGoal. Из-за этого, если человек
+// вчера прошёл 5 слов при цели "5" (и цель была выполнена), а сегодня
+// поменял цель в Настройках на 10 — вчерашний день внезапно переставал
+// засчитываться как "цель выполнена" (5<10), хотя на момент вчерашнего дня
+// цель была достигнута. Это ломало страйк и зелёные дни в недельном
+// календаре задним числом. Теперь вместе со счётчиком слов сохраняется и
+// goal, который действовал В ТОТ день — объект {count, goal} — и именно
+// он используется при проверке этого дня (см. renderWeekGrid и loadState),
+// а не сегодняшнее значение настройки.
+state.activityHistory[todayKey]={count:state.daily.progressCount,goal:state.settings.dailyGoal||5};
 saveState();
 updateStats();
 updateStreakDisplay();
@@ -5884,7 +5922,12 @@ function showSection(id){
 document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
 document.getElementById('sec-'+id).classList.add('active');
 // Обновляем активный таб в нижней навигации
-const mainSections=['train','chat','dictionary','settings'];
+// По просьбе пользователя 'settings' убран из mainSections — в нижней панели
+// для него больше нет отдельной кнопки (см. #mainNav), раздел открывается
+// только из шторки "Ещё" (showSectionFromMore('settings')), поэтому его
+// нужно обрабатывать так же, как 'topics'/'grammar'/'dialogues'/'stats' —
+// подсвечивать соответствующую кнопку внутри шторки, а не в нижней навигации.
+const mainSections=['train','chat','dictionary'];
 document.querySelectorAll('#mainNav button[data-section]').forEach(b=>b.classList.remove('active'));
 const activeBtn=document.querySelector('#mainNav button[data-section="'+id+'"]');
 if(activeBtn)activeBtn.classList.add('active');
@@ -6543,14 +6586,18 @@ d.setDate(d.getDate()-i);
 const dayName=week[d.getDay()];
 const isToday=i===0;
 const dateKey=d.toDateString();
-const wordsCount=history[dateKey]||0;
-// ИСПРАВЛЕНО (по фидбэку): раньше зелёным заливалась ячейка при ЛЮБОЙ
-// активности (даже 1 слово) — на неделе с частыми занятиями получалось
-// сразу 5-6 одинаково ярких плашек подряд и выглядело пёстро. Теперь
-// зелёный означает конкретно "дневная цель выполнена" — то есть в этот
-// день пройдено слов не меньше, чем задано в Настройках → Дневная цель
-// (state.settings.dailyGoal). Точки-индикаторы убраны — не нужны.
-const goal=state.settings.dailyGoal||5;
+const dayEntry=history[dateKey];
+// БАГФИКС (страйк/зелёные дни сбрасывались при смене дневной цели): раньше
+// здесь хранилось только число слов за день (wordsCount), а "выполнена ли
+// цель" всегда сравнивалось с СЕГОДНЯШНИМ state.settings.dailyGoal — то
+// есть смена цели в Настройках (например с 5 на 10) задним числом красила
+// уже прожитые дни как невыполненные. Теперь activityHistory хранит объект
+// {count, goal} — goal, который действовал именно в тот день — и сравнение
+// идёт с ним. Старые записи (просто число, без goal) поддержаны отдельно:
+// для них используется текущая цель как раньше, чтобы не потерять историю
+// тех, кто пользовался приложением до этого исправления.
+const wordsCount=typeof dayEntry==='object'&&dayEntry!==null?(dayEntry.count||0):(dayEntry||0);
+const goal=typeof dayEntry==='object'&&dayEntry!==null?(dayEntry.goal||state.settings.dailyGoal||5):(state.settings.dailyGoal||5);
 const goalMet=wordsCount>=goal;
 let cls='week-day';
 if(isToday)cls+=' today';
@@ -7088,6 +7135,11 @@ let model=localStorage.getItem(OPENROUTER_MODEL_STORAGE)||DEFAULT_OPENROUTER_MOD
 // Migrate deprecated models (DeepSeek R1 outputs <think> tags, old Qwen may be unavailable)
 const deprecated=['deepseek/deepseek-r1:free','deepseek/deepseek-chat:free'];
 if(deprecated.includes(model)){model=DEFAULT_OPENROUTER_MODEL;localStorage.setItem(OPENROUTER_MODEL_STORAGE,model);}
+// По просьбе пользователя в селекте теперь только одна модель (Gemini Flash 1.5).
+// Если у пользователя ранее была сохранена другая модель (Gemini 2.0, Qwen, Llama,
+// "Авто" и т.п. — из старой версии UI), переключаем на единственную оставшуюся,
+// чтобы <select> не оказался без совпадающего value и не показывал пустым.
+if(model!==DEFAULT_OPENROUTER_MODEL){model=DEFAULT_OPENROUTER_MODEL;localStorage.setItem(OPENROUTER_MODEL_STORAGE,model);}
 const keyInput=document.getElementById('openrouterKeyInput');
 const modelSelect=document.getElementById('openrouterModelSelect');
 if(keyInput)keyInput.value=key||'';
@@ -7128,8 +7180,12 @@ const hasKey=!!getOpenRouterKey();
 const notice=document.getElementById('chatKeyNotice');
 if(notice)notice.style.display=hasKey?'none':'block';
 renderChatMessages();
-const input=document.getElementById('chatInput');
-if(input)input.focus();
+// БАГФИКС (по просьбе пользователя): раньше здесь стоял input.focus() —
+// при КАЖДОМ переключении на вкладку "ИИ-чат" поле ввода получало фокус
+// автоматически, из-за чего на телефоне тут же выскакивала экранная
+// клавиатура, будто приложение сразу же требует что-то ввести. Убрано —
+// теперь поле ввода просто доступно, а фокус (и клавиатура) появляются,
+// только когда пользователь сам нажмёт на поле.
 }
 
 // БЕЗОПАСНОСТЬ (ужесточено при ревизии): раньше экранировались только &, <, > —
@@ -7557,8 +7613,14 @@ function detectPlatform() {
   const ua = navigator.userAgent || '';
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isAndroid = /Android/.test(ua);
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  if (isStandalone) return 'installed';
+  // БАГФИКС (по просьбе пользователя): раньше при открытом приложении в
+  // уже установленном виде (display-mode: standalone) сюда возвращалось
+  // 'installed', и openInstallGuide() ниже вместо реальной инструкции
+  // показывал только "уже установлено". Из-за этого нельзя было открыть
+  // инструкцию для справки, если приложение уже стоит на устройстве.
+  // Теперь эта ветка убрана — инструкция всегда показывает реальные шаги
+  // установки по ОС, независимо от того, установлено приложение сейчас или
+  // нет.
   if (isIOS) return 'ios';
   if (isAndroid) return 'android';
   return 'desktop';
@@ -7571,9 +7633,7 @@ function openInstallGuide() {
   if (!modal || !body) return;
 
   let html = '';
-  if (platform === 'installed') {
-    html = `<div class="install-step">✅ Приложение уже установлено на этом устройстве — вы сейчас в нём и находитесь.</div>`;
-  } else if (platform === 'ios') {
+  if (platform === 'ios') {
     html = `
       <div class="install-step"><b>1.</b> Откройте сайт в браузере <b>Safari</b> (важно — не в Chrome, на iOS так не сработает).</div>
       <div class="install-step"><b>2.</b> Нажмите на иконку «Поделиться» <span class="install-icon">⬆️</span> внизу экрана (квадрат со стрелкой вверх).</div>
