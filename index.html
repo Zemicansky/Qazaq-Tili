@@ -1339,10 +1339,10 @@ input.s-pass:focus{border-color:var(--blue)}
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
     <span>Словарь</span>
   </button>
-  <!-- По просьбе пользователя: кнопка "Настройки" убрана из нижней панели —
-       остаётся только 4 иконки (Тренажёр, ИИ-чат, Словарь, Ещё). Сам раздел
-       Настроек никуда не делся, просто доступ к нему перенесён в шторку
-       "Ещё" (см. .more-grid ниже, кнопка showSectionFromMore('settings')). -->
+  <button class="nav-btn" onclick="showSection('settings')" data-section="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    <span>Настройки</span>
+  </button>
   <button class="nav-btn" onclick="toggleMoreSheet()" id="moreNavBtn">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
     <span>Ещё</span>
@@ -1369,10 +1369,6 @@ input.s-pass:focus{border-color:var(--blue)}
     <button class="more-item" onclick="showSectionFromMore('stats')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Прогресс
-    </button>
-    <button class="more-item" onclick="showSectionFromMore('settings')">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Настройки
     </button>
   </div>
 </div>
@@ -5922,12 +5918,7 @@ function showSection(id){
 document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
 document.getElementById('sec-'+id).classList.add('active');
 // Обновляем активный таб в нижней навигации
-// По просьбе пользователя 'settings' убран из mainSections — в нижней панели
-// для него больше нет отдельной кнопки (см. #mainNav), раздел открывается
-// только из шторки "Ещё" (showSectionFromMore('settings')), поэтому его
-// нужно обрабатывать так же, как 'topics'/'grammar'/'dialogues'/'stats' —
-// подсвечивать соответствующую кнопку внутри шторки, а не в нижней навигации.
-const mainSections=['train','chat','dictionary'];
+const mainSections=['train','chat','dictionary','settings'];
 document.querySelectorAll('#mainNav button[data-section]').forEach(b=>b.classList.remove('active'));
 const activeBtn=document.querySelector('#mainNav button[data-section="'+id+'"]');
 if(activeBtn)activeBtn.classList.add('active');
