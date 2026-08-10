@@ -1077,12 +1077,21 @@ nav#mainNav{
 .dopt.wrong-opt{background:var(--red-bg);border-color:var(--red);color:var(--red-dark)}
 
 /* ── CHAT ──────────────────────────────────────────────────── */
+/* БАГФИКС (тестировщики не замечали, что чат без ключа — это только
+   переводчик): раньше блок был приглушённым жёлтым уведомлением, которое
+   легко спутать с фоновым текстом и пропустить. Заменено на более
+   контрастный акцентный стиль на var(--blue)/var(--blue-bg) (переменные уже
+   определены в :root — новый цвет не хардкодится), плюс жирная рамка и
+   более крупный шрифт, чтобы блок сразу читался как важный, а не как обычная
+   подпись интерфейса. Логика показа/скрытия (display:none по умолчанию,
+   переключается в renderChatSection() в зависимости от getOpenRouterKey())
+   не менялась — только визуальное оформление. */
 .chat-notice{
-  background:var(--yellow-bg);color:#7a5800;
-  border:2px solid var(--yellow);
-  border-radius:var(--radius-sm);padding:.65rem .75rem;
-  font-size:.8rem;margin-bottom:.65rem;line-height:1.5;
-  font-weight:600;display:none
+  background:var(--blue-bg);color:#0a5c7a;
+  border:2px solid var(--blue);
+  border-radius:var(--radius-sm);padding:.75rem .85rem;
+  font-size:.85rem;margin-bottom:.65rem;line-height:1.5;
+  font-weight:700;display:none
 }
 .chat-window{
   height:52vh;min-height:300px;
@@ -1553,9 +1562,9 @@ input.s-pass:focus{border-color:var(--blue)}
       <button class="btn-sm" onclick="clearChatHistory()" style="font-size:.72rem">Очистить</button>
     </div>
     <div id="chatKeyNotice" class="chat-notice">
-      Сейчас работает простой перевод без ИИ. Для полноценного чата (объяснения, диалог) добавьте бесплатный ключ OpenRouter в настройках.
+      ⚡ Сейчас чат просто переводит фразы. Подключите бесплатный ключ OpenRouter — и получите живого ИИ-собеседника: с объяснением грамматики, живым диалогом и пониманием контекста. Это бесплатно и займёт 30 секунд.
       <a href="#" onclick="openOpenRouterGuide();return false;"
-        style="display:inline-flex;align-items:center;gap:4px;margin-top:.4rem;color:var(--blue);font-weight:700;font-size:.82rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer">
+        style="display:inline-flex;align-items:center;gap:4px;margin-top:.4rem;color:#0a5c7a;font-weight:700;font-size:.82rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer">
         📖 Как получить ключ (инструкция)
       </a>
     </div>
@@ -1576,13 +1585,26 @@ input.s-pass:focus{border-color:var(--blue)}
     <p class="card-title">Настройки</p>
 
     <div class="settings-group-title" style="margin-top:0">Приложение</div>
-    <div class="settings-row settings-col">
-      <div>
-        <div class="settings-label">Установить на телефон</div>
-        <div class="settings-sub">Добавьте на главный экран — работает как обычное приложение, даже офлайн.</div>
-      </div>
-      <button class="btn btn-check" style="width:100%" onclick="openInstallGuide()">📲 Как установить</button>
+    <div class="settings-row">
+      <div class="settings-label">Установить на телефон</div>
+      <button class="btn-sm" onclick="openInstallGuide()">📲 Как установить</button>
     </div>
+    <div class="settings-sub tight">Добавьте на главный экран — работает как обычное приложение, даже офлайн.</div>
+
+    <!-- Обратная связь для тестировщиков: самый простой способ без регистрации
+         на сторонних сервисах — mailto-ссылка с заранее заполненной темой и
+         технической информацией (User-Agent, дата/время). Открывает почтовый
+         клиент/Gmail пользователя, не требует API-ключей и бэкенда. Минус —
+         работает только если на устройстве настроен email-клиент; если позже
+         понадобится более удобный вариант для мобильных — можно добавить
+         ссылку на Telegram-канал/бота (тоже без регистрации для пользователя).
+         ⚠️ ВАЖНО: замени YOUR_EMAIL@example.com в reportIssue() на реальный
+         адрес перед тем, как отдавать сборку тестировщикам. -->
+    <div class="settings-row">
+      <div class="settings-label">Обратная связь</div>
+      <button class="btn-sm" onclick="reportIssue()">✉️ Сообщить о проблеме</button>
+    </div>
+    <div class="settings-sub tight">Нашли баг или что-то не работает? Напишите нам напрямую.</div>
 
     <div class="settings-group-title">Обучение</div>
     <div class="settings-row">
@@ -1596,7 +1618,7 @@ input.s-pass:focus{border-color:var(--blue)}
     <div class="settings-row">
       <div class="settings-label">Слов в день</div>
       <div class="s-num-group">
-        <input type="number" id="dailyGoalInput" value="5" min="5" max="100"
+        <input type="number" id="dailyGoalInput" value="10" min="5" max="100"
           class="s-num" onchange="saveCustomDailyGoal()" oninput="clampDailyGoalInput();updateGoalEstimate()">
         <span class="s-num-unit">слов</span>
       </div>
@@ -4672,7 +4694,16 @@ const DIALOGUES=[
 // не создавай отдельный счётчик мимо updateWordProgress() — всегда проводи
 // результат через неё, иначе снова разъедутся "Дневная цель" и getDueWords().
 // ──────────────────────────────────────────────────────────────────────
-let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:5},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+// БАГФИКС/ИЗМЕНЕНИЕ ДЕФОЛТА: дефолтная дневная цель для нового пользователя
+// изменена с 5 на 10 слов/день (5 слов давали слишком медленный прогресс
+// для большинства тестировщиков). Значение 5 при этом ОСТАЁТСЯ нижней
+// границей, которую можно выставить вручную в Настройках (min="5" у
+// #dailyGoalInput, валидация val>=5 в saveCustomDailyGoal(), защита
+// g<5→5 в loadState()) — меняется только "из коробки" значение, а не
+// допустимый диапазон. Заменено во всех местах пересоздания state
+// (здесь, resetProgress(), confirmImport()) и во всех защитных фолбэках
+// вида dailyGoal||5 → dailyGoal||10, чтобы дефолт был согласован везде.
+let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 const STORAGE_KEY='qazaq_tili_v2';
 
 function loadState(){
@@ -4747,7 +4778,7 @@ const yesterday=new Date(Date.now()-86400000).toDateString();
 // ИМЕННО для вчерашнего дня (state.daily.dailyGoalAtDate) — если её нет
 // (миграция со старой версии, где это не сохранялось), используем текущую
 // как разумный fallback только в этом случае.
-const goalForThatDay=state.daily.dailyGoalAtDate||state.settings.dailyGoal||5;
+const goalForThatDay=state.daily.dailyGoalAtDate||state.settings.dailyGoal||10;
 const goalWasMet=(state.daily.progressCount||0)>=goalForThatDay;
 if(state.daily.date===yesterday&&goalWasMet){state.streak=(state.streak||0)+1}
 else if(state.daily.date!==today){state.streak=0}
@@ -4758,7 +4789,7 @@ if((state.streak||0)>(state.bestStreak||0))state.bestStreak=state.streak;
 // при проверке "выполнена ли цель" этого дня в будущем (см. goalForThatDay
 // выше), чтобы последующая смена цели в Настройках не переписывала задним
 // числом уже прожитые дни.
-state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[],dailyGoalAtDate:state.settings.dailyGoal||5};
+state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[],dailyGoalAtDate:state.settings.dailyGoal||10};
 state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
 saveState();
 }
@@ -4769,7 +4800,7 @@ if(!state.daily.answeredIds)state.daily.answeredIds=[];
 // Миграция для тех, у кого сегодняшний state.daily уже был создан старой
 // версией без dailyGoalAtDate — берём текущую цель как разумный старт
 // (она и так совпадает с текущей на момент миграции).
-if(state.daily.dailyGoalAtDate===undefined)state.daily.dailyGoalAtDate=state.settings.dailyGoal||5;
+if(state.daily.dailyGoalAtDate===undefined)state.daily.dailyGoalAtDate=state.settings.dailyGoal||10;
 // Миграция со старого (багованного) поля newCount на новое goalCount: раньше
 // newCount рос от ошибок, поэтому его значение бессмысленно переносить как есть
 // — просто гарантируем, что новое поле существует и стартует с 0 у всех, кто
@@ -4875,7 +4906,7 @@ const newWords=[];
 // "все слова уже пройдены", хотя реально пользователь просто не может
 // начать. В остальных местах чтения dailyGoal уже стоит защита ||20 —
 // добавляем её и сюда для единообразия.
-const goal=state.settings.dailyGoal||5;
+const goal=state.settings.dailyGoal||10;
 WORDS.forEach(w=>{
 const ws=state.words[w.id];
 if(!ws){
@@ -5644,7 +5675,7 @@ const todayKey=new Date().toDateString();
 // goal, который действовал В ТОТ день — объект {count, goal} — и именно
 // он используется при проверке этого дня (см. renderWeekGrid и loadState),
 // а не сегодняшнее значение настройки.
-state.activityHistory[todayKey]={count:state.daily.progressCount,goal:state.settings.dailyGoal||5};
+state.activityHistory[todayKey]={count:state.daily.progressCount,goal:state.settings.dailyGoal||10};
 saveState();
 updateStats();
 updateStreakDisplay();
@@ -6588,7 +6619,7 @@ const dayEntry=history[dateKey];
 // для них используется текущая цель как раньше, чтобы не потерять историю
 // тех, кто пользовался приложением до этого исправления.
 const wordsCount=typeof dayEntry==='object'&&dayEntry!==null?(dayEntry.count||0):(dayEntry||0);
-const goal=typeof dayEntry==='object'&&dayEntry!==null?(dayEntry.goal||state.settings.dailyGoal||5):(state.settings.dailyGoal||5);
+const goal=typeof dayEntry==='object'&&dayEntry!==null?(dayEntry.goal||state.settings.dailyGoal||10):(state.settings.dailyGoal||10);
 const goalMet=wordsCount>=goal;
 let cls='week-day';
 if(isToday)cls+=' today';
@@ -6635,7 +6666,7 @@ function updateDailyProgress(){
 // Если dailyGoal когда-либо окажется undefined или 0 (повреждённый файл
 // импорта, будущая ошибка миграции), done/goal*100 давало бы NaN/Infinity,
 // и прогресс-бар "Дневная цель" сломался бы визуально (ширина NaN%).
-const goal=state.settings.dailyGoal||5;
+const goal=state.settings.dailyGoal||10;
 const done=state.daily.progressCount||0;
 const pct=Math.min(100,Math.round(done/goal*100));
 document.getElementById('dailyProgress').style.width=pct+'%';
@@ -6668,7 +6699,7 @@ document.getElementById('dailyLabel').textContent=`${done} / ${goal} слов`;
 // в loadState() при переходе на следующий день (см. комментарий там). Так что
 // это чисто отображаемая величина, а не подмена хранимого состояния.
 function getDisplayStreak(){
-const goal=state.settings.dailyGoal||5;
+const goal=state.settings.dailyGoal||10;
 const goalMetToday=(state.daily.progressCount||0)>=goal;
 return goalMetToday?(state.streak||0)+1:(state.streak||0);
 }
@@ -6726,7 +6757,7 @@ const f=document.createElement('span');f.className='fire';f.textContent='🔥';
 ring.appendChild(f);
 }
 el.style.display='flex';
-const goal=state.settings.dailyGoal||5;
+const goal=state.settings.dailyGoal||10;
 const done=state.daily.progressCount||0;
 const goalMetToday=done>=goal;
 // Кольцо прогресса вокруг огонька — тот же % выполнения дневной цели,
@@ -6767,7 +6798,7 @@ const pop=document.getElementById('streakPopover');
 if(!pop)return;
 const displayStreak=getDisplayStreak();
 const best=Math.max(state.bestStreak||0,displayStreak);
-const goal=state.settings.dailyGoal||5;
+const goal=state.settings.dailyGoal||10;
 const done=state.daily.progressCount||0;
 const goalMetToday=done>=goal;
 const noteHtml=goalMetToday
@@ -6821,6 +6852,18 @@ saveState();
 // Значения меньше 5 по-прежнему не сохраняются (нижняя граница цели),
 // поле в этом случае просто не обновляет state.settings.dailyGoal, пока
 // пользователь не введёт число в допустимом диапазоне 5..100.
+// БАГФИКС (недельный календарь не обновлялся при смене дневной цели): цель
+// на СЕГОДНЯ фиксируется в state.activityHistory[todayKey].goal только внутри
+// updateWordProgress() — то есть в момент верного ответа в тренировке. Если
+// пользователь менял "Слов в день" в Настройках уже ПОСЛЕ того, как сегодняшняя
+// запись была создана, activityHistory оставался со старым goal, а renderWeekGrid()
+// вообще не вызывался — календарь визуально "зависал" до следующего верного
+// ответа. Теперь при сохранении цели: (1) если запись за сегодня уже есть —
+// её goal пересчитывается на новое значение (пользователь сам, осознанно
+// поменял цель "для себя сегодняшнего"); (2) сразу вызывается renderWeekGrid(),
+// чтобы календарь перерисовался мгновенно. Прошлые дни (dailyGoalAtDate,
+// старые записи activityHistory) не трогаются — там цель должна оставаться
+// исторической, как и было задумано.
 function saveCustomDailyGoal(){
 const input=document.getElementById('dailyGoalInput');
 let val=parseInt(input.value);
@@ -6830,8 +6873,13 @@ input.value=100;
 }
 if(Number.isFinite(val)&&val>=5&&val<=100){
 state.settings.dailyGoal=val;
+const todayKey=new Date().toDateString();
+if(state.activityHistory&&state.activityHistory[todayKey]){
+state.activityHistory[todayKey].goal=val;
+}
 saveState();
 updateDailyProgress();
+renderWeekGrid();
 }
 updateGoalEstimate();
 }
@@ -6868,7 +6916,7 @@ const el=document.getElementById('goalEstimateText');
 if(!el)return;
 const input=document.getElementById('dailyGoalInput');
 let val=input?parseInt(input.value):NaN;
-if(!Number.isFinite(val)||val<1)val=state.settings.dailyGoal||5;
+if(!Number.isFinite(val)||val<1)val=state.settings.dailyGoal||10;
 if(val>100)val=100;
 const perWeek=val*7;
 const perMonth=val*30;
@@ -6883,7 +6931,7 @@ localStorage.removeItem(STORAGE_KEY);
 // Если завтра снова понадобится добавить/переименовать поле дневной статистики —
 // правь во всех местах, где создаётся "чистый" state.daily: основное
 // объявление, loadState(), resetProgress(), importProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:5},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 saveState();
 updateStats();
 initQueue();
@@ -7067,7 +7115,7 @@ localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
 // и сама выполнит миграцию полей (см. loadState). Форма daily здесь всё
 // равно должна совпадать с основным объявлением state — см. примечание в
 // resetProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:5},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,activityHistory:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
 loadState();
 updateStats();
 initQueue();
@@ -7081,7 +7129,7 @@ renderDialogues();
 // например, dailyGoal:500 поле в Настройках продолжало бы показывать
 // старое отображаемое число до следующего открытия вкладки Настроек.
 const dgInput=document.getElementById('dailyGoalInput');
-if(dgInput)dgInput.value=state.settings.dailyGoal||5;
+if(dgInput)dgInput.value=state.settings.dailyGoal||10;
 updateGoalEstimate();
 try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
 updateBackupReminder();
@@ -7202,7 +7250,13 @@ function renderChatMessages(){
 const win=document.getElementById('chatWindow');
 if(!win)return;
 if(chatHistory.length===0){
-win.innerHTML='<div class="chat-msg system-note">Напишите фразу на русском или казахском — бот переведёт и, если нужно, исправит ошибки.</div>';
+// БАГФИКС (то же, что и с #chatKeyNotice выше): длинный текст блока-предупреждения
+// над чатом легко пропустить, если сразу проскроллить к самому чату. Дублируем
+// короткую версию предупреждения прямо в первом системном сообщении — она
+// видна без прочтения текста сверху. Показывается только если ключ ещё не
+// подключён (то же условие !getOpenRouterKey(), что и в renderChatSection()).
+const keyWarning=!getOpenRouterKey()?'<br><span style="opacity:.75">⚡ Без ключа OpenRouter — это простой переводчик. Подключите ключ в Настройках для полноценного ИИ.</span>':'';
+win.innerHTML=`<div class="chat-msg system-note">Напишите фразу на русском или казахском — бот переведёт и, если нужно, исправит ошибки.${keyWarning}</div>`;
 return;
 }
 win.innerHTML=chatHistory.map(m=>`<div class="chat-msg ${m.role==='user'?'user':'assistant'}">${formatChatText(escapeChatHtml(m.content))}</div>`).join('');
@@ -7521,7 +7575,7 @@ updateDailyProgress();
 }
 });
 document.getElementById('defaultSpeed').value=state.settings.speed;
-document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||5;
+document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||10;
 updateGoalEstimate();
 loadOpenRouterSettings();
 updateStats();
@@ -7615,6 +7669,63 @@ function detectPlatform() {
   if (isIOS) return 'ios';
   if (isAndroid) return 'android';
   return 'desktop';
+}
+
+// ── АВТОПОКАЗ ИНСТРУКЦИИ ПО УСТАНОВКЕ ПРИ ПЕРВОМ ВИЗИТЕ ────────────────
+// По просьбе пользователя: новый посетитель должен один раз увидеть
+// инструкцию "Как установить" сам, без клика по кнопке. Флаг в localStorage
+// гарантирует, что повторно она не выскочит. Дополнительно не показываем её,
+// если сайт уже открыт как установленное PWA (display-mode: standalone) —
+// в этом случае инструкция уже не нужна, но чтобы не показывать её и здесь
+// при следующем обычном визите в браузере, флаг всё равно выставляется.
+const INSTALL_GUIDE_SEEN_KEY = 'qazaqTili_installGuideSeen';
+
+function maybeShowInstallGuideOnFirstVisit() {
+  try {
+    if (localStorage.getItem(INSTALL_GUIDE_SEEN_KEY)) return;
+  } catch (e) {
+    // localStorage недоступен (приватный режим и т.п.) — просто не показываем
+    // автоматически, чтобы не спамить инструкцией при каждом визите.
+    return;
+  }
+
+  const isStandalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true; // iOS Safari
+
+  // Помечаем как показанную в любом случае, чтобы не всплывало повторно —
+  // даже если пользователь уже открыл сайт как установленное приложение.
+  try { localStorage.setItem(INSTALL_GUIDE_SEEN_KEY, '1'); } catch (e) {}
+
+  if (isStandalone) return;
+
+  // Небольшая задержка, чтобы модалка не выскакивала мгновенно поверх ещё
+  // не отрисованного интерфейса и не пугала пользователя в первую же секунду.
+  setTimeout(() => { openInstallGuide(); }, 1200);
+}
+
+window.addEventListener('load', maybeShowInstallGuideOnFirstVisit);
+
+// Обратная связь от тестировщиков (mailto, без регистрации/бэкенда) — см.
+// комментарий над кнопкой в разделе Настроек. Тема и тело письма собираются
+// через encodeURIComponent(), чтобы спецсимволы (переносы строк, кириллица,
+// User-Agent со скобками и т.п.) не ломали саму mailto-ссылку. В тело письма
+// заранее подставляется техническая информация (User-Agent, дата/время) —
+// пользователю остаётся только дописать текст проблемы сверху.
+// ⚠️ YOUR_EMAIL@example.com — плейсхолдер, замени на реальный адрес получателя
+// обратной связи перед тем, как раздавать сборку тестировщикам.
+function reportIssue() {
+  const to = 'YOUR_EMAIL@example.com';
+  const subject = 'Qazaq Tili - отзыв';
+  const bodyLines = [
+    'Опишите проблему:',
+    '',
+    '---',
+    'Техническая информация (не удаляйте):',
+    `User-Agent: ${navigator.userAgent}`,
+    `Дата/время: ${new Date().toString()}`
+  ];
+  const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+  window.location.href = mailtoUrl;
 }
 
 function openInstallGuide() {
