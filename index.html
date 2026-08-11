@@ -1170,8 +1170,9 @@ input.s-num:focus{border-color:var(--blue)}
 .goal-estimate{
   width:100%;font-size:.74rem;line-height:1.5;color:var(--text2);font-weight:600;
   background:var(--card2);border-radius:var(--radius-xs);
-  padding:.5rem .65rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;
+  padding:.5rem .65rem;display:flex;flex-direction:column;gap:.15rem;
 }
+.goal-estimate .ge-line{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .goal-estimate b{color:var(--accent);font-weight:800}
 .goal-estimate .ge-sep{color:var(--border2)}
 input.s-pass{
@@ -1203,6 +1204,12 @@ input.s-pass:focus{border-color:var(--blue)}
 .import-box-body{font-size:.78rem;color:var(--text2);line-height:1.6}
 .import-box-actions{display:flex;gap:.5rem;margin-top:.6rem}
 .import-error{margin-top:.4rem;padding:.6rem .75rem;border-radius:var(--radius-xs);background:var(--red-bg);color:var(--red);font-size:.78rem}
+.settings-link{
+  display:inline-flex;align-items:center;gap:4px;margin-top:.4rem;
+  color:var(--blue);font-weight:700;font-size:.8rem;
+  text-decoration:underline;text-underline-offset:2px;cursor:pointer;
+}
+.settings-value{font-size:.82rem;font-weight:700;color:var(--text2)}
 
 /* ── GRAMMAR ───────────────────────────────────────────────── */
 #sec-grammar .card{margin-bottom:.65rem}
@@ -1591,20 +1598,20 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div class="settings-sub tight">Добавьте на главный экран — работает как обычное приложение, даже офлайн.</div>
 
-    <!-- Обратная связь для тестировщиков: самый простой способ без регистрации
-         на сторонних сервисах — mailto-ссылка с заранее заполненной темой и
-         технической информацией (User-Agent, дата/время). Открывает почтовый
-         клиент/Gmail пользователя, не требует API-ключей и бэкенда. Минус —
-         работает только если на устройстве настроен email-клиент; если позже
-         понадобится более удобный вариант для мобильных — можно добавить
-         ссылку на Telegram-канал/бота (тоже без регистрации для пользователя).
-         ⚠️ ВАЖНО: замени YOUR_EMAIL@example.com в reportIssue() на реальный
-         адрес перед тем, как отдавать сборку тестировщикам. -->
+    <!-- Обратная связь: форма отправляется на Formspree (formspree.io).
+         Пользователю НЕ нужна регистрация и не открывается почтовый клиент —
+         просто модалка с текстовым полем, дальше fetch() на Formspree endpoint,
+         и сообщение падает вам на почту через их сервис. Один раз регистрируетесь
+         вы сами на formspree.io, создаёте form endpoint (бесплатный план — 50
+         писем/мес, этого достаточно для тестовой обратной связи), и вставляете
+         его ID вместо YOUR_FORM_ID ниже в submitFeedback().
+         ⚠️ ВАЖНО: замени YOUR_FORM_ID в submitFeedback() на реальный ID формы
+         перед тем, как отдавать сборку тестировщикам. -->
     <div class="settings-row">
       <div class="settings-label">Обратная связь</div>
-      <button class="btn-sm" onclick="reportIssue()">✉️ Сообщить о проблеме</button>
+      <button class="btn-sm" onclick="openFeedbackModal()">✉️ Сообщить о проблеме</button>
     </div>
-    <div class="settings-sub tight">Нашли баг или что-то не работает? Напишите нам напрямую.</div>
+    <div class="settings-sub tight">Нашли баг или что-то не работает? Опишите в двух словах — отправится нам напрямую, без почты.</div>
 
     <div class="settings-group-title">Обучение</div>
     <div class="settings-row">
@@ -1615,6 +1622,7 @@ input.s-pass:focus{border-color:var(--blue)}
         <option value="1.5">Быстро</option>
       </select>
     </div>
+    <div class="settings-sub tight">Голос браузера/ОС (kk-KZ), если установлен на устройстве. Ключи не нужны.</div>
     <div class="settings-row">
       <div class="settings-label">Слов в день</div>
       <div class="s-num-group">
@@ -1633,8 +1641,7 @@ input.s-pass:focus{border-color:var(--blue)}
       <div>
         <div class="settings-label">Ключ OpenRouter</div>
         <div class="settings-sub">Бесплатно на openrouter.ai, хранится только в браузере.</div>
-        <a href="#" onclick="openOpenRouterGuide();return false;"
-          style="display:inline-flex;align-items:center;gap:4px;margin-top:.4rem;color:var(--blue);font-weight:700;font-size:.8rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer">
+        <a href="#" class="settings-link" onclick="openOpenRouterGuide();return false;">
           📖 Как получить ключ (инструкция)
         </a>
       </div>
@@ -1643,28 +1650,13 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div class="settings-row">
       <div class="settings-label">Модель ИИ-чата</div>
-      <!-- По просьбе пользователя: в выборе модели оставлена только Gemini Flash 1.5,
-           остальные варианты (Gemini 2.0 Flash, Qwen, Llama, Авто) убраны из UI.
-           Сам select оставлен (а не просто текст), чтобы saveOpenRouterModel()/
-           значение #openrouterModelSelect.value продолжали работать без изменений
-           в остальном коде. FALLBACK_MODELS ниже по файлу не тронут — это отдельный
-           внутренний механизм автоматического повтора при сбое ответа, а не выбор
-           пользователя. -->
-      <select id="openrouterModelSelect" class="s-select" onchange="saveOpenRouterModel()">
-        <option value="google/gemini-flash-1.5:free">Gemini Flash 1.5</option>
-      </select>
+      <div class="settings-value">Gemini Flash 1.5</div>
     </div>
     <div class="settings-row settings-col">
       <div>
         <div class="settings-label">Без ключа</div>
         <div class="settings-sub">Если ключа нет — чат сам переключится на встроенный переводчик (проще, без ИИ).</div>
       </div>
-    </div>
-
-    <div class="settings-group-title">Озвучка слов</div>
-    <div class="settings-row settings-col">
-      <!-- Только голос браузера/ОС (Web Speech API, kk-KZ) — бесплатно, без ключей. -->
-      <div class="settings-sub">Голос браузера/ОС (kk-KZ), если установлен на устройстве. Ключи не нужны.</div>
     </div>
 
     <div class="settings-group-title">Данные</div>
@@ -3347,7 +3339,7 @@ const WORDS=[
 {id:1597,kz:"Артық төлеу",ru:"Переплатить",topic:"shop",example_kz:"Дүкенде артық төледі",example_ru:"Переплатил в магазине"},
 {id:1599,kz:"Артынша",ru:"Вслед",topic:"time",example_kz:"Артынша келді",example_ru:"Пришёл вслед"},
 {id:1600,kz:"Ары",ru:"Дальше",topic:"daily",example_kz:"Ары қарай жүрді",example_ru:"Пошёл дальше"},
-{id:1601,kz:"Арыз",ru:"Жалоба",topic:"work",example_kz:"Арыз жазды",example_ru:"Написал жалобу"},
+{id:1601,kz:"Арыз",ru:"Заявление",topic:"work",example_kz:"Арыз жазды",example_ru:"Написал заявление"},
 {id:1602,kz:"Арылу",ru:"Избавляться",topic:"emotion",example_kz:"Қорқыныштан арылды",example_ru:"Избавился от страха"},
 {id:1603,kz:"Аршу",ru:"Чистить (от кожуры)",topic:"food",example_kz:"Алманы аршыды",example_ru:"Почистил яблоко"},
 {id:1604,kz:"Аса",ru:"Сверх",topic:"daily",example_kz:"Аса қуанышты",example_ru:"Сверх радостный"},
@@ -3959,7 +3951,7 @@ const WORDS=[
 {id:2229,kz:"Есті",ru:"Умный",topic:"emotion",example_kz:"Есті бала",example_ru:"Разумный ребёнок"},
 {id:2230,kz:"Естіру",ru:"Сообщать",topic:"daily",example_kz:"Хабарды естіртті",example_ru:"Сообщил новость"},
 {id:2231,kz:"Есту",ru:"Слышать",topic:"daily",example_kz:"Музыканы естідім",example_ru:"Услышал музыку"},
-{id:2232,kz:"Естігеніңді айту",ru:"Рассказывать то",topic:"daily",example_kz:"Естігенін айтты",example_ru:"Рассказал то, что слышал"},
+{id:2232,kz:"Естігеніңді айту",ru:"Рассказывать услышанное",topic:"daily",example_kz:"Естігенін айтты",example_ru:"Рассказал то, что слышал"},
 {id:2233,kz:"Есу",ru:"Обезуметь",topic:"emotion",example_kz:"Есіп кетті",example_ru:"Обезумел"},
 {id:2234,kz:"Есік",ru:"Дверь",topic:"home",example_kz:"Есікті ашты",example_ru:"Открыл дверь"},
 {id:2235,kz:"Есікті жабу/ашу",ru:"Закрывать/открывать дверь",topic:"home",example_kz:"Есікті жапты",example_ru:"Закрыл дверь"},
@@ -4041,7 +4033,7 @@ const WORDS=[
 {id:2317,kz:"Жұптасу",ru:"Соединяться в пару",topic:"family",example_kz:"Екеуі жұптасты",example_ru:"Они соединились в пару"},
 {id:2318,kz:"Жұрт",ru:"Народ",topic:"daily",example_kz:"Бүкіл жұрт білді",example_ru:"Весь народ узнал"},
 {id:2319,kz:"Жұртшылық",ru:"Общественность",topic:"daily",example_kz:"Жұртшылық қолдады",example_ru:"Общественность поддержала"},
-{id:2320,kz:"Жұт",ru:"Джут (бедствие",topic:"daily",example_kz:"Жұт болды",example_ru:"Случился джут"},
+{id:2320,kz:"Жұт",ru:"Джут (бедствие скота)",topic:"daily",example_kz:"Жұт болды",example_ru:"Случился джут"},
 {id:2321,kz:"Жұту",ru:"Глотать",topic:"food",example_kz:"Дәріні жұтты",example_ru:"Проглотил лекарство"},
 {id:2322,kz:"Жұтқыншақ",ru:"Горло",topic:"health",example_kz:"Жұтқыншағы ауырды",example_ru:"Заболело горло"},
 {id:2323,kz:"Жұқа",ru:"Тонкий",topic:"daily",example_kz:"Жұқа мата",example_ru:"Тонкая ткань"},
@@ -4138,7 +4130,7 @@ const WORDS=[
 {id:2414,kz:"Жамал",ru:"Красота",topic:"emotion",example_kz:"Жамалы жарасты",example_ru:"Красота подходила"},
 {id:2415,kz:"Жаман",ru:"Плохой",topic:"emotion",example_kz:"Жаман хабар",example_ru:"Плохая новость"},
 {id:2416,kz:"Жамау",ru:"Латать",topic:"home",example_kz:"Етікті жамады",example_ru:"Залатал сапог"},
-{id:2417,kz:"Жамбыл",ru:"Жамбыл (имя",topic:"education",example_kz:"Жамбыл өлеңдері",example_ru:"Стихи Жамбыла"},
+{id:2417,kz:"Жамбыл",ru:"Жамбыл (имя)",topic:"education",example_kz:"Жамбыл өлеңдері",example_ru:"Стихи Жамбыла"},
 {id:2418,kz:"Жан",ru:"Душа",topic:"emotion",example_kz:"Жаны ашыды",example_ru:"Душа заболела"},
 {id:2419,kz:"Жан ашу",ru:"Жалеть",topic:"emotion",example_kz:"Оған жаны ашыды",example_ru:"Пожалел его"},
 {id:2420,kz:"Жан бала",ru:"Родное дитя",topic:"family",example_kz:"Жалғыз жан бала",example_ru:"Единственное родное дитя"},
@@ -4515,7 +4507,7 @@ const WORDS=[
 {id:2797,kz:"Қаңтар",ru:"Январь",topic:"time",example_kz:"Қаңтар айы",example_ru:"Месяц январь"},
 {id:2798,kz:"Қаңырау",ru:"Звенеть",topic:"daily",example_kz:"Зал қаңырады",example_ru:"Зал звенел эхом"},
 {id:2799,kz:"Қаңқа",ru:"Скелет",topic:"health",example_kz:"Малдың қаңқасы",example_ru:"Скелет животного"},
-{id:2800,kz:"Қаңқылдау",ru:"Кричать (о гусях",topic:"nature",example_kz:"Қаздар қаңқылдады",example_ru:"Гуси кричали"},
+{id:2800,kz:"Қаңқылдау",ru:"Кричать (о гусях)",topic:"nature",example_kz:"Қаздар қаңқылдады",example_ru:"Гуси кричали"},
 {id:2801,kz:"Қаңқу",ru:"Завывать (о ветре)",topic:"nature",example_kz:"Жел қаңқыды",example_ru:"Ветер завывал"},
 {id:2802,kz:"Қыбыр",ru:"Шевеление",topic:"movement",example_kz:"Жапырақ қыбыры",example_ru:"Шевеление листа"},
 {id:2803,kz:"Қыбырлау",ru:"Шевелиться",topic:"movement",example_kz:"Құрт қыбырлады",example_ru:"Червяк шевелился"},
@@ -4557,7 +4549,7 @@ const WORDS=[
 {id:2839,kz:"Қыңғыру",ru:"Хныкать",topic:"emotion",example_kz:"Бала қыңғырды",example_ru:"Ребёнок хныкал"},
 {id:2840,kz:"Қыңыр",ru:"Своенравный",topic:"emotion",example_kz:"Қыңыр мінез",example_ru:"Своенравный характер"},
 {id:2841,kz:"Қыңырлық",ru:"Упрямство",topic:"emotion",example_kz:"Оның қыңырлығы",example_ru:"Его упрямство"},
-{id:2842,kz:"Қып-қызыл",ru:"Красный-прекрасный",topic:"daily",example_kz:"Қып-қызыл алма",example_ru:"Красное-прекрасное яблоко"},
+{id:2842,kz:"Қып-қызыл",ru:"Ярко-красный",topic:"daily",example_kz:"Қып-қызыл алма",example_ru:"Ярко-красное яблоко"},
 {id:2843,kz:"Қып-қысқа",ru:"Очень короткий",topic:"daily",example_kz:"Қып-қысқа мерзім",example_ru:"Очень короткий срок"},
 {id:2844,kz:"Қыр",ru:"Степь",topic:"nature",example_kz:"Қыр асып өтті",example_ru:"Перевалил через степь"},
 {id:2845,kz:"Қырғи",ru:"Опустошительный",topic:"nature",example_kz:"Қырғи дауыл",example_ru:"Опустошительный ураган"},
@@ -6920,7 +6912,14 @@ if(!Number.isFinite(val)||val<1)val=state.settings.dailyGoal||10;
 if(val>100)val=100;
 const perWeek=val*7;
 const perMonth=val*30;
-el.innerHTML=`≈ <b>${perWeek}</b> слов/нед. <span class="ge-sep">·</span> ≈ <b>${perMonth}</b> слов/мес.`;
+// Оценка "вы выучите X слов" опирается на реальный размер словаря (WORDS.length)
+// и на то, сколько слов уже выучено сейчас (getWordStatus==='learned'), чтобы
+// не обещать больше слов, чем реально осталось в базе.
+const totalWords=WORDS.length;
+const alreadyLearned=WORDS.filter(w=>getWordStatus(w.id)==='learned').length;
+const remaining=Math.max(0,totalWords-alreadyLearned);
+const projectedMonth=Math.min(remaining,perMonth);
+el.innerHTML=`<div class="ge-line">≈ <b>${perWeek}</b> слов/нед. <span class="ge-sep">·</span> ≈ <b>${perMonth}</b> слов/мес.</div><div class="ge-line">За месяц в этом темпе вы выучите примерно <b>${projectedMonth}</b> слов${projectedMonth<perMonth?' <span class="ge-sep">·</span> в словаре столько и осталось':''}.</div>`;
 }
 
 function resetProgress(){
@@ -7174,15 +7173,12 @@ let model=localStorage.getItem(OPENROUTER_MODEL_STORAGE)||DEFAULT_OPENROUTER_MOD
 // Migrate deprecated models (DeepSeek R1 outputs <think> tags, old Qwen may be unavailable)
 const deprecated=['deepseek/deepseek-r1:free','deepseek/deepseek-chat:free'];
 if(deprecated.includes(model)){model=DEFAULT_OPENROUTER_MODEL;localStorage.setItem(OPENROUTER_MODEL_STORAGE,model);}
-// По просьбе пользователя в селекте теперь только одна модель (Gemini Flash 1.5).
-// Если у пользователя ранее была сохранена другая модель (Gemini 2.0, Qwen, Llama,
-// "Авто" и т.п. — из старой версии UI), переключаем на единственную оставшуюся,
-// чтобы <select> не оказался без совпадающего value и не показывал пустым.
+// В приложении используется только одна модель (Gemini Flash 1.5), выбора
+// больше нет — если у пользователя раньше была сохранена другая модель
+// (из старой версии UI), переключаем на единственную поддерживаемую.
 if(model!==DEFAULT_OPENROUTER_MODEL){model=DEFAULT_OPENROUTER_MODEL;localStorage.setItem(OPENROUTER_MODEL_STORAGE,model);}
 const keyInput=document.getElementById('openrouterKeyInput');
-const modelSelect=document.getElementById('openrouterModelSelect');
 if(keyInput)keyInput.value=key||'';
-if(modelSelect)modelSelect.value=model;
 }catch(e){}
 try{
 const saved=localStorage.getItem(CHAT_HISTORY_STORAGE);
@@ -7202,12 +7198,6 @@ function saveOpenRouterKey(){
 const input=document.getElementById('openrouterKeyInput');
 if(!input)return;
 try{localStorage.setItem(OPENROUTER_KEY_STORAGE,input.value.trim())}catch(e){flagStorageError()}
-}
-
-function saveOpenRouterModel(){
-const select=document.getElementById('openrouterModelSelect');
-if(!select)return;
-try{localStorage.setItem(OPENROUTER_MODEL_STORAGE,select.value)}catch(e){}
 }
 
 function saveChatHistory(){
@@ -7713,19 +7703,61 @@ window.addEventListener('load', maybeShowInstallGuideOnFirstVisit);
 // пользователю остаётся только дописать текст проблемы сверху.
 // ⚠️ YOUR_EMAIL@example.com — плейсхолдер, замени на реальный адрес получателя
 // обратной связи перед тем, как раздавать сборку тестировщикам.
-function reportIssue() {
-  const to = 'YOUR_EMAIL@example.com';
-  const subject = 'Qazaq Tili - отзыв';
-  const bodyLines = [
-    'Опишите проблему:',
-    '',
-    '---',
-    'Техническая информация (не удаляйте):',
-    `User-Agent: ${navigator.userAgent}`,
-    `Дата/время: ${new Date().toString()}`
-  ];
-  const mailtoUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
-  window.location.href = mailtoUrl;
+function openFeedbackModal() {
+  const modal = document.getElementById('feedbackModal');
+  if (!modal) return;
+  const status = document.getElementById('feedbackStatus');
+  const textarea = document.getElementById('feedbackText');
+  if (status) { status.textContent = ''; status.className = 'settings-sub tight'; }
+  if (textarea) { textarea.value = ''; textarea.disabled = false; }
+  const btn = document.getElementById('feedbackSubmitBtn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Отправить'; }
+  modal.style.display = 'flex';
+}
+
+function closeFeedbackModal() {
+  const modal = document.getElementById('feedbackModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitFeedback() {
+  const FORM_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID'; // замените YOUR_FORM_ID на свой ID с formspree.io
+  const textarea = document.getElementById('feedbackText');
+  const status = document.getElementById('feedbackStatus');
+  const btn = document.getElementById('feedbackSubmitBtn');
+  const message = (textarea && textarea.value || '').trim();
+
+  if (!message) {
+    if (status) { status.textContent = 'Опишите проблему перед отправкой.'; status.style.color = 'var(--red)'; }
+    return;
+  }
+  if (btn) { btn.disabled = true; btn.textContent = 'Отправка…'; }
+  if (textarea) textarea.disabled = true;
+  if (status) { status.textContent = ''; status.style.color = ''; }
+
+  try {
+    const res = await fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        message,
+        userAgent: navigator.userAgent,
+        timestamp: new Date().toString(),
+        app: 'Qazaq Tili'
+      })
+    });
+    if (res.ok) {
+      if (status) { status.textContent = 'Спасибо! Сообщение отправлено.'; status.style.color = 'var(--green)'; }
+      if (textarea) textarea.value = '';
+      setTimeout(closeFeedbackModal, 1200);
+    } else {
+      throw new Error('bad status');
+    }
+  } catch (e) {
+    if (status) { status.textContent = 'Не получилось отправить. Проверьте интернет и попробуйте ещё раз.'; status.style.color = 'var(--red)'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Отправить'; }
+    if (textarea) textarea.disabled = false;
+  }
 }
 
 function openInstallGuide() {
@@ -7833,6 +7865,25 @@ function closeOpenRouterGuide() {
     <div id="installGuideBody" style="font-size:15px;line-height:1.5;color:var(--text);"></div>
   </div>
 </div>
+<!-- Модалка "Сообщить о проблеме" -->
+<div id="feedbackModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeFeedbackModal()">
+  <div style="background:var(--card);border-radius:16px;max-width:420px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:18px;font-weight:800;">✉️ Сообщить о проблеме</div>
+      <button onclick="closeFeedbackModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
+    </div>
+    <div style="font-size:14px;line-height:1.5;color:var(--text2);margin-bottom:.6rem;">
+      Опишите, что пошло не так. Отправится нам напрямую — регистрация и почта не нужны.
+    </div>
+    <textarea id="feedbackText" class="chat-textarea" style="width:100%;min-height:110px;resize:vertical;box-sizing:border-box" placeholder="Например: при озвучке слова приложение зависает…"></textarea>
+    <div id="feedbackStatus" class="settings-sub tight" style="min-height:1.2em"></div>
+    <div style="display:flex;gap:.5rem;margin-top:.75rem;justify-content:flex-end">
+      <button class="btn-sm" onclick="closeFeedbackModal()">Отмена</button>
+      <button id="feedbackSubmitBtn" class="btn-sm" style="border-color:var(--blue);color:var(--blue)" onclick="submitFeedback()">Отправить</button>
+    </div>
+  </div>
+</div>
+
 <style>
 .install-step{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);}
 .install-step:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
