@@ -8914,6 +8914,215 @@ function closeOpenRouterGuide() {
 .install-note{color:var(--green);font-weight:600;border-bottom:none;}
 .install-icon{font-size:16px;}
 #androidInstallBtn{display:none;}
+
+/* ── Карточка запроса уведомлений (Duolingo-стиль) ── */
+#notifPromptCard {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 8000;
+  width: min(360px, calc(100vw - 32px));
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.22);
+  padding: 20px 20px 16px;
+  border: 1.5px solid var(--border);
+  animation: notifSlideIn .4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes notifSlideIn {
+  from { opacity:0; transform:translateX(-50%) translateY(30px); }
+  to   { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+#notifPromptCard .np-owl { font-size:44px; text-align:center; margin-bottom:8px; }
+#notifPromptCard .np-title {
+  font-size:16px; font-weight:800; color:var(--text);
+  text-align:center; margin-bottom:6px;
+}
+#notifPromptCard .np-sub {
+  font-size:13px; color:var(--text2); text-align:center;
+  line-height:1.45; margin-bottom:14px;
+}
+#notifPromptCard .np-btns { display:flex; gap:8px; }
+#notifPromptCard .np-btn-allow {
+  flex:1; background:var(--blue); color:#fff;
+  border:none; border-radius:12px; padding:11px 0;
+  font-size:14px; font-weight:700; cursor:pointer;
+  transition:opacity .15s;
+}
+#notifPromptCard .np-btn-allow:hover { opacity:.87; }
+#notifPromptCard .np-btn-skip {
+  background:none; border:1.5px solid var(--border);
+  color:var(--text2); border-radius:12px;
+  padding:11px 14px; font-size:13px;
+  cursor:pointer; transition:background .15s;
+}
+#notifPromptCard .np-btn-skip:hover { background:var(--hover); }
 </style>
+<!-- ── Карточка запроса уведомлений ── -->
+<div id="notifPromptCard" role="dialog" aria-label="Включить напоминания">
+  <div class="np-owl">🦉</div>
+  <div class="np-title">Включи напоминания</div>
+  <div class="np-sub">Как Duolingo — мы будем напоминать тебе об уроке раз в день, чтобы стрик не сгорел 🔥</div>
+  <div class="np-btns">
+    <button class="np-btn-allow" id="notifAllowBtn" onclick="notifPromptAllow()">🔔 Включить</button>
+    <button class="np-btn-skip" id="notifSkipBtn" onclick="notifPromptSkip()">Не сейчас</button>
+  </div>
+</div>
+
+<script>
+// ── СИСТЕМА УВЕДОМЛЕНИЙ (Duolingo-стиль) ──────────────────────────────────────
+// Ключи в localStorage:
+//   qazaq_notif_permission  — 'granted'|'denied'|'dismissed' — решение пользователя
+//   qazaq_notif_prompt_seen — timestamp, когда карточка уже показывалась
+//   qazaq_last_practice_ts  — timestamp последней тренировки (обновляется при ответе)
+//   qazaq_notif_sched_ts    — timestamp, на который запланировано уведомление
+const NOTIF_PERM_KEY      = 'qazaq_notif_permission';
+const NOTIF_SEEN_KEY      = 'qazaq_notif_prompt_seen';
+const LAST_PRACTICE_KEY   = 'qazaq_last_practice_ts';
+const NOTIF_SCHED_KEY     = 'qazaq_notif_sched_ts';
+
+// Через сколько часов без занятий слать напоминание (по умолчанию 22ч)
+const REMINDER_AFTER_HOURS = 22;
+// Через сколько часов без ответа на карточку показываем её снова
+const PROMPT_REPEAT_HOURS  = 72;
+
+// ── Вспомогательные ──
+function _notifSw() {
+  return navigator.serviceWorker && navigator.serviceWorker.controller
+    ? navigator.serviceWorker.controller
+    : null;
+}
+function _tellSw(msg) {
+  const sw = _notifSw();
+  if (sw) sw.postMessage(msg);
+}
+
+// ── Запланировать уведомление через SW ───────────────────────────────────────
+// Вычисляем, когда должно прийти напоминание:
+//   - Если пользователь только что позанимался → через REMINDER_AFTER_HOURS
+//   - Если уже давно не занимался → немедленно (но только если страница в фоне)
+function scheduleReminder() {
+  if (Notification.permission !== 'granted') return;
+  const lastTs = parseInt(localStorage.getItem(LAST_PRACTICE_KEY) || '0', 10);
+  const now    = Date.now();
+  const sinceMs = now - lastTs;
+  const targetMs = lastTs + REMINDER_AFTER_HOURS * 3600_000;
+  const delayMs  = Math.max(targetMs - now, 60_000); // минимум через 1 мин
+
+  localStorage.setItem(NOTIF_SCHED_KEY, String(now + delayMs));
+  _tellSw({ type: 'SCHEDULE_NOTIFICATION', delayMs });
+}
+
+// ── Отменить таймер в SW (пользователь зашёл и начал заниматься) ─────────────
+function cancelReminder() {
+  _tellSw({ type: 'CANCEL_NOTIFICATION' });
+  localStorage.removeItem(NOTIF_SCHED_KEY);
+}
+
+// ── Обновить метку времени последней тренировки ───────────────────────────────
+// Вызывается при каждом верном ответе (патчим updateWordProgress ниже)
+function notifMarkPractice() {
+  localStorage.setItem(LAST_PRACTICE_KEY, String(Date.now()));
+  cancelReminder();
+}
+
+// ── Показать карточку запроса ─────────────────────────────────────────────────
+function showNotifPrompt() {
+  const card = document.getElementById('notifPromptCard');
+  if (!card) return;
+  card.style.display = 'block';
+  localStorage.setItem(NOTIF_SEEN_KEY, String(Date.now()));
+}
+function hideNotifPrompt() {
+  const card = document.getElementById('notifPromptCard');
+  if (card) card.style.display = 'none';
+}
+
+// Кнопка «Включить» на карточке
+function notifPromptAllow() {
+  hideNotifPrompt();
+  Notification.requestPermission().then((perm) => {
+    localStorage.setItem(NOTIF_PERM_KEY, perm);
+    if (perm === 'granted') scheduleReminder();
+  });
+}
+// Кнопка «Не сейчас»
+function notifPromptSkip() {
+  hideNotifPrompt();
+  localStorage.setItem(NOTIF_PERM_KEY, 'dismissed');
+}
+
+// ── Проверка при загрузке страницы ───────────────────────────────────────────
+// Если уже есть разрешение — проверяем, не просрочено ли запланированное
+// уведомление (SW мог быть выгружен), и перепланируем если надо.
+// Если разрешения нет — решаем, когда предложить карточку.
+function initNotifications() {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+
+  const perm   = Notification.permission;
+  const stored = localStorage.getItem(NOTIF_PERM_KEY);
+
+  if (perm === 'granted') {
+    // Проверяем: если запланированное время уже прошло — напоминание было
+    // пропущено (SW выгрузился). Перепланируем на следующий цикл.
+    const schedTs = parseInt(localStorage.getItem(NOTIF_SCHED_KEY) || '0', 10);
+    if (schedTs && Date.now() > schedTs) {
+      localStorage.removeItem(NOTIF_SCHED_KEY);
+    }
+    // Перепланируем в любом случае (SW мог умереть)
+    scheduleReminder();
+    return;
+  }
+
+  if (perm === 'denied') return; // Браузер заблокировал — не надоедаем
+  if (stored === 'dismissed') {
+    // Пользователь нажал «Не сейчас» — предложим снова через PROMPT_REPEAT_HOURS
+    const seenTs = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0', 10);
+    if (Date.now() - seenTs < PROMPT_REPEAT_HOURS * 3600_000) return;
+  }
+
+  // Показываем карточку только ПОСЛЕ первого правильного ответа
+  // (флаг _notifReadyToPrompt выставляется в notifMarkPractice)
+  // Это поведение как у Duolingo: сначала дают попробовать, потом просят разрешение
+  window._notifShouldPromptWhenReady = true;
+}
+
+// ── Патч: ловим первый правильный ответ ──────────────────────────────────────
+// Оборачиваем уже существующую updateWordProgress, не трогая её логику.
+(function patchUpdateWordProgress() {
+  const _orig = window.updateWordProgress;
+  if (typeof _orig !== 'function') {
+    // Если функция ещё не определена (код выполняется до неё), ставим MutationObserver
+    // и попробуем позже; но в данном проекте updateWordProgress уже объявлена выше.
+    return;
+  }
+  window.updateWordProgress = function(id, correct, opts) {
+    const result = _orig.call(this, id, correct, opts);
+    if (correct) {
+      notifMarkPractice();
+      // Первый правильный ответ за сессию — показываем карточку (если нужно)
+      if (window._notifShouldPromptWhenReady) {
+        window._notifShouldPromptWhenReady = false;
+        // Небольшая задержка, чтобы не перекрывать анимацию feedback
+        setTimeout(showNotifPrompt, 1800);
+      }
+    }
+    return result;
+  };
+}());
+
+// ── Инициализация ─────────────────────────────────────────────────────────────
+// Ждём, пока SW зарегистрируется (он уже регистрируется выше в коде страницы),
+// потом запускаем логику уведомлений.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then(() => initNotifications());
+} else {
+  initNotifications();
+}
+// ─────────────────────────────────────────────────────────────────────────────
+</script>
+
 </body>
 </html>

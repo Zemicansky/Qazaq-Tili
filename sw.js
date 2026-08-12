@@ -4,6 +4,108 @@
 // заливаешь на GitHub → пользователи автоматически получают новую версию
 // при следующем заходе. Трогать этот файл руками не нужно.
 
+// ── УВЕДОМЛЕНИЯ-НАПОМИНАНИЯ (Duolingo-стиль) ─────────────────────────────────
+// Страница шлёт сообщение SCHEDULE_NOTIFICATION с временем срабатывания;
+// SW хранит таймер в памяти и показывает уведомление, когда придёт время.
+// Если SW был выгружен браузером до срабатывания — при следующем fetch/activate
+// страница сама проверяет, нужно ли показать уведомление (см. index.html).
+
+let _notifTimer = null;
+
+// Варианты мотивирующих уведомлений в стиле Duolingo
+const NOTIF_VARIANTS = [
+  {
+    title: '🔥 Стрик под угрозой!',
+    body: 'Ты ещё не позанимался сегодня. Всего 5 минут — и стрик спасён!'
+  },
+  {
+    title: '🇰🇿 Сәлем! Соскучился?',
+    body: 'Твои казахские слова ждут. Зайди повторить — это займёт 3 минуты!'
+  },
+  {
+    title: '📚 Не давай мозгу лениться!',
+    body: 'Маленький урок казахского прямо сейчас — и день прожит не зря.'
+  },
+  {
+    title: '⚡ Быстрый урок = сохранённый стрик',
+    body: 'Ты так далеко зашёл! Не останавливайся сегодня.'
+  },
+  {
+    title: '🦉 Пора учить казахский!',
+    body: 'Регулярность — ключ к языку. Зайди хотя бы на одно слово!'
+  },
+  {
+    title: '💪 Ты можешь лучше!',
+    body: 'Вчера ты занимался. Не прерывай серию — открой Qazaq Tili!'
+  }
+];
+
+function getRandomNotif() {
+  return NOTIF_VARIANTS[Math.floor(Math.random() * NOTIF_VARIANTS.length)];
+}
+
+// Принимаем команды от страницы
+self.addEventListener('message', (event) => {
+  if (!event.data) return;
+
+  // Страница просит запланировать уведомление через `delayMs` миллисекунд
+  if (event.data.type === 'SCHEDULE_NOTIFICATION') {
+    const delayMs = event.data.delayMs || 0;
+    if (_notifTimer) clearTimeout(_notifTimer);
+
+    // Держим SW живым, пока таймер не сработает (event.waitUntil не работает
+    // для message, поэтому используем вложенный keepAlive-fetch каждые 20с)
+    _notifTimer = setTimeout(() => {
+      const notif = getRandomNotif();
+      self.registration.showNotification(notif.title, {
+        body: notif.body,
+        icon: event.data.icon || './icon-192.png',
+        badge: './icon-72.png',
+        vibrate: [200, 100, 200, 100, 200],
+        tag: 'qazaq-daily-reminder',
+        renotify: true,
+        requireInteraction: false,
+        data: { url: self.location.origin + self.location.pathname.replace('sw.js', '') },
+        actions: [
+          { action: 'open',  title: '📚 Начать урок' },
+          { action: 'later', title: 'Напомни позже' }
+        ]
+      }).catch(() => {});
+    }, delayMs);
+  }
+
+  // Страница сообщает, что пользователь позанимался — отменяем текущий таймер
+  if (event.data.type === 'CANCEL_NOTIFICATION') {
+    if (_notifTimer) { clearTimeout(_notifTimer); _notifTimer = null; }
+  }
+});
+
+// Нажатие на уведомление — открываем/фокусируем вкладку с приложением
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  // Кнопка «Напомни позже» — просто закрываем, страница сама перепланирует
+  if (event.action === 'later') return;
+
+  const targetUrl = (event.notification.data && event.notification.data.url)
+    ? event.notification.data.url
+    : self.location.origin;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Если вкладка уже открыта — фокусируемся на ней
+      for (const client of clientList) {
+        if (client.url.startsWith(targetUrl) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Иначе открываем новую
+      return self.clients.openWindow(targetUrl);
+    })
+  );
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 const CACHE_PREFIX = 'qazaq-tili-';
 
 // Простой быстрый хэш строки (не криптографический, но для наших целей достаточно —
