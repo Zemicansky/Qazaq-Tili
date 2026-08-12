@@ -2271,14 +2271,14 @@ function toggleTheme(){
   const newTheme=isDark?'light':'dark';
   document.documentElement.setAttribute('data-theme',newTheme);
   document.getElementById('themeToggle').textContent=isDark?'🌙':'☀️';
-  try{localStorage.setItem('qazaq_theme',newTheme)}catch(e){}
+  try{localStorage.setItem('qazaq_theme',newTheme)}catch(e){console.warn(e)}
 }
 (function(){
   try{
     const t=localStorage.getItem('qazaq_theme');
     if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('themeToggle').textContent='☀️'}
     else{document.getElementById('themeToggle').textContent='🌙'}
-  }catch(e){}
+  }catch(e){console.warn(e)}
 })();
 
 const TOPICS=[
@@ -5652,7 +5652,7 @@ document.getElementById('nextBtn').style.display='none';
 hideStickyNext();
 document.getElementById('answerInput').value='';
 document.getElementById('answerInput').disabled=false;
-try{document.getElementById('answerInput').focus();}catch(e){}
+try{document.getElementById('answerInput').focus();}catch(e){console.warn(e)}
 // БАГФИКС: показываем кнопку "Не знаю / Пропустить" заново для новой карточки —
 // она скрывается после ответа на предыдущее слово (см. checkAnswer/checkChoice/checkAudio).
 const skipBtnReset=document.getElementById('skipBtn');
@@ -7966,7 +7966,7 @@ function updateBackupReminder(){
 const el=document.getElementById('backupReminder');
 if(!el)return;
 let ts=null;
-try{ts=localStorage.getItem(LAST_BACKUP_STORAGE)}catch(e){}
+try{ts=localStorage.getItem(LAST_BACKUP_STORAGE)}catch(e){console.warn(e)}
 if(!ts){
 el.textContent='Резервной копии ещё не было. Прогресс хранится только в этом браузере — если очистить его данные или сменить устройство, прогресс будет потерян без сохранённого файла.';
 el.style.color='var(--orange)';
@@ -7998,7 +7998,7 @@ document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
 URL.revokeObjectURL(url);
-try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
+try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){console.warn(e)}
 updateBackupReminder();
 }catch(e){
 alert('Не удалось создать файл резервной копии.');
@@ -8142,7 +8142,7 @@ renderDialogues();
 const dgInput=document.getElementById('dailyGoalInput');
 if(dgInput)dgInput.value=state.settings.dailyGoal||10;
 updateGoalEstimate();
-try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
+try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){console.warn(e)}
 updateBackupReminder();
 pendingImportData=null;
 document.getElementById('importPreview').style.display='none';
@@ -8191,7 +8191,7 @@ if(deprecated.includes(model)){model=DEFAULT_OPENROUTER_MODEL;localStorage.setIt
 if(model!==DEFAULT_OPENROUTER_MODEL){model=DEFAULT_OPENROUTER_MODEL;localStorage.setItem(OPENROUTER_MODEL_STORAGE,model);}
 const keyInput=document.getElementById('openrouterKeyInput');
 if(keyInput)keyInput.value=key||'';
-}catch(e){}
+}catch(e){console.warn(e)}
 try{
 const saved=localStorage.getItem(CHAT_HISTORY_STORAGE);
 chatHistory=saved?JSON.parse(saved):[];
@@ -8331,7 +8331,6 @@ renderChatMessages();
 return;
 }
 
-try{
 const messages=[
 {role:'system',content:CHAT_SYSTEM_PROMPT},
 ...chatHistory.slice(-20).map(m=>({role:m.role,content:m.content}))
@@ -8410,7 +8409,8 @@ return text
 .replace(/▁/g,'')
 .replace(/##/g,'')
 // Убираем управляющие символы и нулевые байты
-.replace(/[\u0000-\u001F\u007F\u200B\u200C\u200D\uFEFF]/g,'')
+// eslint-disable-next-line no-control-regex
+.replace(/[\x00-\x1F\x7F\u200B-\u200D\uFEFF]/g,'')
 // Схлопываем множественные пробелы и переводы строк
 .replace(/ {2,}/g,' ')
 .replace(/\n{3,}/g,'\n\n')
@@ -8445,6 +8445,7 @@ if(!text)return text;
 return cleanReply(stripThinkBlocks(text));
 }
 
+try{
 const chosenModel=getOpenRouterModel();
 let{resp:response,json:data}=await callOpenRouter(chosenModel);
 let reply=cleanupReply(extractContent(response,data));
@@ -8521,7 +8522,7 @@ const mblob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
 const murl=URL.createObjectURL(mblob);
 const ml=document.getElementById('pwaManifest');
 if(ml)ml.href=murl;
-}catch(e){}
+}catch(e){console.warn(e)}
 })();
 
 loadState();
@@ -8622,7 +8623,7 @@ if(swUpdateReloaded)return;
 if(!hadControllerBefore){hadControllerBefore=true;return}
 showSwUpdateToast();
 });
-function showSwUpdateToast(){
+const showSwUpdateToast = () => {
 if(document.getElementById('swUpdateToast'))return;
 const toast=document.createElement('div');
 toast.id='swUpdateToast';
@@ -8696,7 +8697,7 @@ function maybeShowInstallGuideOnFirstVisit() {
 
   // Помечаем как показанную в любом случае, чтобы не всплывало повторно —
   // даже если пользователь уже открыл сайт как установленное приложение.
-  try { localStorage.setItem(INSTALL_GUIDE_SEEN_KEY, '1'); } catch (e) {}
+  try { localStorage.setItem(INSTALL_GUIDE_SEEN_KEY, '1'); } catch (e) {console.warn(e)}
 
   if (isStandalone) return;
 
