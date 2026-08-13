@@ -6753,16 +6753,23 @@ playWithBrowserVoice(state.current.kz);
 }
 
 function playWithBrowserVoice(text){
-if(!text) return;
-const encodedText = encodeURIComponent(text);
-// Используем googleapis с client=gtx (наиболее стабильный вариант, реже блокируется CORS/AdBlock)
-const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=kk&q=${encodedText}`;
-const audio = new Audio(url);
-audio.playbackRate = state.settings.speed || 1;
-audio.play().catch(e => {
-console.error("Ошибка воспроизведения аудио:", e);
-showAudioWarning('Не удалось загрузить аудио. Проверьте интернет.');
-});
+if(!('speechSynthesis' in window)){
+showAudioWarning('Озвучка не поддерживается этим браузером.');
+return;
+}
+if(!kkVoiceChecked)checkKkVoice();
+cachedKkVoice=findKkVoice();
+window.speechSynthesis.cancel();
+const u=new SpeechSynthesisUtterance(text);
+u.rate=state.settings.speed||1;
+if(kkVoiceAvailable&&cachedKkVoice){
+u.lang='kk-KZ';
+u.voice=cachedKkVoice;
+}else{
+u.lang='ru-RU';
+showAudioWarning('Казахский голос недоступен на этом устройстве, использую русское произношение (может звучать неточно). Установите казахский голос в настройках речи вашей ОС/браузера для точного произношения.');
+}
+window.speechSynthesis.speak(u);
 }
 
 // БАГФИКС: раньше предупреждение об аудио ("казахский голос недоступен" и
