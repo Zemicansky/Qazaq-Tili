@@ -514,6 +514,26 @@ header{
   100%{opacity:0;transform:translate(-50%,-64px) scale(.95)}
 }
 
+/* ── КОМБО-МНОЖИТЕЛЬ К XP ("🔥 x1.5"/"🔥 x2") ──────────────────────
+   Отдельный бейдж-подсказка "почему XP больше обычного", всплывает рядом
+   с "+N XP" (см. .xp-float выше) только пока комбо активно (comboCount>=5).
+   НЕ ПУТАТЬ с .combo-badge/#streakDisplay в шапке — это виджет дневного
+   streak и уровня XP, к комбо ответов подряд отношения не имеет (см.
+   комментарий у spawnComboBadge() в JS). */
+.answer-combo{
+  position:fixed;z-index:9999;pointer-events:none;
+  font-weight:800;font-size:.85rem;color:#ff8a3d;
+  text-shadow:0 1px 4px rgba(0,0,0,.25);
+  animation:answerComboBounce 1.35s ease-out forwards;
+}
+@keyframes answerComboBounce{
+  0%{opacity:0;transform:translate(-50%,0) scale(.6)}
+  20%{opacity:1;transform:translate(-50%,-4px) scale(1.25)}
+  35%{transform:translate(-50%,-4px) scale(1)}
+  80%{opacity:1;transform:translate(-50%,-30px) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-42px) scale(.92)}
+}
+
 /* ── ENHANCED ANSWER FEEDBACK (звук уже отдельно в JS) ─────── */
 /* Усиленная анимация карточки слова при верном/неверном ответе —
    лёгкий "пульс" рамки карточки плюс всплеск частиц-конфетти при
@@ -828,6 +848,56 @@ nav#mainNav{
 }
 .goal-mode-row .mode-tabs-compact .mode-tab-c.active{
   border-color:transparent;
+}
+
+/* ── БЕТА-КВЕСТ ДНЯ ─────────────────────────────────────────────────
+   Компактная карточка единственного ежедневного квеста (см. подробный
+   комментарий над updateDailyQuestCard() в JS) — намеренно скромнее
+   основной карточки "Цель дня", т.к. это экспериментальная механика,
+   не постоянная часть интерфейса. Серый бейдж "БЕТА" — явный сигнал
+   пользователю, что фича может исчезнуть в будущей версии. */
+.daily-quest-card{
+  background:var(--card2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:.6rem .8rem;
+  margin-bottom:.5rem;
+}
+.dq-row{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+}
+.dq-row-progress{margin-top:.4rem}
+.dq-title{
+  font-size:.78rem;font-weight:700;color:var(--text2);
+  letter-spacing:.1px;
+}
+.dq-badge{
+  font-size:.62rem;font-weight:800;letter-spacing:.4px;
+  color:var(--text3);background:var(--bg3);
+  border:1px solid var(--border);
+  padding:.15rem .45rem;border-radius:8px;
+  flex-shrink:0;white-space:nowrap;
+}
+.dq-badge.quest-done{
+  color:var(--green-dark);background:var(--green-bg);
+  border-color:var(--green);
+}
+.dq-dots{display:flex;gap:.3rem}
+.quest-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--bg3);border:1px solid var(--border);
+  transition:all .18s;
+}
+.quest-dot.filled{
+  background:var(--accent);border-color:var(--accent);
+  box-shadow:0 0 6px var(--accent-glow);
+}
+.dq-count{
+  font-size:.74rem;font-weight:800;color:var(--text2);
+  font-variant-numeric:tabular-nums;
+}
+.daily-quest-card.quest-complete{
+  border-color:var(--green);
 }
 
 /* ── MODE SWITCH ───────────────────────────────────────────── */
@@ -1234,6 +1304,71 @@ nav#mainNav{
 .dopt.correct-opt{background:var(--green-bg);border-color:var(--green);color:var(--green-dark)}
 .dopt.wrong-opt{background:var(--red-bg);border-color:var(--red);color:var(--red-dark)}
 
+/* ── УПРАЖНЕНИЕ "СОБЕРИ ПРЕДЛОЖЕНИЕ" ────────────────────────────────
+   Отдельная секция (#sec-sentencebuilder), стилистически близкая к
+   диалогам (.dopt выше) — но со своими классами sb-*, чтобы UI собранного
+   предложения/банка слов не путался с версткой диалогов. */
+.sb-translation{
+  font-size:.95rem;font-weight:700;color:var(--text);
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:.7rem .85rem;
+  margin-bottom:.7rem;line-height:1.4;
+}
+.sb-built{
+  min-height:2.6rem;
+  display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;
+  border:2px dashed var(--border);border-radius:var(--radius-sm);
+  padding:.55rem .65rem;margin-bottom:.7rem;
+}
+.sb-built-placeholder{color:var(--text3);font-size:.8rem;font-weight:600}
+.sb-built-word{
+  background:var(--blue-bg);color:var(--blue);
+  border-radius:var(--radius-xs);
+  padding:.3rem .55rem;font-weight:800;font-size:.85rem;
+  /* по умолчанию элемент статичен; интерактивность/курсор появляются
+     только у .sb-draggable (см. ниже) — после ответа (sbState.answered)
+     слова рендерятся уже БЕЗ этого класса, чтобы порядок нельзя было
+     случайно поменять после проверки. */
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+/* ПЕРЕТАСКИВАНИЕ СЛОВ (по просьбе пользователя): слова в собранной зоне
+   можно менять местами через Pointer Events (см. sentenceBuilderDragStart()
+   в JS) — единый механизм для мыши и тача. touch-action:none обязателен,
+   иначе на мобильных браузер перехватывает жест под нативный скролл
+   страницы вместо перетаскивания слова. */
+.sb-draggable{cursor:grab}
+.sb-draggable.sb-dragging{
+  cursor:grabbing;position:relative;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
+  opacity:.9;
+}
+.sb-draggable.sb-drop-target{
+  outline:2px dashed var(--accent);outline-offset:2px;
+}
+.sb-hint{
+  font-size:.72rem;color:var(--text3);font-weight:600;
+  margin:-.3rem 0 .6rem;
+}
+.sb-bank{
+  display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;
+}
+.sb-chip{
+  padding:.5rem .75rem;border:2px solid var(--border);
+  border-radius:var(--radius-xs);background:var(--card2);
+  cursor:pointer;font-size:.85rem;font-weight:700;
+  color:var(--text);font-family:inherit;
+  transition:all .15s;
+}
+.sb-chip:active{transform:scale(.96)}
+.sb-chip:disabled{opacity:.25;cursor:default;pointer-events:none}
+.sb-actions{display:flex;justify-content:flex-end;margin-bottom:.3rem}
+.sb-feedback{
+  font-size:.85rem;font-weight:700;padding:0;min-height:1.4rem;
+  margin-top:.4rem;line-height:1.4;
+}
+.sb-feedback-correct{color:var(--green-dark)}
+.sb-feedback-wrong{color:var(--red-dark)}
+
 /* ── CHAT ──────────────────────────────────────────────────── */
 /* БАГФИКС (тестировщики не замечали, что чат без ключа — это только
    переводчик): раньше блок был приглушённым жёлтым уведомлением, которое
@@ -1298,16 +1433,27 @@ nav#mainNav{
   margin:1rem 0 .3rem;
 }
 .settings-group-title:first-child{margin-top:0}
-.settings-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.65rem 0;border-bottom:1.5px solid var(--border);gap:.5rem
+/* Один "пункт настроек" = заголовок/контрол + пояснение под ним, как единый
+   блок. Разделительная линия рисуется ПОД всем блоком целиком (border у
+   .settings-item), а не у внутренней .settings-row — раньше линия была
+   именно на .settings-row, и из-за отрицательного margin-top у
+   .settings-sub.tight пояснительный текст соседней строки визуально
+   "залезал" под эту линию, из-за чего казалось, что линия режет текст.
+   Теперь линия физически идёт ниже последней строчки пояснения. */
+.settings-item{
+  padding:.65rem 0;border-bottom:1.5px solid var(--border);
 }
-.settings-row:last-child{border-bottom:none}
-.settings-row.no-top-pad{padding-top:0}
+.settings-item:last-child{border-bottom:none}
+.settings-item .settings-row{padding:0}
+.settings-item .settings-sub{margin-top:.3rem}
+.settings-item .settings-sub.no-top-pad{margin-top:0}
+.settings-row{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem
+}
+.settings-row-stack{flex-direction:column;align-items:stretch !important;gap:.45rem}
 .settings-label{font-size:.86rem;font-weight:700;flex:1;color:var(--text)}
-.settings-sub{font-size:.72rem;color:var(--text2);margin-top:.2rem;line-height:1.4;font-weight:400}
+.settings-sub{font-size:.72rem;color:var(--text2);line-height:1.4;font-weight:400;margin-top:.2rem}
 .settings-sub.tight{margin-top:-.3rem}
-.settings-col{flex-direction:column;align-items:stretch !important;gap:.45rem}
 select.s-select{
   padding:.4rem .55rem;border:2px solid var(--border);
   border-radius:var(--radius-xs);font-size:.82rem;
@@ -1329,6 +1475,7 @@ input.s-num:focus{border-color:var(--blue)}
   width:100%;font-size:.74rem;line-height:1.5;color:var(--text2);font-weight:600;
   background:var(--card2);border-radius:var(--radius-xs);
   padding:.5rem .65rem;display:flex;flex-direction:column;gap:.15rem;
+  margin-top:.5rem;
 }
 .goal-estimate .ge-line{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
 .goal-estimate b{color:var(--accent);font-weight:800}
@@ -1340,6 +1487,14 @@ input.s-pass{
   font-family:inherit;font-weight:600;outline:none;transition:border-color .2s;
 }
 input.s-pass:focus{border-color:var(--blue)}
+/* Все кнопки-действия в Настройках (установить/фидбек/т.п.) используют
+   ОДИН визуальный стиль (.btn-sm) — раньше "Как получить ключ" был
+   отдельной подчёркнутой синей ссылкой, а остальные действия — серыми
+   кнопками с рамкой, из-за чего однотипные по смыслу элементы ("нажми,
+   чтобы что-то сделать") выглядели по-разному без причины. Теперь ссылкой
+   (.settings-link) остаются только по-настоящему второстепенные inline-
+   переходы внутри пояснительного текста ("Как получить ключ →" в подписи
+   под полем), а любое самостоятельное действие — это .btn-sm. */
 .btn-sm{
   padding:.4rem .8rem;border-radius:var(--radius-xs);
   font-size:.8rem;font-weight:700;border:2px solid var(--border);
@@ -1363,8 +1518,7 @@ input.s-pass:focus{border-color:var(--blue)}
 .import-box-actions{display:flex;gap:.5rem;margin-top:.6rem}
 .import-error{margin-top:.4rem;padding:.6rem .75rem;border-radius:var(--radius-xs);background:var(--red-bg);color:var(--red);font-size:.78rem}
 .settings-link{
-  display:inline-flex;align-items:center;gap:4px;margin-top:.4rem;
-  color:var(--blue);font-weight:700;font-size:.8rem;
+  display:inline;color:var(--blue);font-weight:700;
   text-decoration:underline;text-underline-offset:2px;cursor:pointer;
 }
 .settings-value{font-size:.82rem;font-weight:700;color:var(--text2)}
@@ -1597,6 +1751,10 @@ input.s-pass:focus{border-color:var(--blue)}
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1"/><circle cx="13" cy="10" r="1"/><circle cx="17" cy="10" r="1"/></svg>
       Диалоги
     </button>
+    <button class="more-item" onclick="showSectionFromMore('sentencebuilder')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="6" height="4" rx="1"/><rect x="10" y="6" width="6" height="4" rx="1"/><rect x="17" y="6" width="4" height="4" rx="1"/><path d="M3 15h18"/></svg>
+      Собери предложение
+    </button>
     <button class="more-item" onclick="showSectionFromMore('stats')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
       Прогресс
@@ -1691,6 +1849,23 @@ input.s-pass:focus{border-color:var(--blue)}
     <div class="feedback" id="feedback"></div>
     <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
     <button class="btn btn-skip" id="skipBtn" onclick="skipWord()" title="Слово не будет засчитано как выученное">Не знаю / Пропустить</button>
+
+    <!-- БЕТА-ФУНКЦИЯ: единственный ежедневный квест (эксперимент, см. подробный
+         комментарий над updateDailyQuestCard() в JS). Пометка "БЕТА" оставлена
+         прямо в вёрстке, чтобы отсутствие этой карточки в будущей версии не
+         выглядело как баг, если решим не продолжать механику. Размещена в
+         самом низу тренажёра (по просьбе пользователя) — не мешает основному
+         потоку "слово → ответ → следующее слово". -->
+    <div class="daily-quest-card" id="dailyQuestCard">
+      <div class="dq-row">
+        <div class="dq-title">🎯 Квест дня: 3 верных ответа «На слух»</div>
+        <span class="dq-badge" id="dailyQuestStatusBadge">БЕТА</span>
+      </div>
+      <div class="dq-row dq-row-progress">
+        <div class="dq-dots" id="dailyQuestDots"></div>
+        <span class="dq-count" id="dailyQuestProgress">0/3</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1752,6 +1927,29 @@ input.s-pass:focus{border-color:var(--blue)}
   </div>
 </div>
 
+<!-- SENTENCE BUILDER SECTION -->
+<!-- Отдельное самостоятельное упражнение по образцу Диалогов: не завязано
+     на getDueWords()/SM-2 конкретных слов и не проходит через
+     updateWordProgress() (см. подробный комментарий над startSentenceBuilder()
+     в JS) — чтобы не рисковать сломать уже отлаженную систему интервальных
+     повторений. Доступно из меню "Ещё". -->
+<div id="sec-sentencebuilder" class="section">
+  <div class="card">
+    <p class="card-title">Собери предложение</p>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem;font-weight:600">Соберите казахское предложение из слов по русскому переводу</p>
+    <div class="sb-translation" id="sbTranslation"></div>
+    <div class="sb-built" id="sbBuilt"></div>
+    <p class="sb-hint">Слова в собранном предложении можно перетаскивать местами</p>
+    <div class="sb-bank" id="sbBank"></div>
+    <div class="sb-actions">
+      <button class="btn btn-skip" id="sbUndoBtn" onclick="sentenceBuilderUndo()">↩ Отменить последнее слово</button>
+    </div>
+    <div id="sbFeedback" class="sb-feedback"></div>
+    <button class="btn btn-check" id="sbCheckBtn" style="width:100%;margin-top:.6rem" onclick="sentenceBuilderCheck()">Проверить</button>
+    <button class="btn btn-next" id="sbNextBtn" style="display:none" onclick="sentenceBuilderNext()">Следующее предложение →</button>
+  </div>
+</div>
+
 <!-- DICTIONARY SECTION -->
 <div id="sec-dictionary" class="section">
   <div class="card">
@@ -1797,8 +1995,7 @@ input.s-pass:focus{border-color:var(--blue)}
     </div>
     <div id="chatKeyNotice" class="chat-notice">
       ⚡ Сейчас чат просто переводит фразы. Подключите бесплатный ключ OpenRouter — и получите живого ИИ-собеседника: с объяснением грамматики, живым диалогом и пониманием контекста. Это бесплатно и займёт 30 секунд.
-      <a href="#" onclick="openOpenRouterGuide();return false;"
-        style="display:inline-flex;align-items:center;gap:4px;margin-top:.4rem;color:#0a5c7a;font-weight:700;font-size:.82rem;text-decoration:underline;text-underline-offset:2px;cursor:pointer">
+      <a href="#" class="settings-link" onclick="openOpenRouterGuide();return false;" style="margin-top:.4rem">
         📖 Как получить ключ (инструкция)
       </a>
     </div>
@@ -1819,11 +2016,13 @@ input.s-pass:focus{border-color:var(--blue)}
     <p class="card-title">Настройки</p>
 
     <div class="settings-group-title" style="margin-top:0">Приложение</div>
-    <div class="settings-row">
-      <div class="settings-label">Установить на телефон</div>
-      <button class="btn-sm" onclick="openInstallGuide()">📲 Как установить</button>
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Установить на телефон</div>
+        <button class="btn-sm" onclick="openInstallGuide()">📲 Как установить</button>
+      </div>
+      <div class="settings-sub">Добавьте на главный экран — работает как обычное приложение, даже офлайн.</div>
     </div>
-    <div class="settings-sub tight">Добавьте на главный экран — работает как обычное приложение, даже офлайн.</div>
 
     <!-- Обратная связь: форма отправляется на Formspree (formspree.io).
          Пользователю НЕ нужна регистрация и не открывается почтовый клиент —
@@ -1834,83 +2033,91 @@ input.s-pass:focus{border-color:var(--blue)}
          его ID вместо YOUR_FORM_ID ниже в submitFeedback().
          ⚠️ ВАЖНО: замени YOUR_FORM_ID в submitFeedback() на реальный ID формы
          перед тем, как отдавать сборку тестировщикам. -->
-    <div class="settings-row">
-      <div class="settings-label">Обратная связь</div>
-      <button class="btn-sm" onclick="openFeedbackModal()">✉️ Сообщить о проблеме</button>
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Обратная связь</div>
+        <button class="btn-sm" onclick="openFeedbackModal()">✉️ Сообщить о проблеме</button>
+      </div>
+      <div class="settings-sub">Нашли баг или что-то не работает? Опишите в двух словах — отправится нам напрямую, без почты.</div>
     </div>
-    <div class="settings-sub tight">Нашли баг или что-то не работает? Опишите в двух словах — отправится нам напрямую, без почты.</div>
 
     <div class="settings-group-title">Обучение</div>
-    <div class="settings-row">
-      <div class="settings-label">Скорость озвучки</div>
-      <select id="defaultSpeed" class="s-select" onchange="saveSettings()">
-        <option value="0.5">Медленно</option>
-        <option value="1" selected>Нормально</option>
-        <option value="1.5">Быстро</option>
-      </select>
-    </div>
-    <div class="settings-sub tight">Голос браузера/ОС (kk-KZ), если установлен на устройстве. Ключи не нужны.</div>
-    <div class="settings-row">
-      <div class="settings-label">Слов в день</div>
-      <div class="s-num-group">
-        <input type="number" id="dailyGoalInput" value="10" min="5" max="100"
-          class="s-num" onchange="saveCustomDailyGoal()" oninput="clampDailyGoalInput();updateGoalEstimate()">
-        <span class="s-num-unit">слов</span>
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Скорость озвучки</div>
+        <select id="defaultSpeed" class="s-select" onchange="saveSettings()">
+          <option value="0.5">Медленно</option>
+          <option value="1" selected>Нормально</option>
+          <option value="1.5">Быстро</option>
+        </select>
       </div>
+      <div class="settings-sub">Голос браузера/ОС (kk-KZ), если установлен на устройстве. Ключи не нужны.</div>
     </div>
-    <!-- Оценка "слов в месяц/неделю" — считается на лету, см. updateGoalEstimate(). -->
-    <div class="settings-row no-top-pad">
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Слов в день</div>
+        <div class="s-num-group">
+          <input type="number" id="dailyGoalInput" value="10" min="5" max="100"
+            class="s-num" onchange="saveCustomDailyGoal()" oninput="clampDailyGoalInput();updateGoalEstimate()">
+          <span class="s-num-unit">слов</span>
+        </div>
+      </div>
+      <!-- Оценка "слов в месяц/неделю" — считается на лету, см. updateGoalEstimate(). -->
       <div class="goal-estimate" id="goalEstimateText"></div>
     </div>
 
     <div class="settings-group-title">ИИ-чат</div>
-    <div class="settings-row settings-col">
-      <div>
+    <div class="settings-item">
+      <div class="settings-row settings-row-stack">
         <div class="settings-label">Ключ OpenRouter</div>
-        <div class="settings-sub">Бесплатно на openrouter.ai, хранится только в браузере.</div>
-        <a href="#" class="settings-link" onclick="openOpenRouterGuide();return false;">
-          📖 Как получить ключ (инструкция)
-        </a>
+        <input type="password" id="openrouterKeyInput" placeholder="sk-or-v1-..."
+          class="s-pass" onchange="saveOpenRouterKey()">
       </div>
-      <input type="password" id="openrouterKeyInput" placeholder="sk-or-v1-..."
-        class="s-pass" onchange="saveOpenRouterKey()">
-    </div>
-    <div class="settings-row">
-      <div class="settings-label">Модель ИИ-чата</div>
-      <div class="settings-value">Gemini Flash 1.5</div>
-    </div>
-    <div class="settings-row settings-col">
-      <div>
-        <div class="settings-label">Без ключа</div>
-        <div class="settings-sub">Если ключа нет — чат сам переключится на встроенный переводчик (проще, без ИИ).</div>
+      <div class="settings-sub">Бесплатно на openrouter.ai, хранится только в браузере.
+        <a href="#" class="settings-link" onclick="openOpenRouterGuide();return false;">Как получить ключ →</a>
       </div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Модель ИИ-чата</div>
+        <div class="settings-value">Gemini Flash 1.5</div>
+      </div>
+    </div>
+    <div class="settings-item">
+      <div class="settings-sub no-top-pad">Без ключа чат сам переключится на встроенный переводчик (проще, без ИИ).</div>
     </div>
 
     <div class="settings-group-title">Данные</div>
-    <div class="settings-row">
-      <div class="settings-label">Резервная копия</div>
-      <button class="btn-sm" onclick="exportProgress()">📥 Скачать</button>
-    </div>
-    <div id="backupReminder" class="settings-sub tight"></div>
-    <div class="settings-row">
-      <div class="settings-label">Восстановить</div>
-      <button class="btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Выбрать файл</button>
-      <input type="file" id="importFileInput" accept="application/json,.json"
-        style="display:none" onchange="handleImportFileSelected(event.target.files&&event.target.files[0])">
-    </div>
-    <div id="importPreview" class="import-box" style="display:none">
-      <div class="import-box-title">Что в этом файле:</div>
-      <div id="importPreviewBody" class="import-box-body"></div>
-      <div class="import-box-actions">
-        <button class="btn-sm" onclick="confirmImport()">✅ Восстановить</button>
-        <button class="btn-sm" onclick="cancelImportPreview()">Отмена</button>
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Резервная копия</div>
+        <button class="btn-sm" onclick="exportProgress()">📥 Скачать</button>
       </div>
+      <div id="backupReminder" class="settings-sub no-top-pad"></div>
     </div>
-    <div id="importError" class="import-error" style="display:none"></div>
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Восстановить</div>
+        <button class="btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Выбрать файл</button>
+        <input type="file" id="importFileInput" accept="application/json,.json"
+          style="display:none" onchange="handleImportFileSelected(event.target.files&&event.target.files[0])">
+      </div>
+      <div id="importPreview" class="import-box" style="display:none">
+        <div class="import-box-title">Что в этом файле:</div>
+        <div id="importPreviewBody" class="import-box-body"></div>
+        <div class="import-box-actions">
+          <button class="btn-sm" onclick="confirmImport()">✅ Восстановить</button>
+          <button class="btn-sm" onclick="cancelImportPreview()">Отмена</button>
+        </div>
+      </div>
+      <div id="importError" class="import-error" style="display:none"></div>
+    </div>
 
-    <div class="settings-row">
-      <div class="settings-label">Сбросить прогресс</div>
-      <button class="btn-sm btn-danger" onclick="resetProgress()">Сбросить</button>
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Сбросить прогресс</div>
+        <button class="btn-sm btn-danger" onclick="resetProgress()">Сбросить</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2271,14 +2478,14 @@ function toggleTheme(){
   const newTheme=isDark?'light':'dark';
   document.documentElement.setAttribute('data-theme',newTheme);
   document.getElementById('themeToggle').textContent=isDark?'🌙':'☀️';
-  try{localStorage.setItem('qazaq_theme',newTheme)}catch(e){console.warn(e)}
+  try{localStorage.setItem('qazaq_theme',newTheme)}catch(e){}
 }
 (function(){
   try{
     const t=localStorage.getItem('qazaq_theme');
     if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('themeToggle').textContent='☀️'}
     else{document.getElementById('themeToggle').textContent='🌙'}
-  }catch(e){console.warn(e)}
+  }catch(e){}
 })();
 
 const TOPICS=[
@@ -4893,6 +5100,41 @@ const DIALOGUES=[
 {id:50,title:"Үйде 2",lines:[{s:"A",t:"Үйді жинау керек."},{s:"B",t:"Мен терезені жуамын."},{s:"A",t:"Жақсы, мен кір жуамын."}],q:"Отбасы не істемек?",a:["Тамақ пісіру","Үйді жинау","Серуенге шығу"],c:1}
 ];
 
+// ── УПРАЖНЕНИЕ "СОБЕРИ ПРЕДЛОЖЕНИЕ" ──────────────────────────────────────
+// Ровно 20 предложений, составленных и вручную выверенных отдельно от базы
+// WORDS — намеренно НЕ берём example_kz у слов автоматически: часть
+// example_kz в базе на самом деле короткие словосочетания без сказуемого
+// ("Зелёный лист" и т.п.), для сборки полноценного предложения не годятся.
+// Уровень A2-B1, длина 3-6 слов, глагол в конце (порядок слов казахского
+// языка: подлежащее → дополнение → сказуемое), в каждом предложении все
+// слова уникальны (важно для UI выбора — иначе появятся визуально
+// одинаковые кнопки в банке слов без очевидного порядка клика). Каждое
+// предложение перепроверено на падежные суффиксы и спряжение глагола —
+// при малейшем сомнении сложная форма заменена на более простую и
+// однозначно верную.
+const SENTENCE_BUILDER=[
+{id:1,kz:"Мен ертең жұмысқа барамын.",ru:"Я завтра пойду на работу."},
+{id:2,kz:"Ол дүкеннен нан сатып алды.",ru:"Он купил в магазине хлеб."},
+{id:3,kz:"Біз қазір үйде отырмыз.",ru:"Мы сейчас сидим дома."},
+{id:4,kz:"Сен бүгін мектепке бардың ба?",ru:"Ты сегодня ходил в школу?"},
+{id:5,kz:"Анам ас үйде тамақ пісіреді.",ru:"Моя мама готовит еду на кухне."},
+{id:6,kz:"Балалар паркте ойнап жүр.",ru:"Дети играют в парке."},
+{id:7,kz:"Дәрігер науқасты мұқият тексерді.",ru:"Врач внимательно осмотрел пациента."},
+{id:8,kz:"Мен кеше кітап оқыдым.",ru:"Я вчера читал книгу."},
+{id:9,kz:"Әкем көлікпен жұмысқа барады.",ru:"Мой отец едет на работу на машине."},
+{id:10,kz:"Қала орталығында үлкен базар бар.",ru:"В центре города есть большой рынок."},
+{id:11,kz:"Апам маған жаңа көйлек сыйлады.",ru:"Моя мама подарила мне новое платье."},
+{id:12,kz:"Біз демалыста теңізге барамыз.",ru:"Мы на отдыхе поедем на море."},
+{id:13,kz:"Ол әрдайым таңертең жүгіреді.",ru:"Он всегда бегает по утрам."},
+{id:14,kz:"Мұғалім сыныпта жаңа тақырыпты түсіндірді.",ru:"Учитель объяснил в классе новую тему."},
+{id:15,kz:"Мен саған қазір қоңырау шаламын.",ru:"Я сейчас тебе позвоню."},
+{id:16,kz:"Түскі ас өте дәмді болды.",ru:"Обед был очень вкусным."},
+{id:17,kz:"Ол емханада дәрігерді күтіп тұр.",ru:"Он ждёт врача в поликлинике."},
+{id:18,kz:"Біз жаңа пәтерге көшеміз.",ru:"Мы переезжаем в новую квартиру."},
+{id:19,kz:"Қыз әжесіне хат жазды.",ru:"Девочка написала бабушке письмо."},
+{id:20,kz:"Достарым мені туған күніме шақырды.",ru:"Мои друзья пригласили меня на день рождения."}
+];
+
 // ──────────────────────────────────────────────────────────────────────
 // ВАЖНО ДЛЯ БУДУЩИХ ПРАВОК (см. также CHANGELOG в самом верху файла, п.14):
 // state.daily.goalCount — ЕДИНСТВЕННОЕ поле, которое двигает "Дневную цель"
@@ -4936,7 +5178,7 @@ const DIALOGUES=[
 // Как и остальные поля, эти два добавлены во ВСЕ три места пересоздания
 // state (здесь, resetProgress(), confirmImport() при импорте бэкапа) —
 // см. предыдущий абзац комментария про dailyGoal, та же причина.
-let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,xp:0,activityHistory:{},streakFreezes:0,frozenDates:{},unlockedAchievements:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+let state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,xp:0,activityHistory:{},streakFreezes:0,frozenDates:{},unlockedAchievements:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now(),comboCount:0}};
 const STORAGE_KEY='qazaq_tili_v2';
 
 function loadState(){
@@ -5086,13 +5328,29 @@ maybeAwardStreakFreeze();
 // при проверке "выполнена ли цель" этого дня в будущем (см. goalForThatDay
 // выше), чтобы последующая смена цели в Настройках не переписывала задним
 // числом уже прожитые дни.
-state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[],dailyGoalAtDate:state.settings.dailyGoal||10};
-state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
+// БЕТА-КВЕСТ (см. подробный комментарий у объявления state.daily.questAudioCount
+// ниже, рядом с UI квеста): questAudioCount/questClaimed обязаны обнуляться
+// каждый новый день вместе со всем остальным daily-состоянием, а не жить
+// отдельным циклом сброса — иначе квест "залипнет" выполненным навсегда после
+// первого же дня, когда его прошли.
+state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[],dailyGoalAtDate:state.settings.dailyGoal||10,questAudioCount:0,questClaimed:false};
+// КОМБО-МНОЖИТЕЛЬ (см. комментарий в updateWordProgress()): комбо живёт внутри
+// sessionStats и, как и вся остальная сессионная статистика, обнуляется при
+// смене дня вместе с ней — новый день начинается с чистого комбо.
+state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now(),comboCount:0};
 saveState();
 }
 if(!state.streak)state.streak=0;
 if(!state.bestStreak)state.bestStreak=state.streak||0;
-if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now()};
+if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now(),comboCount:0};
+// Миграция для тех, кто уже играл до появления комбо-множителя — у них
+// sessionStats уже существует, но без поля comboCount.
+if(state.sessionStats.comboCount===undefined)state.sessionStats.comboCount=0;
+// Миграция для тех, кто уже играл до появления бета-квеста "На слух" —
+// у них state.daily уже существует (сегодняшний день ещё не сменился), но
+// без questAudioCount/questClaimed.
+if(state.daily.questAudioCount===undefined)state.daily.questAudioCount=0;
+if(state.daily.questClaimed===undefined)state.daily.questClaimed=false;
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
 // Миграция для тех, у кого сегодняшний state.daily уже был создан старой
 // версией без dailyGoalAtDate — берём текущую цель как разумный старт
@@ -5652,7 +5910,7 @@ document.getElementById('nextBtn').style.display='none';
 hideStickyNext();
 document.getElementById('answerInput').value='';
 document.getElementById('answerInput').disabled=false;
-try{document.getElementById('answerInput').focus();}catch(e){console.warn(e)}
+try{document.getElementById('answerInput').focus();}catch(e){}
 // БАГФИКС: показываем кнопку "Не знаю / Пропустить" заново для новой карточки —
 // она скрывается после ответа на предыдущее слово (см. checkAnswer/checkChoice/checkAudio).
 const skipBtnReset=document.getElementById('skipBtn');
@@ -6074,6 +6332,15 @@ state.sessionStats.total++;
 if(correct&&hintAssisted){
 ws.correct++;
 state.sessionStats.correct++;
+// БЕТА-КВЕСТ "На слух" (см. подробности у объявления questAudioCount): ответ
+// с подсказкой в режиме C всё равно является попыткой ответить на слух —
+// пользователь услышал слово и отреагировал, просто не идеально, поэтому
+// считаем и такие ответы, как и договорились в задаче — обе ветки
+// (correct/hintAssisted) равнозначны для этого квеста.
+if(state.mode==='C')awardAudioQuestProgress();
+// КОМБО-МНОЖИТЕЛЬ (см. подробный комментарий в ветке correct ниже): ответ с
+// подсказкой формально верный, но не "чистая" победа — как и с XP (3 вместо
+// 10), комбо здесь намеренно НЕ трогаем ни в плюс, ни в минус.
 // SM-2: ответ "с подсказкой" — это фактически неудача с точки зрения
 // памяти (пользователь не вспомнил слово сам), поэтому слегка снижаем
 // ease (не так резко, как настоящая ошибка) и возвращаем слово через
@@ -6111,6 +6378,18 @@ ws.correct++;
 state.sessionStats.correct++;
 ws.streak=(ws.streak||0)+1;
 ws.level=ws.streak; // level отражает streak для совместимости со старым прогрессом/статистикой
+// БЕТА-КВЕСТ "На слух" (см. подробности у объявления questAudioCount ниже,
+// рядом с UI квеста в #sec-train): считаем именно ЧИСТЫЙ верный ответ в
+// режиме C — так же, как и hint-assisted ветка выше, но там это уже сделано
+// отдельно, чтобы не дублировать условие в общей для обеих веток точке.
+if(state.mode==='C')awardAudioQuestProgress();
+// КОМБО-МНОЖИТЕЛЬ К XP (без системы жизней — только бонус, без штрафа):
+// самостоятельный верный ответ (без подсказки) двигает комбо вперёд. Комбо
+// живёт в state.sessionStats.comboCount — привязано к текущей сессии, а не
+// накапливается вечно (обнуляется в startTopicTraining()/при рестарте
+// сессии и при смене дня, см. соответствующие комментарии там).
+if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:Date.now(),comboCount:0};
+state.sessionStats.comboCount=(state.sessionStats.comboCount||0)+1;
 // ── SM-2-ПОДОБНЫЙ АЛГОРИТМ ИНТЕРВАЛОВ ─────────────────────────────
 // РЕАЛИЗОВАНО (по просьбе пользователя — "чтобы реально запоминал слова"):
 // раньше интервал зависел ТОЛЬКО от streak — одна и та же лестница
@@ -6169,12 +6448,29 @@ else state.daily.repeatCount++;
 let xpGain=10;
 if(isNewWord)xpGain+=5;
 if(ws.streak>=STREAK_TO_LEARN)xpGain+=2;
-addXp(xpGain,...xpFloatOrigin());
+// КОМБО-МНОЖИТЕЛЬ: применяется к уже полностью посчитанному xpGain (после
+// бонусов за новое слово и за streak>=STREAK_TO_LEARN), ПЕРЕД самим addXp() —
+// то есть множит итоговую сумму, а не переписывает формулу выше.
+const comboCount=state.sessionStats.comboCount||0;
+let comboMultiplier=1;
+if(comboCount>=10)comboMultiplier=2;
+else if(comboCount>=5)comboMultiplier=1.5;
+if(comboMultiplier>1)xpGain=Math.round(xpGain*comboMultiplier);
+const xpOrigin=xpFloatOrigin();
+addXp(xpGain,...xpOrigin);
+// Визуальный бейдж множителя — отдельный от spawnXpFloat()/"+N XP", короткий
+// bounce у той же точки, и только пока множитель реально активен (comboCount
+// >=5). При comboCount<5 бейдж не показываем вовсе — никакого лишнего шума
+// на обычных ответах.
+if(comboMultiplier>1)spawnComboBadge(comboMultiplier,...xpOrigin);
 }else{
 ws.errors=(ws.errors||0)+1;
 state.sessionStats.wrong++;
 ws.streak=0; // ошибка обнуляет счётчик — слово снова нужно назвать 3 раза подряд
 ws.level=0;
+// КОМБО-МНОЖИТЕЛЬ: настоящая ошибка (в отличие от ответа с подсказкой выше)
+// сбрасывает серию подряд идущих "чистых" верных ответов в 0.
+if(state.sessionStats)state.sessionStats.comboCount=0;
 // SM-2: неверный ответ ощутимо снижает ease (слово явно даётся труднее,
 // чем считалось) и сбрасывает interval — при следующей правильной серии
 // слово снова пройдёт через короткие learning-шаги, но с уже более низким
@@ -6515,6 +6811,7 @@ if(moreBtn)moreBtn.classList.add('active-more');
 }
 if(id==='topics')renderTopics();
 if(id==='dialogues')renderDialogues();
+if(id==='sentencebuilder')startSentenceBuilder();
 if(id==='dictionary')renderDictionary();
 if(id==='stats')renderStats();
 if(id==='train'){renderWeekGrid();}
@@ -6570,6 +6867,11 @@ if(!state.currentTopic){alert('Выберите тему');return}
 const topicWords=state.currentTopic==='__all__'?[...WORDS]:WORDS.filter(w=>w.topic===state.currentTopic);
 state.queue=shuffleArray([...topicWords]);
 state.topicSession=true;
+// КОМБО-МНОЖИТЕЛЬ: явный сброс при смене темы — комбо должно отражать серию
+// подряд идущих верных ответов ИМЕННО в текущей тренировке, а не тащить
+// значение из предыдущей темы/сессии (см. также сброс в daily-переходе
+// внутри loadState() и в резервных полных пересозданиях state).
+if(state.sessionStats)state.sessionStats.comboCount=0;
 // БАГФИКС: в отличие от nextWord()/skipWord()/setMode(), эта функция не
 // убирала старые кнопки #quizOptions/#audioOptions режима "Каз → Рус (аудио)"
 // перед показом нового слова. Если пользователь только что ответил на вопрос
@@ -6707,6 +7009,248 @@ saveState();
 // диалога уже записан в state.dialogueState и сохранён — checkAchievements()
 // сама читает актуальный state, поэтому дополнительный контекст не нужен.
 try{ checkAchievements(); }catch(e){ console.warn('[achievements]',e); }
+}
+
+// ── УПРАЖНЕНИЕ "СОБЕРИ ПРЕДЛОЖЕНИЕ" ──────────────────────────────────────
+// Отдельное самостоятельное упражнение по образцу Диалогов (см. checkDialogue()
+// выше): собственный небольшой кусок состояния в sbState, НЕ пересекающийся
+// с state.words/getDueWords()/updateWordProgress() — намеренно, чтобы не
+// рисковать сломать уже отлаженную SM-2-логику интервальных повторений.
+// Ответы здесь не двигают streak/ease/interval конкретных слов, а верный
+// ответ даёт лишь небольшой фиксированный XP через уже существующий addXp().
+let sbState={order:[],pos:0,builtIds:[],answered:false};
+
+// ПЕРЕТАСКИВАНИЕ СЛОВ (по просьбе пользователя): раньше собранную
+// последовательность можно было только наращивать с конца и отменять
+// последнее слово — переставить местами два уже добавленных слова было
+// нельзя, приходилось откатывать всё до нужного места. Теперь слова в
+// "собранной" зоне можно перетаскивать друг относительно друга через
+// Pointer Events (единый механизм и для мыши, и для тача — в отличие от
+// HTML5 Drag&Drop, который на мобильных браузерах работает нестабильно).
+// sbDrag хранит состояние активного перетаскивания; null, когда ничего не
+// тащат.
+let sbDrag=null;
+
+// Порядок предложений перемешивается один раз при входе в раздел (через
+// уже существующую shuffleArray()), дальше "Следующее предложение" просто
+// идёт по этому порядку циклически — так все 20 предложений будут пройдены
+// по разу, прежде чем порядок перемешается заново.
+function startSentenceBuilder(){
+if(!sbState.order.length){
+sbState.order=shuffleArray(SENTENCE_BUILDER.map(s=>s.id));
+sbState.pos=0;
+}
+renderSentenceBuilder();
+}
+
+function currentSentenceBuilderItem(){
+const id=sbState.order[sbState.pos];
+return SENTENCE_BUILDER.find(s=>s.id===id);
+}
+
+function renderSentenceBuilder(){
+const item=currentSentenceBuilderItem();
+if(!item)return;
+sbState.builtIds=[];
+sbState.answered=false;
+document.getElementById('sbTranslation').textContent=item.ru;
+document.getElementById('sbFeedback').innerHTML='';
+document.getElementById('sbFeedback').className='sb-feedback';
+// БАГФИКС: .btn-next (тот же класс, что у основной кнопки "Следующее
+// слово →" в тренажёре) скрыт правилом .btn-next:not([style*="inline"])
+// в CSS — то есть для показа кнопки в её style ОБЯЗАТЕЛЬНО должна быть
+// подстрока "inline" (см. остальные вызовы style.display='inline-block'
+// по коду, например nextBtn в checkAnswer()). Раньше здесь стояла пустая
+// строка style.display='' — она не содержит "inline", поэтому CSS-правило
+// продолжало матчиться и кнопка "Следующее предложение" оставалась
+// невидимой даже после успешной/неуспешной проверки — выглядело так,
+// будто нажатие "Проверить" ничего не делает.
+document.getElementById('sbNextBtn').style.display='none';
+document.getElementById('sbCheckBtn').style.display='';
+document.getElementById('sbCheckBtn').disabled=false;
+// Слова предложения нумеруем индексами их ПРАВИЛЬНОГО порядка (wordIds) —
+// проверка ответа в sentenceBuilderCheck() идёт именно по этим индексам, а
+// не по итоговой строке, чтобы не зависеть от пунктуации/регистра при
+// сравнении.
+const words=item.kz.replace(/[.?!]/g,'').split(' ');
+item._words=words; // кэшируем на время текущего показа предложения
+const shuffledIdx=shuffleArray(words.map((_,i)=>i));
+renderSentenceBuilderBank(shuffledIdx,words);
+renderSentenceBuilderBuilt(words);
+}
+
+function renderSentenceBuilderBank(shuffledIdx,words){
+const bank=document.getElementById('sbBank');
+bank.innerHTML=shuffledIdx.map(i=>{
+const usedAlready=sbState.builtIds.includes(i);
+return `<button class="sb-chip" data-idx="${i}" ${usedAlready?'disabled':''} onclick="sentenceBuilderPick(${i})">${escHtml(words[i])}</button>`;
+}).join('');
+}
+
+// ПЕРЕТАСКИВАНИЕ: каждое собранное слово — отдельный <span class="sb-built-word">
+// с data-pos (текущая позиция в sbState.builtIds) и обработчиками
+// Pointer Events, навешанными через onpointerdown в разметке — проще и
+// надёжнее, чем делегирование через один общий слушатель, т.к. sb-built
+// целиком перерисовывается при каждом изменении порядка.
+function renderSentenceBuilderBuilt(words){
+const built=document.getElementById('sbBuilt');
+if(!sbState.builtIds.length){
+built.innerHTML='<span class="sb-built-placeholder">Собранное предложение появится здесь…</span>';
+return;
+}
+// draggable="false" на самом слове — чтобы браузер не пытался запустить
+// свой нативный HTML5 drag поверх Pointer Events и не конфликтовал с ним
+// (актуально в основном для десктопных браузеров).
+built.innerHTML=sbState.builtIds.map((i,pos)=>
+`<span class="sb-built-word${sbState.answered?'':' sb-draggable'}" data-pos="${pos}" draggable="false" ${sbState.answered?'':`onpointerdown="sentenceBuilderDragStart(event,${pos})"`}>${escHtml(words[i])}</span>`
+).join('');
+}
+
+// Клик по кнопке в банке слов — переносит слово в "собранную" зону и
+// дизейблит исходную кнопку в банке (а не удаляет её из DOM — так проще
+// вернуть слово обратно кнопкой "Отменить последнее слово", не пересобирая
+// банк заново).
+function sentenceBuilderPick(idx){
+if(sbState.answered)return;
+if(sbState.builtIds.includes(idx))return;
+sbState.builtIds.push(idx);
+const item=currentSentenceBuilderItem();
+renderSentenceBuilderBuilt(item._words);
+const chip=document.querySelector(`#sbBank .sb-chip[data-idx="${idx}"]`);
+if(chip)chip.disabled=true;
+}
+
+// Кнопка "Отменить последнее слово" — без неё пользователь, ошибившись на
+// предпоследнем слове, терял бы весь прогресс сборки и должен был бы
+// начинать заново, что раздражает (см. задание).
+function sentenceBuilderUndo(){
+if(sbState.answered)return;
+if(!sbState.builtIds.length)return;
+const idx=sbState.builtIds.pop();
+const item=currentSentenceBuilderItem();
+renderSentenceBuilderBuilt(item._words);
+const chip=document.querySelector(`#sbBank .sb-chip[data-idx="${idx}"]`);
+if(chip)chip.disabled=false;
+}
+
+// ── ПЕРЕТАСКИВАНИЕ СЛОВ МЕСТАМИ ────────────────────────────────────────
+// Начало перетаскивания: запоминаем, какую позицию тащим, и подписываемся
+// на глобальные pointermove/pointerup — это надёжнее, чем вешать move на
+// сам элемент, т.к. палец/курсор может выйти за пределы узкого слова
+// во время перетаскивания, и локальный слушатель на элементе такие
+// события потерял бы.
+function sentenceBuilderDragStart(evt,pos){
+if(sbState.answered)return;
+evt.preventDefault();
+const el=evt.currentTarget;
+sbDrag={fromPos:pos,el,startX:evt.clientX,startY:evt.clientY,moved:false};
+el.setPointerCapture&&el.setPointerCapture(evt.pointerId);
+el.classList.add('sb-dragging');
+window.addEventListener('pointermove',sentenceBuilderDragMove);
+window.addEventListener('pointerup',sentenceBuilderDragEnd);
+window.addEventListener('pointercancel',sentenceBuilderDragEnd);
+}
+
+function sentenceBuilderDragMove(evt){
+if(!sbDrag)return;
+const dx=evt.clientX-sbDrag.startX;
+const dy=evt.clientY-sbDrag.startY;
+// Порог в несколько пикселей — иначе обычный тап по слову (без намерения
+// тащить) уже засчитывался бы как "потянул" и мог случайно поменять
+// местами соседние слова от дрожания пальца.
+if(!sbDrag.moved&&Math.hypot(dx,dy)>4)sbDrag.moved=true;
+if(!sbDrag.moved)return;
+sbDrag.el.style.transform=`translate(${dx}px,${dy}px)`;
+sbDrag.el.style.zIndex=10;
+// Определяем, над каким по счёту словом сейчас находится курсор/палец —
+// сравниваем координату указателя с центрами остальных слов в built-зоне,
+// чтобы во время перетаскивания подсвечивать место вставки.
+const built=document.getElementById('sbBuilt');
+const children=[...built.querySelectorAll('.sb-built-word')];
+children.forEach(c=>c.classList.remove('sb-drop-target'));
+let target=null;
+for(const c of children){
+if(c===sbDrag.el)continue;
+const rect=c.getBoundingClientRect();
+if(evt.clientX>=rect.left&&evt.clientX<=rect.right&&evt.clientY>=rect.top&&evt.clientY<=rect.bottom){
+target=c;
+break;
+}
+}
+if(target)target.classList.add('sb-drop-target');
+sbDrag.overPos=target?Number(target.dataset.pos):null;
+}
+
+function sentenceBuilderDragEnd(evt){
+if(!sbDrag)return;
+window.removeEventListener('pointermove',sentenceBuilderDragMove);
+window.removeEventListener('pointerup',sentenceBuilderDragEnd);
+window.removeEventListener('pointercancel',sentenceBuilderDragEnd);
+const wasMoved=sbDrag.moved;
+const fromPos=sbDrag.fromPos;
+const toPos=sbDrag.overPos;
+sbDrag.el.classList.remove('sb-dragging');
+sbDrag.el.style.transform='';
+sbDrag.el.style.zIndex='';
+sbDrag=null;
+if(wasMoved&&toPos!==null&&toPos!==undefined&&toPos!==fromPos){
+// Перестановка местами: вынимаем слово из старой позиции и вставляем
+// его на новую — соседние слова сами сдвигаются, как в обычном списке.
+const arr=sbState.builtIds;
+const [moved]=arr.splice(fromPos,1);
+arr.splice(toPos,0,moved);
+const item=currentSentenceBuilderItem();
+renderSentenceBuilderBuilt(item._words);
+}else{
+// Короткий тап без реального перетаскивания — просто убираем визуальные
+// классы, порядок не меняем.
+const built=document.getElementById('sbBuilt');
+built.querySelectorAll('.sb-built-word').forEach(c=>c.classList.remove('sb-drop-target'));
+}
+}
+
+function sentenceBuilderCheck(){
+if(sbState.answered)return;
+const item=currentSentenceBuilderItem();
+const words=item._words;
+// Сравниваем по индексам исходного порядка, а не по строке — так сравнение
+// не зависит от пунктуации/регистра, только от того, в каком порядке
+// пользователь выбрал слова.
+const correctOrder=words.map((_,i)=>i);
+const isCorrect=sbState.builtIds.length===correctOrder.length&&
+sbState.builtIds.every((v,i)=>v===correctOrder[i]);
+sbState.answered=true;
+document.getElementById('sbCheckBtn').disabled=true;
+// Перерисовываем собранную зону без обработчиков перетаскивания (см.
+// sbState.answered в renderSentenceBuilderBuilt()) — после ответа порядок
+// менять уже нельзя.
+renderSentenceBuilderBuilt(words);
+const fb=document.getElementById('sbFeedback');
+if(isCorrect){
+fb.className='sb-feedback sb-feedback-correct';
+fb.textContent='✓ Верно! '+item.kz;
+// Короткая награда за вспомогательное упражнение — меньше базовой награды
+// за слово в основном тренажёре (10 XP), т.к. это не основной SM-2-цикл.
+addXp(6);
+}else{
+fb.className='sb-feedback sb-feedback-wrong';
+fb.textContent='✗ Правильный порядок: '+item.kz;
+}
+// БАГФИКС (см. подробный комментарий в renderSentenceBuilder()): кнопка
+// "Следующее предложение" — это .btn-next, и без подстроки "inline" в
+// style её прячет CSS-правило .btn-next:not([style*="inline"]).
+document.getElementById('sbNextBtn').style.display='inline-block';
+}
+
+// Циклически идёт по всем 20 предложениям в перемешанном порядке; дойдя до
+// конца — перемешивает заново и начинает новый круг.
+function sentenceBuilderNext(){
+sbState.pos++;
+if(sbState.pos>=sbState.order.length){
+sbState.order=shuffleArray(SENTENCE_BUILDER.map(s=>s.id));
+sbState.pos=0;
+}
+renderSentenceBuilder();
 }
 
 function renderDictionary(opts){
@@ -7254,6 +7798,64 @@ document.getElementById('dailyProgress').style.width=pct+'%';
 // скриншот пользователя). Теперь стрик отображается только в шапке, здесь —
 // только прогресс по словам.
 document.getElementById('dailyLabel').textContent=`${done} / ${goal} слов`;
+// БЕТА-КВЕСТ: обновляем карточку квеста тем же вызовом, которым и так уже
+// обновляется остальной дневной прогресс после каждого ответа — см.
+// подробный комментарий над блоком квеста в updateDailyQuestCard() ниже,
+// не заводим для этого отдельный ещё один update-цикл.
+updateDailyQuestCard();
+}
+
+// ────────────────────────────────────────────────────────────────────────
+// БЕТА-ФУНКЦИЯ: единственный ежедневный квест ("Ответь верно 3 раза в
+// режиме 'На слух' сегодня"), добавлен как эксперимент — намеренно ОДИН
+// квест, а не система из нескольких/ротация, чтобы сначала посмотреть на
+// реакцию, прежде чем усложнять. Выбран режим "На слух" (mode==='C'),
+// потому что прогресс по нему легко посчитать (mode==='C' && correct) и
+// это подталкивает попробовать недо-используемую часть тренажёра.
+// Если решим не продолжать эту механику — весь блок ограничен полями
+// state.daily.questAudioCount/questClaimed, функциями
+// awardAudioQuestProgress()/updateDailyQuestCard() и HTML-карточкой
+// #dailyQuestCard в #sec-train — безопасно удалить одним куском.
+// ────────────────────────────────────────────────────────────────────────
+const DAILY_QUEST_TARGET=3;
+const DAILY_QUEST_XP=15;
+
+// Вызывается из updateWordProgress() при каждом успешном ответе (обычном
+// или с подсказкой — обе ветки считаются попыткой на слух) в режиме C.
+// Сама решает, выдавать ли награду (проверяет questClaimed, чтобы не
+// выдать повторно) — вызывающему коду ничего проверять не нужно.
+function awardAudioQuestProgress(){
+if(!state.daily)return;
+if(state.daily.questAudioCount===undefined)state.daily.questAudioCount=0;
+if(state.daily.questClaimed===undefined)state.daily.questClaimed=false;
+if(state.daily.questClaimed)return; // уже забрали награду сегодня — дальше не считаем
+state.daily.questAudioCount++;
+if(state.daily.questAudioCount>=DAILY_QUEST_TARGET){
+state.daily.questClaimed=true;
+// Разовая награда — 15 XP, без привязки к координатам клика (как и в
+// hint-assisted ветке updateWordProgress(), место ответа тут не всегда
+// доступно/уместно), поэтому просто плюсуем к общему счётчику XP без
+// всплывающей анимации на карточке слова.
+addXp(DAILY_QUEST_XP);
+}
+}
+
+// Отрисовывает карточку квеста в #sec-train (см. #dailyQuestCard в HTML,
+// рядом с прогресс-баром дневной цели). Вызывается из updateDailyProgress(),
+// которая и так уже вызывается после каждого ответа — отдельный цикл
+// обновления для этого не заводим.
+function updateDailyQuestCard(){
+const card=document.getElementById('dailyQuestCard');
+if(!card)return;
+const count=Math.min(DAILY_QUEST_TARGET,state.daily.questAudioCount||0);
+const done=!!state.daily.questClaimed;
+document.getElementById('dailyQuestProgress').textContent=`${count}/${DAILY_QUEST_TARGET}`;
+document.getElementById('dailyQuestStatusBadge').textContent=done?'✓ Выполнено':'БЕТА';
+document.getElementById('dailyQuestStatusBadge').classList.toggle('quest-done',done);
+const dots=document.getElementById('dailyQuestDots');
+dots.innerHTML=Array.from({length:DAILY_QUEST_TARGET},(_,i)=>
+`<span class="quest-dot${i<count?' filled':''}"></span>`).join('');
+card.classList.toggle('quest-complete',done);
 }
 
 // БАГФИКС (страйк не показывался "в свой первый день"): раньше state.streak
@@ -7791,6 +8393,25 @@ document.body.appendChild(el);
 setTimeout(()=>el.remove(),1150);
 }
 
+// КОМБО-МНОЖИТЕЛЬ К XP: отдельный, короткий bounce-бейдж ("🔥 x1.5"/"🔥 x2"),
+// который появляется у той же точки, что и "+N XP" (см. xpFloatOrigin()), но
+// только когда множитель реально активен (comboCount>=5 — см. вызов в
+// updateWordProgress()). ВАЖНО: это НЕ то же самое, что .combo-badge/
+// #streakDisplay в шапке — тот виджет отвечает за дневной streak и уровень
+// XP и никак не связан с комбо ответов подряд. Здесь используется отдельный
+// класс .answer-combo, чтобы не конфликтовать со стилями/логикой шапки.
+function spawnComboBadge(multiplier,x,y){
+const el=document.createElement('div');
+el.className='answer-combo';
+el.textContent='🔥 x'+multiplier;
+el.style.left=x+'px';
+// Небольшое смещение по вертикали относительно "+N XP", чтобы бейджи не
+// перекрывали друг друга, а читались как единая пара "награда + причина".
+el.style.top=(y+22)+'px';
+document.body.appendChild(el);
+setTimeout(()=>el.remove(),1400);
+}
+
 let _lastRenderedLevel=null;
 function updateXpDisplay(justLeveledUp){
 // ОБЪЕДИНЕНО: XP больше не отдельный видимый элемент — звезда и номер
@@ -7884,8 +8505,38 @@ state.activityHistory[todayKey].goal=val;
 saveState();
 updateDailyProgress();
 renderWeekGrid();
+}else{
+// БАГФИКС: раньше при val<5 (например пользователь ввёл "4" и увёл фокус)
+// функция просто ничего не сохраняла и на этом молчала — state.settings.dailyGoal
+// оставался старым (скажем, 10), но само поле ввода продолжало показывать "4",
+// а оценка "≈N слов/нед" под ним (updateGoalEstimate читает прямо из поля)
+// продолжала пересчитываться под эти "4" — то есть интерфейс показывал одно,
+// а тренажёр использовал совсем другое, и никакого объяснения пользователю не
+// было. Теперь: (1) поле явно откатывается к реально сохранённому значению,
+// чтобы то, что видно в поле, всегда совпадало с тем, что используется в
+// тренажёре; (2) на секунду показывается предупреждение под полем, почему
+// откат произошёл.
+input.value=state.settings.dailyGoal||10;
+showDailyGoalMinWarning();
 }
 updateGoalEstimate();
+}
+
+// Показывает короткое предупреждение под полем "Слов в день", когда введённое
+// значение меньше допустимого минимума (5) и было отклонено/откачено обратно
+// в saveCustomDailyGoal(). Использует тот же контейнер #goalEstimateText, но
+// временно подменяет его содержимое, а затем возвращает обычную оценку —
+// так не нужен отдельный DOM-узел и лишняя вёрстка.
+let dailyGoalWarningTimer=null;
+function showDailyGoalMinWarning(){
+const el=document.getElementById('goalEstimateText');
+if(!el)return;
+if(dailyGoalWarningTimer)clearTimeout(dailyGoalWarningTimer);
+el.innerHTML='<div class="ge-line" style="color:var(--red)">⚠ Минимум — 5 слов в день. Возвращено к сохранённому значению.</div>';
+dailyGoalWarningTimer=setTimeout(()=>{
+dailyGoalWarningTimer=null;
+updateGoalEstimate();
+},2200);
 }
 
 // Обрезает значение поля "Слов в день" до потолка 100 ПРЯМО во время
@@ -7942,7 +8593,7 @@ localStorage.removeItem(STORAGE_KEY);
 // Если завтра снова понадобится добавить/переименовать поле дневной статистики —
 // правь во всех местах, где создаётся "чистый" state.daily: основное
 // объявление, loadState(), resetProgress(), importProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,xp:0,activityHistory:{},streakFreezes:0,frozenDates:{},unlockedAchievements:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,xp:0,activityHistory:{},streakFreezes:0,frozenDates:{},unlockedAchievements:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now(),comboCount:0}};
 saveState();
 updateStats();
 initQueue();
@@ -7966,7 +8617,7 @@ function updateBackupReminder(){
 const el=document.getElementById('backupReminder');
 if(!el)return;
 let ts=null;
-try{ts=localStorage.getItem(LAST_BACKUP_STORAGE)}catch(e){console.warn(e)}
+try{ts=localStorage.getItem(LAST_BACKUP_STORAGE)}catch(e){}
 if(!ts){
 el.textContent='Резервной копии ещё не было. Прогресс хранится только в этом браузере — если очистить его данные или сменить устройство, прогресс будет потерян без сохранённого файла.';
 el.style.color='var(--orange)';
@@ -7998,7 +8649,7 @@ document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
 URL.revokeObjectURL(url);
-try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){console.warn(e)}
+try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
 updateBackupReminder();
 }catch(e){
 alert('Не удалось создать файл резервной копии.');
@@ -8126,7 +8777,7 @@ localStorage.setItem(STORAGE_KEY,JSON.stringify(incoming));
 // и сама выполнит миграцию полей (см. loadState). Форма daily здесь всё
 // равно должна совпадать с основным объявлением state — см. примечание в
 // resetProgress().
-state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,xp:0,activityHistory:{},streakFreezes:0,frozenDates:{},unlockedAchievements:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now()}};
+state={mode:'A',currentTopic:null,queue:[],current:null,answered:false,words:{},daily:{goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]},settings:{speed:1,dailyGoal:10},dialogueState:{},history:[],streak:0,bestStreak:0,lastPracticeDate:null,xp:0,activityHistory:{},streakFreezes:0,frozenDates:{},unlockedAchievements:{},sessionStats:{correct:0,wrong:0,total:0,startTime:Date.now(),comboCount:0}};
 loadState();
 updateStats();
 initQueue();
@@ -8142,7 +8793,7 @@ renderDialogues();
 const dgInput=document.getElementById('dailyGoalInput');
 if(dgInput)dgInput.value=state.settings.dailyGoal||10;
 updateGoalEstimate();
-try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){console.warn(e)}
+try{localStorage.setItem(LAST_BACKUP_STORAGE,Date.now().toString())}catch(e){}
 updateBackupReminder();
 pendingImportData=null;
 document.getElementById('importPreview').style.display='none';
@@ -8191,7 +8842,7 @@ if(deprecated.includes(model)){model=DEFAULT_OPENROUTER_MODEL;localStorage.setIt
 if(model!==DEFAULT_OPENROUTER_MODEL){model=DEFAULT_OPENROUTER_MODEL;localStorage.setItem(OPENROUTER_MODEL_STORAGE,model);}
 const keyInput=document.getElementById('openrouterKeyInput');
 if(keyInput)keyInput.value=key||'';
-}catch(e){console.warn(e)}
+}catch(e){}
 try{
 const saved=localStorage.getItem(CHAT_HISTORY_STORAGE);
 chatHistory=saved?JSON.parse(saved):[];
@@ -8331,6 +8982,7 @@ renderChatMessages();
 return;
 }
 
+try{
 const messages=[
 {role:'system',content:CHAT_SYSTEM_PROMPT},
 ...chatHistory.slice(-20).map(m=>({role:m.role,content:m.content}))
@@ -8409,8 +9061,7 @@ return text
 .replace(/▁/g,'')
 .replace(/##/g,'')
 // Убираем управляющие символы и нулевые байты
-// eslint-disable-next-line no-control-regex
-.replace(/[\x00-\x1F\x7F\u200B-\u200D\uFEFF]/g,'')
+.replace(/[\u0000-\u001F\u007F\u200B\u200C\u200D\uFEFF]/g,'')
 // Схлопываем множественные пробелы и переводы строк
 .replace(/ {2,}/g,' ')
 .replace(/\n{3,}/g,'\n\n')
@@ -8445,7 +9096,6 @@ if(!text)return text;
 return cleanReply(stripThinkBlocks(text));
 }
 
-try{
 const chosenModel=getOpenRouterModel();
 let{resp:response,json:data}=await callOpenRouter(chosenModel);
 let reply=cleanupReply(extractContent(response,data));
@@ -8522,7 +9172,7 @@ const mblob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
 const murl=URL.createObjectURL(mblob);
 const ml=document.getElementById('pwaManifest');
 if(ml)ml.href=murl;
-}catch(e){console.warn(e)}
+}catch(e){}
 })();
 
 loadState();
@@ -8623,7 +9273,7 @@ if(swUpdateReloaded)return;
 if(!hadControllerBefore){hadControllerBefore=true;return}
 showSwUpdateToast();
 });
-const showSwUpdateToast = () => {
+function showSwUpdateToast(){
 if(document.getElementById('swUpdateToast'))return;
 const toast=document.createElement('div');
 toast.id='swUpdateToast';
@@ -8697,7 +9347,7 @@ function maybeShowInstallGuideOnFirstVisit() {
 
   // Помечаем как показанную в любом случае, чтобы не всплывало повторно —
   // даже если пользователь уже открыл сайт как установленное приложение.
-  try { localStorage.setItem(INSTALL_GUIDE_SEEN_KEY, '1'); } catch (e) {console.warn(e)}
+  try { localStorage.setItem(INSTALL_GUIDE_SEEN_KEY, '1'); } catch (e) {}
 
   if (isStandalone) return;
 
@@ -8914,215 +9564,6 @@ function closeOpenRouterGuide() {
 .install-note{color:var(--green);font-weight:600;border-bottom:none;}
 .install-icon{font-size:16px;}
 #androidInstallBtn{display:none;}
-
-/* ── Карточка запроса уведомлений (Duolingo-стиль) ── */
-#notifPromptCard {
-  display: none;
-  position: fixed;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  z-index: 8000;
-  width: min(360px, calc(100vw - 32px));
-  background: var(--card);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.22);
-  padding: 20px 20px 16px;
-  border: 1.5px solid var(--border);
-  animation: notifSlideIn .4s cubic-bezier(.34,1.56,.64,1) forwards;
-}
-@keyframes notifSlideIn {
-  from { opacity:0; transform:translateX(-50%) translateY(30px); }
-  to   { opacity:1; transform:translateX(-50%) translateY(0); }
-}
-#notifPromptCard .np-owl { font-size:44px; text-align:center; margin-bottom:8px; }
-#notifPromptCard .np-title {
-  font-size:16px; font-weight:800; color:var(--text);
-  text-align:center; margin-bottom:6px;
-}
-#notifPromptCard .np-sub {
-  font-size:13px; color:var(--text2); text-align:center;
-  line-height:1.45; margin-bottom:14px;
-}
-#notifPromptCard .np-btns { display:flex; gap:8px; }
-#notifPromptCard .np-btn-allow {
-  flex:1; background:var(--blue); color:#fff;
-  border:none; border-radius:12px; padding:11px 0;
-  font-size:14px; font-weight:700; cursor:pointer;
-  transition:opacity .15s;
-}
-#notifPromptCard .np-btn-allow:hover { opacity:.87; }
-#notifPromptCard .np-btn-skip {
-  background:none; border:1.5px solid var(--border);
-  color:var(--text2); border-radius:12px;
-  padding:11px 14px; font-size:13px;
-  cursor:pointer; transition:background .15s;
-}
-#notifPromptCard .np-btn-skip:hover { background:var(--hover); }
 </style>
-<!-- ── Карточка запроса уведомлений ── -->
-<div id="notifPromptCard" role="dialog" aria-label="Включить напоминания">
-  <div class="np-owl">🦉</div>
-  <div class="np-title">Включи напоминания</div>
-  <div class="np-sub">Как Duolingo — мы будем напоминать тебе об уроке раз в день, чтобы стрик не сгорел 🔥</div>
-  <div class="np-btns">
-    <button class="np-btn-allow" id="notifAllowBtn" onclick="notifPromptAllow()">🔔 Включить</button>
-    <button class="np-btn-skip" id="notifSkipBtn" onclick="notifPromptSkip()">Не сейчас</button>
-  </div>
-</div>
-
-<script>
-// ── СИСТЕМА УВЕДОМЛЕНИЙ (Duolingo-стиль) ──────────────────────────────────────
-// Ключи в localStorage:
-//   qazaq_notif_permission  — 'granted'|'denied'|'dismissed' — решение пользователя
-//   qazaq_notif_prompt_seen — timestamp, когда карточка уже показывалась
-//   qazaq_last_practice_ts  — timestamp последней тренировки (обновляется при ответе)
-//   qazaq_notif_sched_ts    — timestamp, на который запланировано уведомление
-const NOTIF_PERM_KEY      = 'qazaq_notif_permission';
-const NOTIF_SEEN_KEY      = 'qazaq_notif_prompt_seen';
-const LAST_PRACTICE_KEY   = 'qazaq_last_practice_ts';
-const NOTIF_SCHED_KEY     = 'qazaq_notif_sched_ts';
-
-// Через сколько часов без занятий слать напоминание (по умолчанию 22ч)
-const REMINDER_AFTER_HOURS = 22;
-// Через сколько часов без ответа на карточку показываем её снова
-const PROMPT_REPEAT_HOURS  = 72;
-
-// ── Вспомогательные ──
-function _notifSw() {
-  return navigator.serviceWorker && navigator.serviceWorker.controller
-    ? navigator.serviceWorker.controller
-    : null;
-}
-function _tellSw(msg) {
-  const sw = _notifSw();
-  if (sw) sw.postMessage(msg);
-}
-
-// ── Запланировать уведомление через SW ───────────────────────────────────────
-// Вычисляем, когда должно прийти напоминание:
-//   - Если пользователь только что позанимался → через REMINDER_AFTER_HOURS
-//   - Если уже давно не занимался → немедленно (но только если страница в фоне)
-function scheduleReminder() {
-  if (Notification.permission !== 'granted') return;
-  const lastTs = parseInt(localStorage.getItem(LAST_PRACTICE_KEY) || '0', 10);
-  const now    = Date.now();
-  const sinceMs = now - lastTs;
-  const targetMs = lastTs + REMINDER_AFTER_HOURS * 3600_000;
-  const delayMs  = Math.max(targetMs - now, 60_000); // минимум через 1 мин
-
-  localStorage.setItem(NOTIF_SCHED_KEY, String(now + delayMs));
-  _tellSw({ type: 'SCHEDULE_NOTIFICATION', delayMs });
-}
-
-// ── Отменить таймер в SW (пользователь зашёл и начал заниматься) ─────────────
-function cancelReminder() {
-  _tellSw({ type: 'CANCEL_NOTIFICATION' });
-  localStorage.removeItem(NOTIF_SCHED_KEY);
-}
-
-// ── Обновить метку времени последней тренировки ───────────────────────────────
-// Вызывается при каждом верном ответе (патчим updateWordProgress ниже)
-function notifMarkPractice() {
-  localStorage.setItem(LAST_PRACTICE_KEY, String(Date.now()));
-  cancelReminder();
-}
-
-// ── Показать карточку запроса ─────────────────────────────────────────────────
-function showNotifPrompt() {
-  const card = document.getElementById('notifPromptCard');
-  if (!card) return;
-  card.style.display = 'block';
-  localStorage.setItem(NOTIF_SEEN_KEY, String(Date.now()));
-}
-function hideNotifPrompt() {
-  const card = document.getElementById('notifPromptCard');
-  if (card) card.style.display = 'none';
-}
-
-// Кнопка «Включить» на карточке
-function notifPromptAllow() {
-  hideNotifPrompt();
-  Notification.requestPermission().then((perm) => {
-    localStorage.setItem(NOTIF_PERM_KEY, perm);
-    if (perm === 'granted') scheduleReminder();
-  });
-}
-// Кнопка «Не сейчас»
-function notifPromptSkip() {
-  hideNotifPrompt();
-  localStorage.setItem(NOTIF_PERM_KEY, 'dismissed');
-}
-
-// ── Проверка при загрузке страницы ───────────────────────────────────────────
-// Если уже есть разрешение — проверяем, не просрочено ли запланированное
-// уведомление (SW мог быть выгружен), и перепланируем если надо.
-// Если разрешения нет — решаем, когда предложить карточку.
-function initNotifications() {
-  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-
-  const perm   = Notification.permission;
-  const stored = localStorage.getItem(NOTIF_PERM_KEY);
-
-  if (perm === 'granted') {
-    // Проверяем: если запланированное время уже прошло — напоминание было
-    // пропущено (SW выгрузился). Перепланируем на следующий цикл.
-    const schedTs = parseInt(localStorage.getItem(NOTIF_SCHED_KEY) || '0', 10);
-    if (schedTs && Date.now() > schedTs) {
-      localStorage.removeItem(NOTIF_SCHED_KEY);
-    }
-    // Перепланируем в любом случае (SW мог умереть)
-    scheduleReminder();
-    return;
-  }
-
-  if (perm === 'denied') return; // Браузер заблокировал — не надоедаем
-  if (stored === 'dismissed') {
-    // Пользователь нажал «Не сейчас» — предложим снова через PROMPT_REPEAT_HOURS
-    const seenTs = parseInt(localStorage.getItem(NOTIF_SEEN_KEY) || '0', 10);
-    if (Date.now() - seenTs < PROMPT_REPEAT_HOURS * 3600_000) return;
-  }
-
-  // Показываем карточку только ПОСЛЕ первого правильного ответа
-  // (флаг _notifReadyToPrompt выставляется в notifMarkPractice)
-  // Это поведение как у Duolingo: сначала дают попробовать, потом просят разрешение
-  window._notifShouldPromptWhenReady = true;
-}
-
-// ── Патч: ловим первый правильный ответ ──────────────────────────────────────
-// Оборачиваем уже существующую updateWordProgress, не трогая её логику.
-(function patchUpdateWordProgress() {
-  const _orig = window.updateWordProgress;
-  if (typeof _orig !== 'function') {
-    // Если функция ещё не определена (код выполняется до неё), ставим MutationObserver
-    // и попробуем позже; но в данном проекте updateWordProgress уже объявлена выше.
-    return;
-  }
-  window.updateWordProgress = function(id, correct, opts) {
-    const result = _orig.call(this, id, correct, opts);
-    if (correct) {
-      notifMarkPractice();
-      // Первый правильный ответ за сессию — показываем карточку (если нужно)
-      if (window._notifShouldPromptWhenReady) {
-        window._notifShouldPromptWhenReady = false;
-        // Небольшая задержка, чтобы не перекрывать анимацию feedback
-        setTimeout(showNotifPrompt, 1800);
-      }
-    }
-    return result;
-  };
-}());
-
-// ── Инициализация ─────────────────────────────────────────────────────────────
-// Ждём, пока SW зарегистрируется (он уже регистрируется выше в коде страницы),
-// потом запускаем логику уведомлений.
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.ready.then(() => initNotifications());
-} else {
-  initNotifications();
-}
-// ─────────────────────────────────────────────────────────────────────────────
-</script>
-
 </body>
 </html>
