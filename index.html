@@ -1866,7 +1866,6 @@ input.s-pass:focus{border-color:var(--blue)}
       <div class="mode-tabs-compact" id="modeTabsCompact">
         <button class="mode-tab-c active" id="modeA" onclick="setMode('A')">Рус→Каз</button>
         <button class="mode-tab-c" id="modeB" onclick="setMode('B')">Каз→Рус</button>
-        <button class="mode-tab-c" id="modeC" onclick="setMode('C')">🔊 На слух</button>
       </div>
     </div>
 
@@ -6754,8 +6753,10 @@ playWithBrowserVoice(state.current.kz);
 }
 
 function playWithBrowserVoice(text){
+if(!text) return;
 const encodedText = encodeURIComponent(text);
-const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=kk&client=tw-ob&q=${encodedText}`;
+// Используем googleapis с client=gtx (наиболее стабильный вариант, реже блокируется CORS/AdBlock)
+const url = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=kk&q=${encodedText}`;
 const audio = new Audio(url);
 audio.playbackRate = state.settings.speed || 1;
 audio.play().catch(e => {
