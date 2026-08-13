@@ -1315,10 +1315,12 @@ nav#mainNav{
   margin-bottom:.7rem;line-height:1.4;
 }
 .sb-built{
+  position:relative;
   min-height:2.6rem;
   display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;
   border:2px dashed var(--border);border-radius:var(--radius-sm);
   padding:.55rem .65rem;margin-bottom:.7rem;
+  transition:border-color .2s;
 }
 .sb-built-placeholder{color:var(--text3);font-size:.8rem;font-weight:600}
 .sb-built-word{
@@ -1361,13 +1363,79 @@ nav#mainNav{
 }
 .sb-chip:active{transform:scale(.96)}
 .sb-chip:disabled{opacity:.25;cursor:default;pointer-events:none}
-.sb-actions{display:flex;justify-content:flex-end;margin-bottom:.3rem}
+.sb-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;gap:.5rem}
 .sb-feedback{
   font-size:.85rem;font-weight:700;padding:0;min-height:1.4rem;
   margin-top:.4rem;line-height:1.4;
 }
 .sb-feedback-correct{color:var(--green-dark)}
 .sb-feedback-wrong{color:var(--red-dark)}
+
+/* ── УЛУЧШЕНИЯ "СОБЕРИ ПРЕДЛОЖЕНИЕ": заголовок со стриком, прогресс-бар
+   по кругу из предложений, счётчик за сессию — добавлены, чтобы упражнение
+   давало то же чувство прогресса, что и основной тренажёр (#dailyProgress),
+   а не выглядело изолированным набором из 25 карточек без обратной связи. */
+.sb-header-row{
+  display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+}
+.sb-streak-badge{
+  font-size:.72rem;font-weight:800;color:var(--orange);
+  background:var(--orange-bg);border-radius:999px;
+  padding:.2rem .55rem;white-space:nowrap;
+  transition:transform .15s;
+}
+.sb-streak-badge.sb-streak-pop{animation:sbStreakPop .35s ease}
+@keyframes sbStreakPop{
+  0%{transform:scale(1)}
+  40%{transform:scale(1.18)}
+  100%{transform:scale(1)}
+}
+/* Слоты под слова: даже пустая built-зона теперь показывает, сколько слов
+   нужно собрать всего (по числу слов в текущем предложении) — так сразу
+   видно, сколько ещё осталось выбрать, а не только пустую рамку без ориентира. */
+.sb-slot{
+  min-width:2.4rem;height:1.9rem;border:2px dashed var(--border2);
+  border-radius:var(--radius-xs);flex-shrink:0;
+}
+.sb-built-word{animation:sbWordIn .22s cubic-bezier(.34,1.56,.64,1)}
+@keyframes sbWordIn{
+  from{transform:scale(.8);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+.sb-built.sb-shake{animation:sbShake .35s ease}
+@keyframes sbShake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-6px)}
+  75%{transform:translateX(6px)}
+}
+/* Свечение built-зоны зелёным при верном ответе — короткая, ненавязчивая
+   вспышка рамки/фона в уже существующих --green* переменных, без новых
+   хардкод-цветов. */
+.sb-built.sb-correct-glow{animation:sbCorrectGlow .6s ease}
+@keyframes sbCorrectGlow{
+  0%{border-color:var(--border);background:transparent;transform:scale(1)}
+  30%{border-color:var(--green);background:var(--green-bg);transform:scale(1.015)}
+  100%{border-color:var(--border);background:transparent;transform:scale(1)}
+}
+/* Плавная смена карточки предложения (перевод + built-зона + банк слов) при
+   переходе к следующему предложению — вместо мгновенной подмены контента. */
+.sb-card-enter{animation:sbCardEnter .28s ease}
+@keyframes sbCardEnter{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+/* Небольшое конфетти при верном ответе: несколько div-квадратиков,
+   абсолютно спозиционированных внутри .sb-built (position:relative),
+   разлетающихся вверх/в стороны и исчезающих — без внешних библиотек. */
+.sb-confetti-piece{
+  position:absolute;top:50%;left:50%;width:6px;height:6px;
+  border-radius:2px;pointer-events:none;
+  animation:sbConfettiFly .7s ease-out forwards;
+}
+@keyframes sbConfettiFly{
+  0%{transform:translate(-50%,-50%) rotate(0deg);opacity:1}
+  100%{transform:translate(var(--sb-cx,0),var(--sb-cy,-40px)) rotate(var(--sb-cr,180deg));opacity:0}
+}
 
 /* ── CHAT ──────────────────────────────────────────────────── */
 /* БАГФИКС (тестировщики не замечали, что чат без ключа — это только
@@ -1798,7 +1866,7 @@ input.s-pass:focus{border-color:var(--blue)}
       <div class="mode-tabs-compact" id="modeTabsCompact">
         <button class="mode-tab-c active" id="modeA" onclick="setMode('A')">Рус→Каз</button>
         <button class="mode-tab-c" id="modeB" onclick="setMode('B')">Каз→Рус</button>
-        <button class="mode-tab-c" id="modeC" onclick="setMode('C')" style="display:none">🔊</button>
+        <button class="mode-tab-c" id="modeC" onclick="setMode('C')">🔊 На слух</button>
       </div>
     </div>
 
@@ -1935,13 +2003,17 @@ input.s-pass:focus{border-color:var(--blue)}
      повторений. Доступно из меню "Ещё". -->
 <div id="sec-sentencebuilder" class="section">
   <div class="card">
-    <p class="card-title">Собери предложение</p>
-    <p style="font-size:.82rem;color:var(--text2);margin-bottom:.75rem;font-weight:600">Соберите казахское предложение из слов по русскому переводу</p>
+    <div class="sb-header-row">
+      <p class="card-title" style="margin-bottom:0">Собери предложение</p>
+      <span class="sb-streak-badge" id="sbStreakBadge" style="display:none">🔥 0</span>
+    </div>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:.6rem;font-weight:600">Соберите казахское предложение из слов по русскому переводу</p>
     <div class="sb-translation" id="sbTranslation"></div>
     <div class="sb-built" id="sbBuilt"></div>
     <p class="sb-hint">Слова в собранном предложении можно перетаскивать местами</p>
     <div class="sb-bank" id="sbBank"></div>
     <div class="sb-actions">
+      <span></span>
       <button class="btn btn-skip" id="sbUndoBtn" onclick="sentenceBuilderUndo()">↩ Отменить последнее слово</button>
     </div>
     <div id="sbFeedback" class="sb-feedback"></div>
@@ -5101,7 +5173,8 @@ const DIALOGUES=[
 ];
 
 // ── УПРАЖНЕНИЕ "СОБЕРИ ПРЕДЛОЖЕНИЕ" ──────────────────────────────────────
-// Ровно 20 предложений, составленных и вручную выверенных отдельно от базы
+// 25 предложений (id 1-20 — исходный набор, id 21-25 добавлены позже),
+// составленных и вручную выверенных отдельно от базы
 // WORDS — намеренно НЕ берём example_kz у слов автоматически: часть
 // example_kz в базе на самом деле короткие словосочетания без сказуемого
 // ("Зелёный лист" и т.п.), для сборки полноценного предложения не годятся.
@@ -5132,7 +5205,92 @@ const SENTENCE_BUILDER=[
 {id:17,kz:"Ол емханада дәрігерді күтіп тұр.",ru:"Он ждёт врача в поликлинике."},
 {id:18,kz:"Біз жаңа пәтерге көшеміз.",ru:"Мы переезжаем в новую квартиру."},
 {id:19,kz:"Қыз әжесіне хат жазды.",ru:"Девочка написала бабушке письмо."},
-{id:20,kz:"Достарым мені туған күніме шақырды.",ru:"Мои друзья пригласили меня на день рождения."}
+{id:20,kz:"Достарым мені туған күніме шақырды.",ru:"Мои друзья пригласили меня на день рождения."},
+{id:21,kz:"Мен әр күні су ішемін.",ru:"Я каждый день пью воду."},
+{id:22,kz:"Ол бүгін жаңа көйлек киді.",ru:"Она сегодня надела новое платье."},
+{id:23,kz:"Біз кешке кино көреміз.",ru:"Мы вечером посмотрим фильм."},
+{id:24,kz:"Әжем бақшада гүл өсіреді.",ru:"Моя бабушка выращивает в саду цветы."},
+{id:25,kz:"Студент дәрісханада сабақ тыңдайды.",ru:"Студент слушает урок в аудитории."},
+{id:26,kz:"Күн бүгін өте ыстық.",ru:"Сегодня очень жаркий день."},
+{id:27,kz:"Ертең жаңбыр жауады.",ru:"Завтра пойдёт дождь."},
+{id:28,kz:"Апта бойы қар жауды.",ru:"Всю неделю шёл снег."},
+{id:29,kz:"Менің әпкем дәрігер болып жұмыс істейді.",ru:"Моя старшая сестра работает врачом."},
+{id:30,kz:"Ағам институтта информатика оқытады.",ru:"Мой старший брат преподаёт информатику в институте."},
+{id:31,kz:"Біздің отбасы жеті адамнан тұрады.",ru:"Наша семья состоит из семи человек."},
+{id:32,kz:"Күйеу балам маған сыйлық әкелді.",ru:"Мой зять принёс мне подарок."},
+{id:33,kz:"Немерем ертең туады.",ru:"Мой внук родится завтра."},
+{id:34,kz:"Ол дүкенде жаңа телефон көрді.",ru:"Он увидел в магазине новый телефон."},
+{id:35,kz:"Біз базардан жеміс алдық.",ru:"Мы купили на рынке фрукты."},
+{id:36,kz:"Сатушы маған қымбат сағат ұсынды.",ru:"Продавец предложил мне дорогие часы."},
+{id:37,kz:"Мен интернеттен киім тапсырыс бердім.",ru:"Я заказал одежду через интернет."},
+{id:38,kz:"Бұл сөмке маған тым қымбат.",ru:"Эта сумка для меня слишком дорогая."},
+{id:39,kz:"Асхана бүгін ерте жабылады.",ru:"Столовая сегодня закрывается рано."},
+{id:40,kz:"Аспаз тағамға тұз қосты.",ru:"Повар добавил в блюдо соль."},
+{id:41,kz:"Біз мейрамханада балық тапсырыс бердік.",ru:"Мы заказали в ресторане рыбу."},
+{id:42,kz:"Наурыз көже дәстүрлі тағам болып саналады.",ru:"Наурыз көже считается традиционным блюдом."},
+{id:43,kz:"Балам таңғы асты жақсы көреді.",ru:"Мой ребёнок любит завтрак."},
+{id:44,kz:"Директор жиналысты сағат оннан бастады.",ru:"Директор начал собрание с десяти часов."},
+{id:45,kz:"Менеджер жаңа жобаны бүгін таныстырды.",ru:"Менеджер представил сегодня новый проект."},
+{id:46,kz:"Әріптесім есепті кешке дейін дайындайды.",ru:"Мой коллега подготовит отчёт к вечеру."},
+{id:47,kz:"Компания жаңа қызметкер іздейді.",ru:"Компания ищет нового сотрудника."},
+{id:48,kz:"Мен демалыс сұрауға өтініш жаздым.",ru:"Я написал заявление на отпуск."},
+{id:49,kz:"Оқушылар емтиханға мұқият дайындалды.",ru:"Ученики тщательно подготовились к экзамену."},
+{id:50,kz:"Профессор дәрісті қызықты өткізді.",ru:"Профессор интересно провёл лекцию."},
+{id:51,kz:"Кітапхана студенттерге тегін кітап береді.",ru:"Библиотека выдаёт студентам книги бесплатно."},
+{id:52,kz:"Ол университетке жаңадан түсті.",ru:"Он недавно поступил в университет."},
+{id:53,kz:"Қызым үй тапсырмасын әлі бітірмеді.",ru:"Моя дочь ещё не закончила домашнее задание."},
+{id:54,kz:"Дәптерімді мектепте ұмытып кеттім.",ru:"Я забыл свою тетрадь в школе."},
+{id:55,kz:"Пойыз вокзалдан сағат жетіде кетеді.",ru:"Поезд отправляется с вокзала в семь часов."},
+{id:56,kz:"Ұшақ әуежайға кешігіп қонды.",ru:"Самолёт приземлился в аэропорту с опозданием."},
+{id:57,kz:"Такси мені үйге жылдам жеткізді.",ru:"Такси быстро довезло меня домой."},
+{id:58,kz:"Автобус аялдамада ұзақ тұрды.",ru:"Автобус долго стоял на остановке."},
+{id:59,kz:"Жол бойы көліктер тығыз тұр.",ru:"Вдоль дороги плотно стоят машины."},
+{id:60,kz:"Достарым маған қаладан хат жіберді.",ru:"Мои друзья прислали мне письмо из города."},
+{id:61,kz:"Көршіміз бізге кофе ұсынды.",ru:"Наш сосед предложил нам кофе."},
+{id:62,kz:"Қонақтар кешке біздің үйге келеді.",ru:"Гости придут к нам домой вечером."},
+{id:63,kz:"Мен туыстарыма дүйсенбіде хабарласамын.",ru:"Я свяжусь с родственниками в понедельник."},
+{id:64,kz:"Ол маған көп көмек көрсетті.",ru:"Он оказал мне большую помощь."},
+{id:65,kz:"Дене шынықтыру денсаулыққа пайдалы.",ru:"Физкультура полезна для здоровья."},
+{id:66,kz:"Мен таңертең жүгіруге шығамын.",ru:"Я выхожу на пробежку утром."},
+{id:67,kz:"Спортшы жарыста бірінші орын алды.",ru:"Спортсмен занял на соревновании первое место."},
+{id:68,kz:"Жаттықтырушы командаға жаңа әдіс үйретті.",ru:"Тренер научил команду новому методу."},
+{id:69,kz:"Балалар футбол ойнағанды жақсы көреді.",ru:"Дети любят играть в футбол."},
+{id:70,kz:"Ол емдеуші дәрі ішпей жүр.",ru:"Он не пьёт назначенное лекарство."},
+{id:71,kz:"Тісім қатты ауырып тұр.",ru:"У меня сильно болит зуб."},
+{id:72,kz:"Медбике науқасқа дәрі берді.",ru:"Медсестра дала пациенту лекарство."},
+{id:73,kz:"Дәрігер маған демалу керек деді.",ru:"Врач сказал мне, что нужно отдохнуть."},
+{id:74,kz:"Ол суық тиіп, ауырып қалды.",ru:"Он простудился и заболел."},
+{id:75,kz:"Аспан бүгін мүлдем бұлтсыз.",ru:"Небо сегодня совсем без облаков."},
+{id:76,kz:"Күшті жел терезені ашып жіберді.",ru:"Сильный ветер распахнул окно."},
+{id:77,kz:"Қыс биыл өте суық болды.",ru:"Зима в этом году была очень холодной."},
+{id:78,kz:"Жаз мезгілі маған көбірек ұнайды.",ru:"Летний сезон нравится мне больше."},
+{id:79,kz:"Мен жаңа пәтер жалдағым келеді.",ru:"Я хочу арендовать новую квартиру."},
+{id:80,kz:"Үй иесі жалдау ақысын көтерді.",ru:"Хозяин дома повысил арендную плату."},
+{id:81,kz:"Бөлмеде терезе үлкен әрі жарық.",ru:"Комната с большим и светлым окном."},
+{id:82,kz:"Ол ыдысты ас үйде жуды.",ru:"Он помыл посуду на кухне."},
+{id:83,kz:"Қызметші еденді таза сүртті.",ru:"Уборщица чисто вытерла пол."},
+{id:84,kz:"Мысығым диванда тәтті ұйықтап жатыр.",ru:"Моя кошка сладко спит на диване."},
+{id:85,kz:"Иттер бақшада бір-бірімен ойнады.",ru:"Собаки играли друг с другом в саду."},
+{id:86,kz:"Құстар таңертең қатты сайрайды.",ru:"Птицы громко поют по утрам."},
+{id:87,kz:"Ол банктен қарыз алмақшы.",ru:"Он собирается взять кредит в банке."},
+{id:88,kz:"Мен айлық жалақымды алдым.",ru:"Я получил свою месячную зарплату."},
+{id:89,kz:"Бағасы соңғы айда қатты өсті.",ru:"Цена сильно выросла за последний месяц."},
+{id:90,kz:"Біз концертке билет сатып алдық.",ru:"Мы купили билеты на концерт."},
+{id:91,kz:"Ол театрда жаңа спектакль қойды.",ru:"Он поставил в театре новый спектакль."},
+{id:92,kz:"Әнші қала алаңында ән салды.",ru:"Певец спел песню на городской площади."},
+{id:93,kz:"Суретші көрмеге керемет сурет қойды.",ru:"Художник выставил на выставке замечательную картину."},
+{id:94,kz:"Мен әлі қазақша нашар сөйлеймін.",ru:"Я пока плохо говорю по-казахски."},
+{id:95,kz:"Ол ағылшын тілін жылдам үйренді.",ru:"Он быстро выучил английский язык."},
+{id:96,kz:"Мұғалім жаңа сөздерді тақтаға жазды.",ru:"Учитель написал новые слова на доске."},
+{id:97,kz:"Бұл сөздің мағынасын түсінбедім.",ru:"Я не понял значение этого слова."},
+{id:98,kz:"Балаң биыл мектепке барады ма?",ru:"Твой ребёнок пойдёт в этом году в школу?"},
+{id:99,kz:"Мен саған сенемін.",ru:"Я тебе доверяю."},
+{id:100,kz:"Ол әйелін қатты жақсы көреді.",ru:"Он очень сильно любит свою жену."},
+{id:101,kz:"Балалар атасын сағынып қалды.",ru:"Дети соскучились по дедушке."},
+{id:102,kz:"Біз ертең базарға барамыз.",ru:"Мы завтра пойдём на рынок."},
+{id:103,kz:"Кешкі ас әлі дайын емес.",ru:"Ужин ещё не готов."},
+{id:104,kz:"Шай ішесің бе, әлде кофе ме?",ru:"Ты выпьешь чай, или кофе?"},
+{id:105,kz:"Терезені жабыңызшы, суық өтіп тұр.",ru:"Закройте, пожалуйста, окно, дует холодом."}
 ];
 
 // ──────────────────────────────────────────────────────────────────────
@@ -5391,11 +5549,14 @@ if(!Number.isFinite(g)||g<5)state.settings.dailyGoal=5;
 else if(g>100)state.settings.dailyGoal=100;
 else state.settings.dailyGoal=g;
 }
-// Режим "Аудио" (C) временно скрыт из интерфейса (кнопка display:none, см. HTML
-// выше) — если у вернувшегося пользователя в сохранённом состоянии почему-то
-// остался mode:'C' (например, с прошлой сессии до этого изменения), переключаем
-// на 'A', иначе ни одна кнопка режима не подсветится как активная.
-if(state.mode==='C')state.mode='A';
+// БАГФИКС (квест дня "На слух" не засчитывался): раньше кнопка режима C была
+// скрыта (display:none) в HTML, а здесь же state.mode принудительно сбрасывался
+// с 'C' на 'A' при каждой загрузке — из-за этого пользователь физически не мог
+// попасть в режим "На слух", а значит state.mode никогда не равнялось 'C', и
+// awardAudioQuestProgress() (см. updateWordProgress()) никогда не вызывалась.
+// Квест дня застревал на 0/3 навсегда. Кнопка режима возвращена в интерфейс
+// (см. #modeC в HTML), поэтому сброс здесь больше не нужен и был бы вреден —
+// он бы каждый раз откатывал осознанный выбор пользователя обратно на 'A'.
 // Миграция со старой версии: раньше прогресс слова хранился только в level (без streak/lastSeen)
 // БАГФИКС/ЗАЩИТА (аудит): раньше цикл ожидал, что ЛЮБОЕ значение state.words[id] —
 // это объект прогресса. Специально сформированный (или просто повреждённый)
@@ -7018,7 +7179,12 @@ try{ checkAchievements(); }catch(e){ console.warn('[achievements]',e); }
 // рисковать сломать уже отлаженную SM-2-логику интервальных повторений.
 // Ответы здесь не двигают streak/ease/interval конкретных слов, а верный
 // ответ даёт лишь небольшой фиксированный XP через уже существующий addXp().
-let sbState={order:[],pos:0,builtIds:[],answered:false};
+// correctCount/wrongCount/streak — статистика ТЕКУЩЕЙ сессии упражнения
+// (обнуляется только при перезагрузке страницы, как и остальной sbState) —
+// не путать с XP/достижениями, которые сохраняются в state и переживают
+// перезагрузку; здесь это чисто визуальная обратная связь "как идут дела
+// прямо сейчас", по аналогии с comboCount в основном тренажёре.
+let sbState={currentId:null,builtIds:[],answered:false,correctCount:0,wrongCount:0,streak:0};
 
 // ПЕРЕТАСКИВАНИЕ СЛОВ (по просьбе пользователя): раньше собранную
 // последовательность можно было только наращивать с конца и отменять
@@ -7031,21 +7197,30 @@ let sbState={order:[],pos:0,builtIds:[],answered:false};
 // тащат.
 let sbDrag=null;
 
-// Порядок предложений перемешивается один раз при входе в раздел (через
-// уже существующую shuffleArray()), дальше "Следующее предложение" просто
-// идёт по этому порядку циклически — так все 20 предложений будут пройдены
-// по разу, прежде чем порядок перемешается заново.
+// Каждое предложение выбирается полностью случайно из всего списка (а не
+// проходом по перемешанному кругу) — пользователь не должен ощущать, что
+// база предложений конечна и зациклена. currentId по возможности не
+// совпадает с предыдущим показанным предложением (если в базе больше
+// одного предложения), чтобы одно и то же предложение не выпадало два
+// раза подряд.
+function pickRandomSentenceBuilderId(){
+if(SENTENCE_BUILDER.length<=1)return SENTENCE_BUILDER[0]&&SENTENCE_BUILDER[0].id;
+let id;
+do{
+id=SENTENCE_BUILDER[Math.floor(Math.random()*SENTENCE_BUILDER.length)].id;
+}while(id===sbState.currentId);
+return id;
+}
+
 function startSentenceBuilder(){
-if(!sbState.order.length){
-sbState.order=shuffleArray(SENTENCE_BUILDER.map(s=>s.id));
-sbState.pos=0;
+if(sbState.currentId==null){
+sbState.currentId=pickRandomSentenceBuilderId();
 }
 renderSentenceBuilder();
 }
 
 function currentSentenceBuilderItem(){
-const id=sbState.order[sbState.pos];
-return SENTENCE_BUILDER.find(s=>s.id===id);
+return SENTENCE_BUILDER.find(s=>s.id===sbState.currentId);
 }
 
 function renderSentenceBuilder(){
@@ -7077,6 +7252,29 @@ item._words=words; // кэшируем на время текущего пока
 const shuffledIdx=shuffleArray(words.map((_,i)=>i));
 renderSentenceBuilderBank(shuffledIdx,words);
 renderSentenceBuilderBuilt(words);
+updateSentenceBuilderStreakBadge();
+// Плавное появление новой карточки предложения (перевод + built-зона +
+// банк слов) вместо мгновенной подмены — тот же приём перезапуска
+// анимации через remove/requestAnimationFrame, что и у sb-streak-pop ниже.
+[document.getElementById('sbTranslation'),document.getElementById('sbBuilt'),document.getElementById('sbBank')].forEach(el=>{
+el.classList.remove('sb-card-enter');
+requestAnimationFrame(()=>el.classList.add('sb-card-enter'));
+});
+}
+
+// Бейдж серии подряд верных ответов — единственный оставшийся здесь
+// индикатор прогресса (счётчик "N / всего" и прогресс-бар по кругу
+// предложений убраны намеренно, чтобы не намекать пользователю на конечный
+// размер базы предложений; дублирующий "✓/✗ за сессию" тоже убран, чтобы
+// не путать с этим бейджем).
+function updateSentenceBuilderStreakBadge(){
+const badge=document.getElementById('sbStreakBadge');
+if(sbState.streak>=2){
+badge.style.display='';
+badge.textContent=`🔥 ${sbState.streak}`;
+}else{
+badge.style.display='none';
+}
 }
 
 function renderSentenceBuilderBank(shuffledIdx,words){
@@ -7094,16 +7292,24 @@ return `<button class="sb-chip" data-idx="${i}" ${usedAlready?'disabled':''} onc
 // целиком перерисовывается при каждом изменении порядка.
 function renderSentenceBuilderBuilt(words){
 const built=document.getElementById('sbBuilt');
-if(!sbState.builtIds.length){
-built.innerHTML='<span class="sb-built-placeholder">Собранное предложение появится здесь…</span>';
-return;
-}
 // draggable="false" на самом слове — чтобы браузер не пытался запустить
 // свой нативный HTML5 drag поверх Pointer Events и не конфликтовал с ним
 // (актуально в основном для десктопных браузеров).
-built.innerHTML=sbState.builtIds.map((i,pos)=>
+const wordsHtml=sbState.builtIds.map((i,pos)=>
 `<span class="sb-built-word${sbState.answered?'':' sb-draggable'}" data-pos="${pos}" draggable="false" ${sbState.answered?'':`onpointerdown="sentenceBuilderDragStart(event,${pos})"`}>${escHtml(words[i])}</span>`
 ).join('');
+// Пустые слоты (sb-slot) на оставшиеся места — по числу ещё не выбранных
+// слов предложения. Раньше built-зона либо была совсем пустой (только
+// текст-плейсхолдер), либо показывала уже добавленные слова без намёка на
+// то, сколько слов всего нужно собрать — теперь это видно сразу, как в
+// игре виселица/кроссворде.
+const remaining=words.length-sbState.builtIds.length;
+const slotsHtml=remaining>0?Array.from({length:remaining},()=>'<span class="sb-slot"></span>').join(''):'';
+if(!sbState.builtIds.length&&!sbState.answered){
+built.innerHTML=slotsHtml||'<span class="sb-built-placeholder">Собранное предложение появится здесь…</span>';
+return;
+}
+built.innerHTML=wordsHtml+(sbState.answered?'':slotsHtml);
 }
 
 // Клик по кнопке в банке слов — переносит слово в "собранную" зону и
@@ -7226,30 +7432,75 @@ document.getElementById('sbCheckBtn').disabled=true;
 // менять уже нельзя.
 renderSentenceBuilderBuilt(words);
 const fb=document.getElementById('sbFeedback');
+const builtEl=document.getElementById('sbBuilt');
 if(isCorrect){
 fb.className='sb-feedback sb-feedback-correct';
 fb.textContent='✓ Верно! '+item.kz;
 // Короткая награда за вспомогательное упражнение — меньше базовой награды
 // за слово в основном тренажёре (10 XP), т.к. это не основной SM-2-цикл.
 addXp(6);
+sbState.correctCount++;
+sbState.streak++;
+// Зелёное свечение built-зоны + небольшое конфетти — приятный, но не
+// аляповатый фидбек на верный ответ (см. sbSpawnConfetti() ниже).
+builtEl.classList.remove('sb-correct-glow');
+requestAnimationFrame(()=>builtEl.classList.add('sb-correct-glow'));
+sbSpawnConfetti(builtEl);
+const badge=document.getElementById('sbStreakBadge');
+if(sbState.streak>=2){
+// Перезапускаем CSS-анимацию бейджа: сначала снимаем класс, затем
+// навешиваем в следующем кадре — иначе повторные попадания подряд не
+// переигрывали бы уже идущую анимацию (браузер её просто проигнорирует,
+// если класс не менялся).
+badge.classList.remove('sb-streak-pop');
+requestAnimationFrame(()=>badge.classList.add('sb-streak-pop'));
+}
 }else{
 fb.className='sb-feedback sb-feedback-wrong';
 fb.textContent='✗ Правильный порядок: '+item.kz;
+sbState.wrongCount++;
+sbState.streak=0;
+// Лёгкая встряска собранной (неверной) последовательности — тот же приём
+// обратной связи, что и в остальном тренажёре при ошибке, только здесь
+// локально на built-зоне, чтобы не привязываться к глобальному #feedback.
+builtEl.classList.remove('sb-shake');
+requestAnimationFrame(()=>builtEl.classList.add('sb-shake'));
 }
+updateSentenceBuilderStreakBadge();
 // БАГФИКС (см. подробный комментарий в renderSentenceBuilder()): кнопка
 // "Следующее предложение" — это .btn-next, и без подстроки "inline" в
 // style её прячет CSS-правило .btn-next:not([style*="inline"]).
 document.getElementById('sbNextBtn').style.display='inline-block';
 }
 
-// Циклически идёт по всем 20 предложениям в перемешанном порядке; дойдя до
-// конца — перемешивает заново и начинает новый круг.
-function sentenceBuilderNext(){
-sbState.pos++;
-if(sbState.pos>=sbState.order.length){
-sbState.order=shuffleArray(SENTENCE_BUILDER.map(s=>s.id));
-sbState.pos=0;
+// Небольшое конфетти без внешних библиотек: несколько квадратиков в цветах
+// уже существующих переменных проекта (--green/--accent/--blue), вылетающих
+// из центра built-зоны и исчезающих — элементы сами удаляются из DOM по
+// окончании CSS-анимации (см. @keyframes sbConfettiFly), чтобы не копить
+// лишние узлы при частых верных ответах.
+function sbSpawnConfetti(container){
+const colors=['var(--green)','var(--accent)','var(--blue)'];
+const count=10;
+for(let i=0;i<count;i++){
+const piece=document.createElement('span');
+piece.className='sb-confetti-piece';
+const angle=(Math.PI*2*i)/count+Math.random()*0.4;
+const dist=30+Math.random()*30;
+piece.style.setProperty('--sb-cx',Math.cos(angle)*dist+'px');
+piece.style.setProperty('--sb-cy',Math.sin(angle)*dist-20+'px');
+piece.style.setProperty('--sb-cr',Math.round(Math.random()*360)+'deg');
+piece.style.background=colors[i%colors.length];
+piece.addEventListener('animationend',()=>piece.remove());
+container.appendChild(piece);
 }
+}
+
+// Каждый переход к следующему предложению — новый полностью случайный
+// выбор из всего списка SENTENCE_BUILDER (см. pickRandomSentenceBuilderId()
+// выше), а не проход по перемешанному кругу — так пользователь не замечает
+// цикличности при частом использовании упражнения.
+function sentenceBuilderNext(){
+sbState.currentId=pickRandomSentenceBuilderId();
 renderSentenceBuilder();
 }
 
