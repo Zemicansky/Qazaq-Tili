@@ -850,19 +850,44 @@ nav#mainNav{
   border-color:transparent;
 }
 
-/* ── БЕТА-КВЕСТ ДНЯ ─────────────────────────────────────────────────
-   Компактная карточка единственного ежедневного квеста (см. подробный
-   комментарий над updateDailyQuestCard() в JS) — намеренно скромнее
-   основной карточки "Цель дня", т.к. это экспериментальная механика,
-   не постоянная часть интерфейса. Серый бейдж "БЕТА" — явный сигнал
-   пользователю, что фича может исчезнуть в будущей версии. */
-.daily-quest-card{
+/* ── КВЕСТЫ ДНЯ ─────────────────────────────────────────────────────
+   3 случайных ежедневных квеста (см. подробный комментарий над
+   QUEST_POOL/generateDailyQuests()/updateDailyQuestCard() в JS).
+   .daily-quest-card — обёртка-контейнер (без своего фона/рамки, чтобы не
+   дублировать рамку у каждой отдельной строки квеста внутри неё);
+   .daily-quest-row — карточка ОДНОГО квеста, таких на экране три подряд. */
+.dq-set-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.4rem;padding:0 .1rem;
+}
+.dq-set-title{
+  font-size:.8rem;font-weight:800;color:var(--text2);
+  display:inline-flex;align-items:center;gap:.35rem;
+}
+/* Пометка "БЕТА" — явный сигнал и пользователю, и (при повторном чтении кода)
+   тому, кто будет дальше это дорабатывать, что механика квестов ещё
+   экспериментальная и может измениться. Специально ненавязчивая — мелкий
+   серый бейдж, а не яркий цвет, чтобы не выглядело как ошибка или предупреждение. */
+.dq-beta-tag{
+  font-size:.6rem;font-weight:800;letter-spacing:.4px;
+  color:var(--text3);background:var(--bg3);
+  border:1px solid var(--border);
+  padding:.1rem .35rem;border-radius:6px;
+  vertical-align:middle;
+}
+.dq-set-count{
+  font-size:.75rem;font-weight:800;color:var(--accent);
+  font-variant-numeric:tabular-nums;
+}
+.daily-quest-row{
   background:var(--card2);
   border:1px solid var(--border);
   border-radius:var(--radius-sm);
   padding:.6rem .8rem;
-  margin-bottom:.5rem;
+  margin-bottom:.45rem;
+  transition:border-color .2s,background .2s;
 }
+.daily-quest-row:last-child{margin-bottom:.5rem}
 .dq-row{
   display:flex;align-items:center;justify-content:space-between;gap:.5rem;
 }
@@ -896,7 +921,7 @@ nav#mainNav{
   font-size:.74rem;font-weight:800;color:var(--text2);
   font-variant-numeric:tabular-nums;
 }
-.daily-quest-card.quest-complete{
+.daily-quest-row.quest-complete{
   border-color:var(--green);
 }
 
@@ -1314,14 +1339,32 @@ nav#mainNav{
   border-radius:var(--radius-sm);padding:.7rem .85rem;
   margin-bottom:.7rem;line-height:1.4;
 }
+.sb-built-wrap{
+  position:relative;
+}
 .sb-built{
   position:relative;
   min-height:2.6rem;
   display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;
   border:2px dashed var(--border);border-radius:var(--radius-sm);
-  padding:.55rem .65rem;margin-bottom:.7rem;
-  transition:border-color .2s;
+  padding:.55rem 3rem .55rem .65rem;margin-bottom:.7rem;
+  transition:border-color .2s,background .2s;
 }
+/* Пока в зоне уже есть хотя бы одно слово, рамка становится чуть заметнее
+   (сплошного цвета акцента вместо приглушённого серого) — небольшой сигнал
+   "тут уже что-то есть, это не пустая заглушка", особенно полезно на
+   маленьких экранах, где .sb-built-placeholder не всегда бросается в глаза. */
+.sb-built.sb-has-words{border-color:var(--border2)}
+.sb-listen-btn{
+  position:absolute;right:.5rem;top:.5rem;
+  width:2rem;height:2rem;border-radius:50%;
+  border:1px solid var(--border);background:var(--card2);
+  color:var(--text2);font-size:1rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,background .15s;
+}
+.sb-listen-btn:active{transform:scale(.9)}
+.sb-listen-btn:hover{background:var(--blue-bg);color:var(--blue)}
 .sb-built-placeholder{color:var(--text3);font-size:.8rem;font-weight:600}
 .sb-built-word{
   background:var(--blue-bg);color:var(--blue);
@@ -1338,14 +1381,22 @@ nav#mainNav{
    в JS) — единый механизм для мыши и тача. touch-action:none обязателен,
    иначе на мобильных браузер перехватывает жест под нативный скролл
    страницы вместо перетаскивания слова. */
-.sb-draggable{cursor:grab}
+.sb-draggable{cursor:grab;transition:transform .12s ease}
 .sb-draggable.sb-dragging{
-  cursor:grabbing;position:relative;
-  box-shadow:0 4px 14px rgba(0,0,0,.25);
-  opacity:.9;
+  cursor:grabbing;position:relative;z-index:10;
+  box-shadow:0 6px 18px rgba(0,0,0,.3);
+  opacity:.92;transition:none;
+  scale:1.05;
 }
+/* Drop-зона: раньше был едва заметный outline вокруг соседнего слова —
+   теперь дополнительно подсвечивается фон и слово-цель слегка "подталкивается"
+   в сторону, откуда движется перетаскиваемое слово, чтобы было физически
+   видно, куда именно оно встанет при отпускании (как в дуолинго-подобных
+   приложениях), а не только рамка без направления. */
 .sb-draggable.sb-drop-target{
-  outline:2px dashed var(--accent);outline-offset:2px;
+  outline:2px dashed var(--accent);outline-offset:3px;
+  background:var(--accent-glow,var(--blue-bg));
+  border-radius:var(--radius-xs);
 }
 .sb-hint{
   font-size:.72rem;color:var(--text3);font-weight:600;
@@ -1377,6 +1428,13 @@ nav#mainNav{
    а не выглядело изолированным набором из 25 карточек без обратной связи. */
 .sb-header-row{
   display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+}
+.sb-header-badges{display:flex;align-items:center;gap:.4rem}
+.sb-session-badge{
+  font-size:.7rem;font-weight:800;color:var(--text2);
+  background:var(--card2);border:1px solid var(--border);
+  border-radius:999px;padding:.2rem .5rem;white-space:nowrap;
+  font-variant-numeric:tabular-nums;
 }
 .sb-streak-badge{
   font-size:.72rem;font-weight:800;color:var(--orange);
@@ -1917,22 +1975,14 @@ input.s-pass:focus{border-color:var(--blue)}
     <button class="btn btn-next" onclick="nextWord()" id="nextBtn" style="display:none">Следующее слово →</button>
     <button class="btn btn-skip" id="skipBtn" onclick="skipWord()" title="Слово не будет засчитано как выученное">Не знаю / Пропустить</button>
 
-    <!-- БЕТА-ФУНКЦИЯ: единственный ежедневный квест (эксперимент, см. подробный
-         комментарий над updateDailyQuestCard() в JS). Пометка "БЕТА" оставлена
-         прямо в вёрстке, чтобы отсутствие этой карточки в будущей версии не
-         выглядело как баг, если решим не продолжать механику. Размещена в
-         самом низу тренажёра (по просьбе пользователя) — не мешает основному
-         потоку "слово → ответ → следующее слово". -->
-    <div class="daily-quest-card" id="dailyQuestCard">
-      <div class="dq-row">
-        <div class="dq-title">🎯 Квест дня: 3 верных ответа «На слух»</div>
-        <span class="dq-badge" id="dailyQuestStatusBadge">БЕТА</span>
-      </div>
-      <div class="dq-row dq-row-progress">
-        <div class="dq-dots" id="dailyQuestDots"></div>
-        <span class="dq-count" id="dailyQuestProgress">0/3</span>
-      </div>
-    </div>
+    <!-- БЕТА: КВЕСТЫ ДНЯ — QUESTS_PER_DAY (сейчас 2) случайных квеста,
+         обновляются каждый день (см. QUEST_POOL и generateDailyQuests() в JS).
+         Пометка "БЕТА" показывается прямо в заголовке карточки (см.
+         .dq-beta-tag в updateDailyQuestCard()) — механика ещё экспериментальная.
+         Содержимое рендерится целиком из JS в updateDailyQuestCard() —
+         контейнер здесь пустой намеренно. Размещена в самом низу тренажёра —
+         не мешает основному потоку "слово → ответ → следующее слово". -->
+    <div class="daily-quest-card" id="dailyQuestCard"></div>
   </div>
 </div>
 
@@ -2004,12 +2054,18 @@ input.s-pass:focus{border-color:var(--blue)}
   <div class="card">
     <div class="sb-header-row">
       <p class="card-title" style="margin-bottom:0">Собери предложение</p>
-      <span class="sb-streak-badge" id="sbStreakBadge" style="display:none">🔥 0</span>
+      <div class="sb-header-badges">
+        <span class="sb-session-badge" id="sbSessionBadge" style="display:none"></span>
+        <span class="sb-streak-badge" id="sbStreakBadge" style="display:none">🔥 0</span>
+      </div>
     </div>
     <p style="font-size:.82rem;color:var(--text2);margin-bottom:.6rem;font-weight:600">Соберите казахское предложение из слов по русскому переводу</p>
     <div class="sb-translation" id="sbTranslation"></div>
-    <div class="sb-built" id="sbBuilt"></div>
-    <p class="sb-hint">Слова в собранном предложении можно перетаскивать местами</p>
+    <div class="sb-built-wrap">
+      <div class="sb-built" id="sbBuilt"></div>
+      <button class="sb-listen-btn" id="sbListenBtn" onclick="sentenceBuilderListen()" title="Прослушать собранное предложение" style="display:none">🔊</button>
+    </div>
+    <p class="sb-hint">💡 Слова можно перетаскивать местами — зажмите и потяните</p>
     <div class="sb-bank" id="sbBank"></div>
     <div class="sb-actions">
       <span></span>
@@ -5485,12 +5541,15 @@ maybeAwardStreakFreeze();
 // при проверке "выполнена ли цель" этого дня в будущем (см. goalForThatDay
 // выше), чтобы последующая смена цели в Настройках не переписывала задним
 // числом уже прожитые дни.
-// БЕТА-КВЕСТ (см. подробный комментарий у объявления state.daily.questAudioCount
-// ниже, рядом с UI квеста): questAudioCount/questClaimed обязаны обнуляться
-// каждый новый день вместе со всем остальным daily-состоянием, а не жить
-// отдельным циклом сброса — иначе квест "залипнет" выполненным навсегда после
-// первого же дня, когда его прошли.
-state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[],dailyGoalAtDate:state.settings.dailyGoal||10,questAudioCount:0,questClaimed:false};
+// КВЕСТЫ ДНЯ (см. подробный комментарий над блоком QUEST_POOL/generateDailyQuests()
+// ниже, рядом с UI квестов): questSet — QUESTS_PER_DAY квестов (см. константу
+// рядом с QUEST_POOL), выбранных случайно на сегодня;
+// они обязаны пересоздаваться и обнуляться каждый новый день вместе со всем
+// остальным daily-состоянием, а не жить отдельным циклом сброса — иначе набор
+// "залипнет" вчерашним навсегда. Старые поля questAudioCount/questClaimed
+// оставлены для обратной совместимости миграции (см. ниже), сам единственный
+// квест "На слух" теперь живёт как один из элементов questSet.
+state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:today,answeredIds:[],dailyGoalAtDate:state.settings.dailyGoal||10,questAudioCount:0,questClaimed:false,questSet:generateDailyQuests(today)};
 // КОМБО-МНОЖИТЕЛЬ (см. комментарий в updateWordProgress()): комбо живёт внутри
 // sessionStats и, как и вся остальная сессионная статистика, обнуляется при
 // смене дня вместе с ней — новый день начинается с чистого комбо.
@@ -5503,11 +5562,31 @@ if(!state.sessionStats)state.sessionStats={correct:0,wrong:0,total:0,startTime:D
 // Миграция для тех, кто уже играл до появления комбо-множителя — у них
 // sessionStats уже существует, но без поля comboCount.
 if(state.sessionStats.comboCount===undefined)state.sessionStats.comboCount=0;
+// Миграция для тех, кто уже играл до появления квеста "N ответов подряд без
+// подсказки" — у них sessionStats уже существует, но без noHintStreak.
+if(state.sessionStats.noHintStreak===undefined)state.sessionStats.noHintStreak=0;
 // Миграция для тех, кто уже играл до появления бета-квеста "На слух" —
 // у них state.daily уже существует (сегодняшний день ещё не сменился), но
 // без questAudioCount/questClaimed.
 if(state.daily.questAudioCount===undefined)state.daily.questAudioCount=0;
 if(state.daily.questClaimed===undefined)state.daily.questClaimed=false;
+// МИГРАЦИЯ (система из нескольких случайных квестов вместо одного): у тех,
+// кто уже играл сегодня до появления questSet, state.daily существует (день
+// не сменился), но questSet ещё нет. Генерируем набор на сегодня тем же
+// today, что и выше в этой функции — детерминированно по дате (см.
+// generateDailyQuests()), поэтому набор не "прыгнет" повторно при следующей
+// загрузке в тот же день. Если старый бета-квест "На слух" уже был частично
+// пройден (questAudioCount>0) — переносим этот прогресс в соответствующий
+// квест нового набора, чтобы не обнулять то, что пользователь уже сделал
+// сегодня.
+if(!state.daily.questSet){
+state.daily.questSet=generateDailyQuests(state.daily.date);
+const audioQuest=state.daily.questSet.find(q=>q.type==='audioCorrect');
+if(audioQuest&&state.daily.questAudioCount>0){
+audioQuest.progress=Math.min(audioQuest.target,state.daily.questAudioCount);
+audioQuest.claimed=!!state.daily.questClaimed;
+}
+}
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
 // Миграция для тех, у кого сегодняшний state.daily уже был создан старой
 // версией без dailyGoalAtDate — берём текущую цель как разумный старт
@@ -6498,6 +6577,10 @@ state.sessionStats.correct++;
 // считаем и такие ответы, как и договорились в задаче — обе ветки
 // (correct/hintAssisted) равнозначны для этого квеста.
 if(state.mode==='C')awardAudioQuestProgress();
+// КВЕСТ "без подсказки подряд": ответ с подсказкой прерывает серию, даже
+// если сам ответ формально верный — см. state.sessionStats.noHintStreak в
+// ветке correct ниже.
+if(state.sessionStats)state.sessionStats.noHintStreak=0;
 // КОМБО-МНОЖИТЕЛЬ (см. подробный комментарий в ветке correct ниже): ответ с
 // подсказкой формально верный, но не "чистая" победа — как и с XP (3 вместо
 // 10), комбо здесь намеренно НЕ трогаем ни в плюс, ни в минус.
@@ -6538,11 +6621,21 @@ ws.correct++;
 state.sessionStats.correct++;
 ws.streak=(ws.streak||0)+1;
 ws.level=ws.streak; // level отражает streak для совместимости со старым прогрессом/статистикой
-// БЕТА-КВЕСТ "На слух" (см. подробности у объявления questAudioCount ниже,
-// рядом с UI квеста в #sec-train): считаем именно ЧИСТЫЙ верный ответ в
-// режиме C — так же, как и hint-assisted ветка выше, но там это уже сделано
-// отдельно, чтобы не дублировать условие в общей для обеих веток точке.
-if(state.mode==='C')awardAudioQuestProgress();
+// КВЕСТЫ ДНЯ: считаем именно ЧИСТЫЙ верный ответ (без подсказки) — так же,
+// как и hint-assisted ветка выше не считает ничего, кроме audioCorrect, эта
+// ветка отвечает за все остальные типы квестов, завязанные на обычную
+// тренировку. См. awardQuestProgress() и QUEST_POOL в конце файла.
+if(state.mode==='C')awardQuestProgress('audioCorrect');
+if(state.mode==='A')awardQuestProgress('perfectMode');
+if(state.mode==='B')awardQuestProgress('reverseMode');
+awardQuestProgress('anyCorrect');
+// "Без подсказки подряд" — сбрасывается при любой ошибке или подсказке (см.
+// соответствующие места ниже/выше в updateWordProgress), а не только растёт,
+// иначе квест на 5 подряд можно было бы набрать за произвольно долгую сессию
+// с ошибками между верными ответами.
+state.sessionStats.noHintStreak=(state.sessionStats.noHintStreak||0)+1;
+if(state.sessionStats.noHintStreak>=5)awardQuestProgress('noHintStreak');
+if(isNewWord)awardQuestProgress('newWords');
 // КОМБО-МНОЖИТЕЛЬ К XP (без системы жизней — только бонус, без штрафа):
 // самостоятельный верный ответ (без подсказки) двигает комбо вперёд. Комбо
 // живёт в state.sessionStats.comboCount — привязано к текущей сессии, а не
@@ -6631,6 +6724,9 @@ ws.level=0;
 // КОМБО-МНОЖИТЕЛЬ: настоящая ошибка (в отличие от ответа с подсказкой выше)
 // сбрасывает серию подряд идущих "чистых" верных ответов в 0.
 if(state.sessionStats)state.sessionStats.comboCount=0;
+// КВЕСТ "без подсказки подряд": ошибка тоже прерывает серию, как и ответ с
+// подсказкой (см. соответствующее место выше в hint-assisted ветке).
+if(state.sessionStats)state.sessionStats.noHintStreak=0;
 // SM-2: неверный ответ ощутимо снижает ease (слово явно даётся труднее,
 // чем считалось) и сбрасывает interval — при следующей правильной серии
 // слово снова пройдёт через короткие learning-шаги, но с уже более низким
@@ -7159,6 +7255,11 @@ document.querySelectorAll(`#dq${id} .dopt`).forEach((b,i)=>{
 if(i===correct)b.classList.add('correct-opt');
 else if(b===el&&i!==correct)b.classList.add('wrong-opt');
 });
+// КВЕСТ ДНЯ "Пройди N диалогов" — засчитываем сам факт прохождения диалога
+// (ответ дан), независимо от того, верным ли оказался выбор варианта, т.к.
+// квест про вовлечённость в раздел "Диалоги", а не про безошибочность.
+awardQuestProgress('dialogue');
+updateDailyQuestCard();
 saveState();
 // ДОСТИЖЕНИЯ: проверяем группу 4 (диалоги) сразу после того, как результат
 // диалога уже записан в state.dialogueState и сохранён — checkAchievements()
@@ -7269,6 +7370,19 @@ badge.textContent=`🔥 ${sbState.streak}`;
 }else{
 badge.style.display='none';
 }
+// Счётчик сессии (✓/✗ за текущий заход в упражнение) — по аналогии со
+// streak-бейджем показываем только когда есть о чём говорить, т.е. хотя бы
+// одна попытка уже была, а не с самого начала на пустых нулях.
+const sessionBadge=document.getElementById('sbSessionBadge');
+const total=sbState.correctCount+sbState.wrongCount;
+if(sessionBadge){
+if(total>0){
+sessionBadge.style.display='';
+sessionBadge.textContent=`✓ ${sbState.correctCount} · ✗ ${sbState.wrongCount}`;
+}else{
+sessionBadge.style.display='none';
+}
+}
 }
 
 function renderSentenceBuilderBank(shuffledIdx,words){
@@ -7299,11 +7413,29 @@ const wordsHtml=sbState.builtIds.map((i,pos)=>
 // игре виселица/кроссворде.
 const remaining=words.length-sbState.builtIds.length;
 const slotsHtml=remaining>0?Array.from({length:remaining},()=>'<span class="sb-slot"></span>').join(''):'';
+// Кнопка "прослушать": показываем только когда есть хотя бы одно собранное
+// слово — послушать пустую зону бессмысленно, а после ответа она озвучивает
+// уже готовое (верное или неверное) предложение, что помогает на слух
+// запомнить правильный порядок слов.
+const listenBtn=document.getElementById('sbListenBtn');
+if(listenBtn)listenBtn.style.display=sbState.builtIds.length?'flex':'none';
+built.classList.toggle('sb-has-words',sbState.builtIds.length>0);
 if(!sbState.builtIds.length&&!sbState.answered){
 built.innerHTML=slotsHtml||'<span class="sb-built-placeholder">Собранное предложение появится здесь…</span>';
 return;
 }
 built.innerHTML=wordsHtml+(sbState.answered?'':slotsHtml);
+}
+
+// Озвучивает текущий порядок слов в built-зоне (не обязательно правильный —
+// пользователь может захотеть услышать, как звучит его собственная попытка,
+// до или после проверки). Использует уже существующий playWordAudio(), тот
+// же движок озвучки, что и остальной тренажёр и словарь.
+function sentenceBuilderListen(){
+const item=currentSentenceBuilderItem();
+if(!item||!item._words||!sbState.builtIds.length)return;
+const text=sbState.builtIds.map(i=>item._words[i]).join(' ');
+playWordAudio(text);
 }
 
 // Клик по кнопке в банке слов — переносит слово в "собранную" зону и
@@ -7435,6 +7567,11 @@ fb.textContent='✓ Верно! '+item.kz;
 addXp(6);
 sbState.correctCount++;
 sbState.streak++;
+// КВЕСТ ДНЯ "Собери N предложений верно" — считаем только чистое верное
+// собирание, по аналогии с "чистым" верным ответом в обычной тренировке.
+awardQuestProgress('sentenceBuilder');
+updateDailyQuestCard();
+saveState();
 // Зелёное свечение built-зоны + небольшое конфетти — приятный, но не
 // аляповатый фидбек на верный ответ (см. sbSpawnConfetti() ниже).
 builtEl.classList.remove('sb-correct-glow');
@@ -8051,56 +8188,112 @@ updateDailyQuestCard();
 }
 
 // ────────────────────────────────────────────────────────────────────────
-// БЕТА-ФУНКЦИЯ: единственный ежедневный квест ("Ответь верно 3 раза в
-// режиме 'На слух' сегодня"), добавлен как эксперимент — намеренно ОДИН
-// квест, а не система из нескольких/ротация, чтобы сначала посмотреть на
-// реакцию, прежде чем усложнять. Выбран режим "На слух" (mode==='C'),
-// потому что прогресс по нему легко посчитать (mode==='C' && correct) и
-// это подталкивает попробовать недо-используемую часть тренажёра.
-// Если решим не продолжать эту механику — весь блок ограничен полями
-// state.daily.questAudioCount/questClaimed, функциями
-// awardAudioQuestProgress()/updateDailyQuestCard() и HTML-карточкой
-// #dailyQuestCard в #sec-train — безопасно удалить одним куском.
+// БЕТА: СИСТЕМА КВЕСТОВ ДНЯ (заменяет прежний единственный бета-квест
+// "На слух"). Статус БЕТА сохранён намеренно (см. бейдж .dq-beta-tag в
+// updateDailyQuestCard() и в самой вёрстке карточки) — механика подобрана
+// экспериментально и состав/количество квестов может ещё поменяться.
+// Каждый день из QUEST_POOL случайно выбираются QUESTS_PER_DAY (сейчас 2)
+// РАЗНЫХ квеста и кладутся в state.daily.questSet (см. generateDailyQuests()
+// ниже и место вызова в loadState() при смене дня). Выбор детерминирован по
+// сегодняшней дате — см. seededShuffle() — поэтому набор не "перетасовывается"
+// повторно при каждой перезагрузке страницы в течение одного и того же дня,
+// а меняется именно на следующий день, давая пользователю новый повод зайти.
+// Каждый элемент questSet: {type, icon, title, target, progress, claimed, xp}.
+// Прогресс по типу квеста начисляется из разных точек тренажёра —
+// см. awardQuestProgress() и её вызовы в updateWordProgress(),
+// sentenceBuilderCheck(), checkDialogue().
+// Если решим не продолжать эту механику — весь блок ограничен
+// QUEST_POOL/generateDailyQuests()/awardQuestProgress()/updateDailyQuestCard()
+// и HTML-карточкой #dailyQuestCard в #sec-train — безопасно удалить одним куском.
 // ────────────────────────────────────────────────────────────────────────
-const DAILY_QUEST_TARGET=3;
-const DAILY_QUEST_XP=15;
+const QUEST_POOL=[
+{type:'audioCorrect',icon:'🎧',title:'3 верных ответа «На слух»',target:3,xp:15},
+{type:'anyCorrect',icon:'⚡',title:'8 верных ответов в тренировке',target:8,xp:15},
+{type:'noHintStreak',icon:'🎯',title:'5 ответов подряд без подсказки',target:5,xp:20},
+{type:'sentenceBuilder',icon:'🧩',title:'Собери 3 предложения верно',target:3,xp:15},
+{type:'dialogue',icon:'💬',title:'Пройди 2 диалога',target:2,xp:10},
+{type:'newWords',icon:'🌱',title:'Выучи 5 новых слов',target:5,xp:20},
+{type:'perfectMode',icon:'🏆',title:'5 верных ответов в режиме «Рус → Каз»',target:5,xp:15},
+{type:'reverseMode',icon:'🔁',title:'5 верных ответов в режиме «Каз → Рус»',target:5,xp:15},
+];
+// БЕТА: сколько квестов показываем в день. Было 3, уменьшено до 2 — по
+// обратной связи выглядело перегруженным для экспериментальной механики.
+const QUESTS_PER_DAY=2;
 
-// Вызывается из updateWordProgress() при каждом успешном ответе (обычном
-// или с подсказкой — обе ветки считаются попыткой на слух) в режиме C.
-// Сама решает, выдавать ли награду (проверяет questClaimed, чтобы не
-// выдать повторно) — вызывающему коду ничего проверять не нужно.
+// Простой детерминированный "случайный" выбор на основе строки-даты — то же
+// число дней даёт тот же набор квестов при любой перезагрузке в течение
+// дня, но разное на следующий день. Не криптографический, здесь это не нужно,
+// важна только повторяемость на один день и разброс между днями.
+function seededShuffle(arr,seedStr){
+let seed=0;
+for(let i=0;i<seedStr.length;i++)seed=(seed*31+seedStr.charCodeAt(i))>>>0;
+const a=[...arr];
+for(let i=a.length-1;i>0;i--){
+seed=(seed*1103515245+12345)>>>0;
+const j=seed%(i+1);
+[a[i],a[j]]=[a[j],a[i]];
+}
+return a;
+}
+
+// Возвращает 3 случайных РАЗНЫХ квеста на дату dateStr — по одному
+// экземпляру { ...poolItem, progress:0, claimed:false } на каждый, чтобы
+// прогресс каждого квеста хранился независимо и не делил один и тот же
+// объект с QUEST_POOL (иначе прогресс "утекал" бы между разными пользователями
+// одного шаблона в других частях кода).
+function generateDailyQuests(dateStr){
+const picked=seededShuffle(QUEST_POOL,dateStr).slice(0,QUESTS_PER_DAY);
+return picked.map(q=>({...q,progress:0,claimed:false}));
+}
+
+// Единая точка начисления прогресса квестам дня — вызывается из разных мест
+// тренажёра (обычная тренировка, "Собери предложение", диалоги) с типом
+// события, которое произошло. Сама решает, есть ли среди сегодняшних 3
+// квестов такой тип, и если да — двигает его прогресс и выдаёт награду по
+// достижении цели. Вызывающему коду не нужно ничего проверять заранее.
+function awardQuestProgress(type){
+if(!state.daily||!state.daily.questSet)return;
+const q=state.daily.questSet.find(x=>x.type===type);
+if(!q||q.claimed)return;
+q.progress=Math.min(q.target,(q.progress||0)+1);
+if(q.progress>=q.target){
+q.claimed=true;
+addXp(q.xp);
+}
+}
+
+// Обёртка для обратной совместимости со старыми вызовами по коду (режим C
+// "На слух") — теперь просто делегирует в общую функцию с нужным типом.
 function awardAudioQuestProgress(){
-if(!state.daily)return;
-if(state.daily.questAudioCount===undefined)state.daily.questAudioCount=0;
-if(state.daily.questClaimed===undefined)state.daily.questClaimed=false;
-if(state.daily.questClaimed)return; // уже забрали награду сегодня — дальше не считаем
-state.daily.questAudioCount++;
-if(state.daily.questAudioCount>=DAILY_QUEST_TARGET){
-state.daily.questClaimed=true;
-// Разовая награда — 15 XP, без привязки к координатам клика (как и в
-// hint-assisted ветке updateWordProgress(), место ответа тут не всегда
-// доступно/уместно), поэтому просто плюсуем к общему счётчику XP без
-// всплывающей анимации на карточке слова.
-addXp(DAILY_QUEST_XP);
-}
+awardQuestProgress('audioCorrect');
 }
 
-// Отрисовывает карточку квеста в #sec-train (см. #dailyQuestCard в HTML,
-// рядом с прогресс-баром дневной цели). Вызывается из updateDailyProgress(),
-// которая и так уже вызывается после каждого ответа — отдельный цикл
-// обновления для этого не заводим.
+// Отрисовывает карточки всех квестов дня в #sec-train (см. #dailyQuestCard
+// в HTML — контейнер, в который рендерится список карточек). Вызывается из
+// updateDailyProgress(), которая и так уже вызывается после каждого ответа —
+// отдельный цикл обновления для этого не заводим.
 function updateDailyQuestCard(){
 const card=document.getElementById('dailyQuestCard');
 if(!card)return;
-const count=Math.min(DAILY_QUEST_TARGET,state.daily.questAudioCount||0);
-const done=!!state.daily.questClaimed;
-document.getElementById('dailyQuestProgress').textContent=`${count}/${DAILY_QUEST_TARGET}`;
-document.getElementById('dailyQuestStatusBadge').textContent=done?'✓ Выполнено':'БЕТА';
-document.getElementById('dailyQuestStatusBadge').classList.toggle('quest-done',done);
-const dots=document.getElementById('dailyQuestDots');
-dots.innerHTML=Array.from({length:DAILY_QUEST_TARGET},(_,i)=>
-`<span class="quest-dot${i<count?' filled':''}"></span>`).join('');
-card.classList.toggle('quest-complete',done);
+const quests=(state.daily&&state.daily.questSet)||[];
+if(!quests.length){card.innerHTML='';return}
+const doneCount=quests.filter(q=>q.claimed).length;
+card.innerHTML=`<div class="dq-set-header"><span class="dq-set-title">🎯 Квесты дня <span class="dq-beta-tag">БЕТА</span></span><span class="dq-set-count">${doneCount}/${quests.length}</span></div>`+
+quests.map(q=>{
+const count=Math.min(q.target,q.progress||0);
+const done=!!q.claimed;
+const dots=Array.from({length:q.target},(_,i)=>`<span class="quest-dot${i<count?' filled':''}"></span>`).join('');
+return `<div class="daily-quest-row${done?' quest-complete':''}">
+<div class="dq-row">
+<span class="dq-title">${q.icon} ${escHtml(q.title)}</span>
+<span class="dq-badge${done?' quest-done':''}">${done?'✓ +'+q.xp+' XP':'+'+q.xp+' XP'}</span>
+</div>
+<div class="dq-row dq-row-progress">
+<div class="dq-dots">${dots}</div>
+<span class="dq-count">${count}/${q.target}</span>
+</div>
+</div>`;
+}).join('');
 }
 
 // БАГФИКС (страйк не показывался "в свой первый день"): раньше state.streak
