@@ -1122,6 +1122,7 @@ nav#mainNav{
   border-bottom:3px solid #0d8bc4;
 }
 .btn-check:active{border-bottom-width:1px;margin-top:2px}
+.btn-check:disabled{opacity:.4;cursor:default;pointer-events:none;border-bottom-color:transparent}
 
 .btn-next{
   background:var(--accent);color:white;
@@ -1421,6 +1422,7 @@ nav#mainNav{
 }
 .sb-feedback-correct{color:var(--green-dark)}
 .sb-feedback-wrong{color:var(--red-dark)}
+.sb-feedback-hint{color:var(--text2)}
 
 /* ── УЛУЧШЕНИЯ "СОБЕРИ ПРЕДЛОЖЕНИЕ": заголовок со стриком, прогресс-бар
    по кругу из предложений, счётчик за сессию — добавлены, чтобы упражнение
@@ -2166,6 +2168,21 @@ input.s-pass:focus{border-color:var(--blue)}
         <button class="btn-sm" onclick="openFeedbackModal()">✉️ Сообщить о проблеме</button>
       </div>
       <div class="settings-sub">Нашли баг или что-то не работает? Опишите в двух словах — отправится нам напрямую, без почты.</div>
+    </div>
+
+    <!-- Короткая страница о приватности в виде модалки (по образцу
+         feedbackModal ниже) — три-четыре абзаца, объясняющих, что хранится
+         только локально и что реально уходит наружу (OpenRouter при
+         использовании AI-чата, Formspree при отправке обратной связи).
+         Полноформатный юридический документ для MVP-стадии не нужен, но
+         явно написать это пользователю — обязательный минимум перед
+         релизом. См. openPrivacyModal()/closePrivacyModal() в JS. -->
+    <div class="settings-item">
+      <div class="settings-row">
+        <div class="settings-label">Конфиденциальность</div>
+        <button class="btn-sm" onclick="openPrivacyModal()">🔒 Как хранятся данные</button>
+      </div>
+      <div class="settings-sub">Что сохраняется в браузере и что никуда не передаётся.</div>
     </div>
 
     <div class="settings-group-title">Обучение</div>
@@ -5455,6 +5472,18 @@ if(!state.frozenDates)state.frozenDates={};
 // (см. комментарий выше про queue/current/...), поэтому ошибка тут же
 // заблокировала бы работу приложения у всех старых пользователей разом.
 if(!state.unlockedAchievements)state.unlockedAchievements={};
+// ЗАЩИТА (устойчивость к битым/специально повреждённым файлам импорта или
+// вручную отредактированному localStorage): если state.daily в сохранённых
+// данных оказался не объектом (например null, строка, число — валидный
+// JSON, но неожиданная форма значения), обращение state.daily.date ниже
+// упало бы с TypeError, а loadState() вызывается не только при загрузке
+// страницы, но и на каждый visibilitychange — то есть такая ошибка
+// заблокировала бы работу приложения полностью, без возможности выйти без
+// ручной очистки localStorage. Пересоздаём daily с нуля в этом случае —
+// это те же безопасные дефолты, что и в исходном объекте state выше.
+if(!state.daily||typeof state.daily!=='object'){
+state.daily={goalCount:0,progressCount:0,repeatCount:0,errorCount:0,date:new Date().toDateString(),answeredIds:[]};
+}
 const today=new Date().toDateString();
 if(state.daily.date!==today){
 const yesterday=new Date(Date.now()-86400000).toDateString();
@@ -5587,6 +5616,25 @@ audioQuest.progress=Math.min(audioQuest.target,state.daily.questAudioCount);
 audioQuest.claimed=!!state.daily.questClaimed;
 }
 }
+// БАГФИКС/МИГРАЦИЯ: 'audioCorrect' убран из QUEST_POOL (режим "На слух"
+// недостижим из UI, см. комментарий у QUEST_POOL), но у пользователей, чей
+// набор квестов на СЕГОДНЯ уже был сгенерирован ДО этого исправления, в
+// state.daily.questSet мог остаться старый экземпляр этого квеста — без
+// миграции он бы завис на 0/3 (или на своём текущем прогрессе) до конца
+// дня, никогда не будучи выполнимым. Если такой квест ещё не выполнен —
+// заменяем его на случайный выполнимый квест из актуального пула (кроме
+// уже присутствующих в наборе, чтобы не задвоить); если уже был выполнен и
+// награда забрана (claimed) — оставляем как есть, чтобы не отобрать
+// полученный XP.
+if(state.daily.questSet){
+const staleIdx=state.daily.questSet.findIndex(q=>q.type==='audioCorrect'&&!q.claimed);
+if(staleIdx!==-1){
+const usedTypes=state.daily.questSet.map(q=>q.type);
+const replacement=QUEST_POOL.find(q=>!usedTypes.includes(q.type));
+if(replacement)state.daily.questSet[staleIdx]={...replacement,progress:0,claimed:false};
+else state.daily.questSet.splice(staleIdx,1);
+}
+}
 if(!state.daily.answeredIds)state.daily.answeredIds=[];
 // Миграция для тех, у кого сегодняшний state.daily уже был создан старой
 // версией без dailyGoalAtDate — берём текущую цель как разумный старт
@@ -5627,14 +5675,20 @@ if(!Number.isFinite(g)||g<5)state.settings.dailyGoal=5;
 else if(g>100)state.settings.dailyGoal=100;
 else state.settings.dailyGoal=g;
 }
-// БАГФИКС (квест дня "На слух" не засчитывался): раньше кнопка режима C была
-// скрыта (display:none) в HTML, а здесь же state.mode принудительно сбрасывался
-// с 'C' на 'A' при каждой загрузке — из-за этого пользователь физически не мог
-// попасть в режим "На слух", а значит state.mode никогда не равнялось 'C', и
-// awardAudioQuestProgress() (см. updateWordProgress()) никогда не вызывалась.
-// Квест дня застревал на 0/3 навсегда. Кнопка режима возвращена в интерфейс
-// (см. #modeC в HTML), поэтому сброс здесь больше не нужен и был бы вреден —
-// он бы каждый раз откатывал осознанный выбор пользователя обратно на 'A'.
+// БАГФИКС (запуск сразу в недоступном режиме "На слух"): кнопка режима C
+// (#modeC) в HTML ОТСУТСТВУЕТ — в разметке переключателя есть только
+// #modeA и #modeB (см. .mode-tabs-compact выше). Раньше здесь стоял
+// комментарий, утверждающий, что кнопка modeC "возвращена в интерфейс" и
+// поэтому сброс mode:'C'->'A' якобы больше не нужен — это неверно и не
+// соответствует фактической разметке. Из-за отсутствия сброса пользователь,
+// у которого в localStorage с прошлых версий сохранилось state.mode==='C'
+// (когда кнопка режима C ещё существовала), при следующей загрузке
+// приложения попадал в режим "На слух" без какой-либо кнопки в UI, чтобы
+// из него выйти. Сама логика режима C в коде намеренно не удаляется (может
+// понадобиться в будущем) — просто исключаем возможность оказаться в нём
+// через обычный пользовательский путь, нормализуя state.mode при каждой
+// загрузке. Остальной прогресс (words/xp/streak и т.д.) при этом не трогаем.
+if(state.mode!=='A'&&state.mode!=='B')state.mode='A';
 // Миграция со старой версии: раньше прогресс слова хранился только в level (без streak/lastSeen)
 // БАГФИКС/ЗАЩИТА (аудит): раньше цикл ожидал, что ЛЮБОЕ значение state.words[id] —
 // это объект прогресса. Специально сформированный (или просто повреждённый)
@@ -7337,7 +7391,10 @@ document.getElementById('sbFeedback').className='sb-feedback';
 // будто нажатие "Проверить" ничего не делает.
 document.getElementById('sbNextBtn').style.display='none';
 document.getElementById('sbCheckBtn').style.display='';
-document.getElementById('sbCheckBtn').disabled=false;
+// Начинаем с задизейбленной кнопкой — sbState.builtIds ещё пуст в этот
+// момент (обнуляется чуть выше), renderSentenceBuilderBuilt() ниже сама
+// расставит правильное disabled-состояние по мере выбора слов.
+document.getElementById('sbCheckBtn').disabled=true;
 // Слова предложения нумеруем индексами их ПРАВИЛЬНОГО порядка (wordIds) —
 // проверка ответа в sentenceBuilderCheck() идёт именно по этим индексам, а
 // не по итоговой строке, чтобы не зависеть от пунктуации/регистра при
@@ -7419,6 +7476,12 @@ const slotsHtml=remaining>0?Array.from({length:remaining},()=>'<span class="sb-s
 // запомнить правильный порядок слов.
 const listenBtn=document.getElementById('sbListenBtn');
 if(listenBtn)listenBtn.style.display=sbState.builtIds.length?'flex':'none';
+// УЛУЧШЕНИЕ: делаем баг с проверкой пустой сборки физически невозможным, а
+// не только отловленным программно (см. sentenceBuilderCheck()) — кнопка
+// "Проверить" неактивна, пока не выбрано ни одного слова, и включается,
+// как только пользователь начал собирать предложение.
+const checkBtn=document.getElementById('sbCheckBtn');
+if(checkBtn&&!sbState.answered)checkBtn.disabled=sbState.builtIds.length===0;
 built.classList.toggle('sb-has-words',sbState.builtIds.length>0);
 if(!sbState.builtIds.length&&!sbState.answered){
 built.innerHTML=slotsHtml||'<span class="sb-built-placeholder">Собранное предложение появится здесь…</span>';
@@ -7545,6 +7608,22 @@ function sentenceBuilderCheck(){
 if(sbState.answered)return;
 const item=currentSentenceBuilderItem();
 const words=item._words;
+// БАГФИКС: раньше проверка ниже (сравнение sbState.builtIds с correctOrder)
+// выполнялась без предварительной проверки, что пользователь вообще что-то
+// выбрал. Пустой массив builtIds просто не совпадал по длине с correctOrder,
+// поэтому isCorrect получался false — и функция шла по обычной ветке
+// "неверно", помечая sbState.answered=true, показывая правильный ответ и
+// засчитывая это в sbState.wrongCount/сбрасывая streak — как будто
+// пользователь реально попытался собрать предложение и ошибся, хотя он
+// просто нажал "Проверить" на пустой сборке. Теперь при пустом наборе слов
+// функция прерывается ДО простановки answered и до любого фидбека — вместо
+// результата показываем мягкое предупреждение, не считая это попыткой.
+if(!sbState.builtIds.length){
+const fb=document.getElementById('sbFeedback');
+fb.className='sb-feedback sb-feedback-hint';
+fb.textContent='Сначала соберите предложение из слов';
+return;
+}
 // Сравниваем по индексам исходного порядка, а не по строке — так сравнение
 // не зависит от пунктуации/регистра, только от того, в каком порядке
 // пользователь выбрал слова.
@@ -8207,7 +8286,16 @@ updateDailyQuestCard();
 // и HTML-карточкой #dailyQuestCard в #sec-train — безопасно удалить одним куском.
 // ────────────────────────────────────────────────────────────────────────
 const QUEST_POOL=[
-{type:'audioCorrect',icon:'🎧',title:'3 верных ответа «На слух»',target:3,xp:15},
+// БАГФИКС (найдено при аудите после фикса режима "На слух"): квест
+// audioCorrect ("3 верных ответа «На слух»") требовал state.mode==='C' —
+// см. awardQuestProgress('audioCorrect') в checkAnswer/checkChoice. Кнопки
+// режима C в разметке нет, а state.mode нормализуется к 'A' при каждой
+// загрузке (см. loadState()), поэтому state.mode физически не может стать
+// 'C' обычным пользовательским путём. Если этот квест выпадал в набор дня,
+// он был невыполним никаким действием в интерфейсе и застревал на 0/3
+// навсегда — ровно тот же класс бага, что и с самим режимом C, просто на
+// уровень выше (в системе квестов). Логику начисления (awardAudioQuestProgress)
+// не удаляю — она безобидна и не мешает, просто квест из ежедневного пула убран.
 {type:'anyCorrect',icon:'⚡',title:'8 верных ответов в тренировке',target:8,xp:15},
 {type:'noHintStreak',icon:'🎯',title:'5 ответов подряд без подсказки',target:5,xp:20},
 {type:'sentenceBuilder',icon:'🧩',title:'Собери 3 предложения верно',target:3,xp:15},
@@ -9821,6 +9909,19 @@ function closeFeedbackModal() {
   if (modal) modal.style.display = 'none';
 }
 
+// Открытие/закрытие короткой страницы о приватности — тот же простой
+// паттерн модалки, что и у feedbackModal выше, без отдельной формы,
+// т.к. это просто текст для чтения.
+function openPrivacyModal() {
+  const modal = document.getElementById('privacyModal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function closePrivacyModal() {
+  const modal = document.getElementById('privacyModal');
+  if (modal) modal.style.display = 'none';
+}
+
 async function submitFeedback() {
   const FORM_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID'; // замените YOUR_FORM_ID на свой ID с formspree.io
   const textarea = document.getElementById('feedbackText');
@@ -9981,6 +10082,27 @@ function closeOpenRouterGuide() {
     <div style="display:flex;gap:.5rem;margin-top:.75rem;justify-content:flex-end">
       <button class="btn-sm" onclick="closeFeedbackModal()">Отмена</button>
       <button id="feedbackSubmitBtn" class="btn-sm" style="border-color:var(--blue);color:var(--blue)" onclick="submitFeedback()">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Модалка "Конфиденциальность" — краткое честное объяснение, что хранится
+     локально и что реально уходит с устройства. Не юридический документ,
+     а понятный текст для пользователя (см. openPrivacyModal() в JS). -->
+<div id="privacyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closePrivacyModal()">
+  <div style="background:var(--card);border-radius:16px;max-width:460px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:18px;font-weight:800;">🔒 Как хранятся данные</div>
+      <button onclick="closePrivacyModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
+    </div>
+    <div style="font-size:14px;line-height:1.6;color:var(--text2)">
+      <p style="margin:0 0 .8rem"><b>Ваш прогресс — только в этом браузере.</b> Слова, XP, streak, история занятий хранятся локально на этом устройстве (localStorage) и никуда не отправляются. Мы не видим ваш прогресс и не собираем его на сервере.</p>
+      <p style="margin:0 0 .8rem"><b>Важно:</b> если вы очистите данные сайта в браузере, переустановите браузер или откроете приложение с другого устройства — прогресс не перенесётся автоматически. Регулярно сохраняйте резервную копию через Настройки → Резервная копия → Скачать.</p>
+      <p style="margin:0 0 .8rem"><b>Что всё же уходит с устройства:</b> если вы подключаете свой ключ OpenRouter для AI-чата, ваши сообщения в этом чате отправляются в OpenRouter для получения ответа — по их правилам обработки данных, не по нашим. Сообщение из формы "Обратная связь" отправляется через сервис Formspree, чтобы дойти до нас. Поиск переводов может обращаться к открытым словарным сервисам (Wiktionary, Glosbe) — без передачи каких-либо личных данных, только сам искомый текст.</p>
+      <p style="margin:0">Мы не показываем рекламу и не передаём данные третьим лицам для маркетинга.</p>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:1rem">
+      <button class="btn-sm" onclick="closePrivacyModal()">Понятно</button>
     </div>
   </div>
 </div>
