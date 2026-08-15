@@ -572,18 +572,13 @@
       <div class="settings-sub">Добавьте на главный экран — работает как обычное приложение, даже офлайн.</div>
     </div>
 
-    <!-- Обратная связь: форма отправляется на forms.space.
-         Пользователю НЕ нужна регистрация и не открывается почтовый клиент —
-         просто модалка с текстовым полем, дальше fetch() на форм-эндпоинт
-         forms.space, и сообщение падает вам в личный кабинет forms.space.
-         Endpoint уже настроен в submitFeedback() (app.js) на:
-         https://stuffy-walkway-784.forms.space/form-6rgu0e -->
+        <!-- Обратная связь: переход на Google Форму. -->
     <div class="settings-item">
       <div class="settings-row">
         <div class="settings-label">Обратная связь</div>
-        <button class="btn-sm" onclick="openFeedbackModal()">✉️ Сообщить о проблеме</button>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSe1YB91FT2GtzIFjKjq1jGv0XV_4sNIj7wy_YhbAlNqNqm_rg/viewform" target="_blank" rel="noopener noreferrer" class="btn-sm" style="text-decoration:none; display:inline-block; line-height:inherit">✉️ Сообщить о проблеме</a>
       </div>
-      <div class="settings-sub">Нашли баг или что-то не работает? Опишите в двух словах (до 80 слов) — отправится нам напрямую, без почты.</div>
+      <div class="settings-sub">Нашли баг или что-то не работает? Заполните короткую форму, и мы всё исправим.</div>
     </div>
 
     <div class="settings-group-title">Обучение</div>
