@@ -121,6 +121,16 @@ function simpleHash(str) {
 
 // Установка: скачиваем index.html, считаем его хэш и кэшируем под именем,
 // которое зависит от этого хэша.
+// ДОБАВЛЕНО: после разделения index.html на 3 файла (index.html + style.css +
+// app.js, см. README.md) страница больше не самодостаточна одним файлом —
+// без style.css и app.js она откроется офлайн голой и нерабочей. Поэтому
+// install теперь качает и кэширует все три файла сразу, а не только
+// index.html (раньше style.css/app.js попадали в кэш только "постфактум",
+// через обычный fetch-перехват ниже — то есть после первого online-визита).
+// Версия кэша по-прежнему считается от index.html — это ключевой файл,
+// именно он выступает "точкой синхронизации" деплоя.
+const PRECACHE_FILES = ['./index.html', './style.css', './app.js'];
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     fetch('./index.html', { cache: 'no-store' })
@@ -129,10 +139,19 @@ self.addEventListener('install', (event) => {
         const version = simpleHash(html);
         const cacheName = CACHE_PREFIX + version;
         return caches.open(cacheName).then((cache) => {
-          // Кладём уже скачанный текст напрямую, чтобы не качать index.html дважды.
-          return cache.put(
-            './index.html',
-            new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } })
+          return Promise.all(
+            PRECACHE_FILES.map((path) =>
+              path === './index.html'
+                // index.html уже скачан выше — не качаем второй раз.
+                ? cache.put(path, new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } }))
+                // style.css и app.js качаем отдельно; если какого-то файла
+                // ещё нет на хостинге (например, деплой в процессе) — не
+                // валим всю установку SW из-за одного файла.
+                : fetch(path, { cache: 'no-store' })
+                    .then((r) => r.text())
+                    .then((text) => cache.put(path, new Response(text, { headers: { 'Content-Type': path.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/javascript; charset=utf-8' } })))
+                    .catch(() => {})
+            )
           );
         });
       })
@@ -155,6 +174,16 @@ self.addEventListener('activate', (event) => {
       .then((response) => response.text())
       .then((html) => {
         const currentVersion = CACHE_PREFIX + simpleHash(html);
+        // Догружаем style.css/app.js в новый кэш той же версии — та же причина,
+        // что и в install (см. комментарий там и PRECACHE_FILES).
+        caches.open(currentVersion).then((cache) => {
+          ['./style.css', './app.js'].forEach((path) => {
+            fetch(path, { cache: 'no-store' })
+              .then((r) => r.text())
+              .then((text) => cache.put(path, new Response(text, { headers: { 'Content-Type': path.endsWith('.css') ? 'text/css; charset=utf-8' : 'application/javascript; charset=utf-8' } })))
+              .catch(() => {});
+          });
+        });
         // ВАЖНО: не удалять CACHE_PREFIX+'assets' — это отдельный, постоянный
         // кэш для бинарных файлов (см. isTextLikeResponse в обработчике fetch
         // ниже), а не версия index.html по хэшу. Он не должен чиститься при
