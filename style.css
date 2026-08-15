@@ -1589,3 +1589,18 @@ input.s-pass:focus{border-color:var(--blue)}
 .install-note{color:var(--green);font-weight:600;border-bottom:none;}
 .install-icon{font-size:16px;}
 #androidInstallBtn{display:none;}
+
+/* ── Honeypot-поле для формы обратной связи (защита от спам-ботов) ──────
+   Намеренно НЕ display:none и НЕ visibility:hidden — некоторые боты
+   умеют это распознавать и пропускать такие поля. Вместо этого сдвигаем
+   поле далеко за пределы экрана и делаем прозрачным — визуально это то
+   же самое "невидимо", но для автозаполнителя форм поле выглядит как
+   обычное видимое текстовое поле. */
+.feedback-honeypot{
+  position:absolute;
+  left:-9999px;
+  width:1px;
+  height:1px;
+  opacity:0;
+  overflow:hidden;
+}

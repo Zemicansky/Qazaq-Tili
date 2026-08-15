@@ -7241,12 +7241,42 @@ function closeFeedbackModal() {
   if (modal) modal.style.display = 'none';
 }
 
+// Минимальный интервал между отправками фидбека — защита от человека,
+// который решит спамить форму вручную (боты уже отсекаются honeypot-полем
+// ниже). Не требует внешних сервисов, хранится в том же localStorage,
+// что и остальной прогресс. См. FEEDBACK_LAST_SENT_KEY в submitFeedback().
+const FEEDBACK_RATE_LIMIT_MS = 60 * 1000; // 1 сообщение в минуту
+const FEEDBACK_LAST_SENT_KEY = 'qazaq_feedback_last_sent';
+
 async function submitFeedback() {
-  const FORM_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID'; // замените YOUR_FORM_ID на свой ID с formspree.io
+  const FORM_ENDPOINT = 'https://formspree.io/f/4148e866-65d8-43ce-ba7b-71fd3793c31b';
   const textarea = document.getElementById('feedbackText');
   const status = document.getElementById('feedbackStatus');
   const btn = document.getElementById('feedbackSubmitBtn');
+  const honeypot = document.getElementById('feedbackHoneypot');
   const message = (textarea && textarea.value || '').trim();
+
+  // Honeypot: это поле невидимо человеку (см. CSS .feedback-honeypot) —
+  // если оно заполнено, значит форму отправил бот, а не человек. Тихо
+  // делаем вид, что всё прошло успешно, не тратя лимит запросов Formspree
+  // и не показывая боту, что его вычислили.
+  if (honeypot && honeypot.value.trim()) {
+    if (status) { status.textContent = 'Спасибо! Сообщение отправлено.'; status.style.color = 'var(--green)'; }
+    if (textarea) textarea.value = '';
+    setTimeout(closeFeedbackModal, 1200);
+    return;
+  }
+
+  // Рейт-лимит: не даём отправить чаще, чем раз в минуту, даже если человек
+  // жмёт кнопку повторно — защищает почту от намеренного спама через форму.
+  let lastSent = 0;
+  try { lastSent = parseInt(localStorage.getItem(FEEDBACK_LAST_SENT_KEY) || '0', 10); } catch (e) {}
+  const msSinceLast = Date.now() - lastSent;
+  if (lastSent && msSinceLast < FEEDBACK_RATE_LIMIT_MS) {
+    const secsLeft = Math.ceil((FEEDBACK_RATE_LIMIT_MS - msSinceLast) / 1000);
+    if (status) { status.textContent = `Подождите ${secsLeft} сек. перед следующей отправкой.`; status.style.color = 'var(--red)'; }
+    return;
+  }
 
   if (!message) {
     if (status) { status.textContent = 'Опишите проблему перед отправкой.'; status.style.color = 'var(--red)'; }
@@ -7268,6 +7298,7 @@ async function submitFeedback() {
       })
     });
     if (res.ok) {
+      try { localStorage.setItem(FEEDBACK_LAST_SENT_KEY, Date.now().toString()); } catch (e) {}
       if (status) { status.textContent = 'Спасибо! Сообщение отправлено.'; status.style.color = 'var(--green)'; }
       if (textarea) textarea.value = '';
       setTimeout(closeFeedbackModal, 1200);
