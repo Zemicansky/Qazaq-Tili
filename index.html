@@ -1047,7 +1047,11 @@
     <div style="font-size:14px;line-height:1.5;color:var(--text2);margin-bottom:.6rem;">
       Опишите, что пошло не так. Отправится нам напрямую — регистрация и почта не нужны.
     </div>
-    <textarea id="feedbackText" class="chat-textarea" style="width:100%;min-height:110px;resize:vertical;box-sizing:border-box" placeholder="Например: при озвучке слова приложение зависает…"></textarea>
+    <textarea id="feedbackText" class="chat-textarea" style="width:100%;min-height:110px;resize:vertical;box-sizing:border-box" placeholder="Например: при озвучке слова приложение зависает…" maxlength="500" oninput="updateFeedbackCounter()"></textarea>
+    <!-- Счётчик слов/символов отзыва — ограничивает объём текста, чтобы
+         пользователь не мог прислать слишком длинное сообщение (см.
+         maxlength выше и updateFeedbackCounter() в app.js). -->
+    <div id="feedbackCounter" class="settings-sub tight" style="text-align:right;margin-top:.25rem"></div>
     <!-- Honeypot: поле-ловушка для ботов. Скрыто от людей через CSS
          (см. .feedback-honeypot в style.css) — обычный пользователь его не
          видит и не может заполнить, боты же заполняют все поля подряд.

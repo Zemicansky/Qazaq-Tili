@@ -7234,6 +7234,36 @@ function openFeedbackModal() {
   const btn = document.getElementById('feedbackSubmitBtn');
   if (btn) { btn.disabled = false; btn.textContent = 'Отправить'; }
   modal.style.display = 'flex';
+  updateFeedbackCounter();
+}
+
+// Максимальное количество слов, разрешённое в одном отзыве. Ограничивает
+// длину сообщения, чтобы пользователь не мог отправить слишком объёмный
+// текст (например вставку целой статьи). Символьный лимit дополнительно
+// задан через maxlength="500" прямо в HTML на #feedbackText — этот предел
+// по словам работает поверх него как более "человеческое" ограничение
+// (500 символов и так почти всегда укладываются в лимит по словам ниже,
+// но если вставить текст без пробелов, maxlength всё равно подстрахует).
+const FEEDBACK_MAX_WORDS = 80;
+
+// Считает слова в тексте отзыва и обновляет счётчик под textarea. Если
+// пользователь превышает лимит слов, лишние слова обрезаются на лету —
+// это не даёт написать длинное сообщение, даже если вставить его через
+// буфер обмена (paste), а не печатать руками.
+function updateFeedbackCounter() {
+  const textarea = document.getElementById('feedbackText');
+  const counter = document.getElementById('feedbackCounter');
+  if (!textarea) return;
+  const words = textarea.value.trim().length ? textarea.value.trim().split(/\s+/) : [];
+  if (words.length > FEEDBACK_MAX_WORDS) {
+    // Обрезаем до лимита, сохраняя курсор в конце — просто и предсказуемо.
+    textarea.value = words.slice(0, FEEDBACK_MAX_WORDS).join(' ');
+  }
+  const count = textarea.value.trim().length ? textarea.value.trim().split(/\s+/).length : 0;
+  if (counter) {
+    counter.textContent = `${count} / ${FEEDBACK_MAX_WORDS} слов`;
+    counter.style.color = count >= FEEDBACK_MAX_WORDS ? 'var(--red)' : 'var(--text3)';
+  }
 }
 
 function closeFeedbackModal() {
@@ -7249,7 +7279,14 @@ const FEEDBACK_RATE_LIMIT_MS = 60 * 1000; // 1 сообщение в минут�
 const FEEDBACK_LAST_SENT_KEY = 'qazaq_feedback_last_sent';
 
 async function submitFeedback() {
-  const FORM_ENDPOINT = 'https://formspree.io/f/4148e866-65d8-43ce-ba7b-71fd3793c31b';
+  // ИСПРАВЛЕНО: раньше здесь стоял несуществующий Formspree endpoint
+  // (случайный UUID вместо настоящего ID формы) — форма физически не могла
+  // никуда отправиться, любой POST возвращал ошибку. Заменено на реальный
+  // сервис forms.space, подключённый пользователем. forms.space принимает
+  // обычный form-urlencoded POST (как классическая HTML-форма), поэтому
+  // ниже тело запроса собирается через FormData/URLSearchParams, а не
+  // JSON — так их бэкенд гарантированно распознаёт поля.
+  const FORM_ENDPOINT = 'https://stuffy-walkway-784.forms.space/form-6rgu0e';
   const textarea = document.getElementById('feedbackText');
   const status = document.getElementById('feedbackStatus');
   const btn = document.getElementById('feedbackSubmitBtn');
@@ -7282,20 +7319,34 @@ async function submitFeedback() {
     if (status) { status.textContent = 'Опишите проблему перед отправкой.'; status.style.color = 'var(--red)'; }
     return;
   }
+  // Дублирующая проверка лимита слов на случай, если textarea заполнили не
+  // через клавиатуру/paste (а, например, программно) — не полагаемся только
+  // на "живое" обрезание в updateFeedbackCounter().
+  const wordCount = message.split(/\s+/).length;
+  if (wordCount > FEEDBACK_MAX_WORDS) {
+    if (status) { status.textContent = `Слишком длинное сообщение — максимум ${FEEDBACK_MAX_WORDS} слов.`; status.style.color = 'var(--red)'; }
+    return;
+  }
   if (btn) { btn.disabled = true; btn.textContent = 'Отправка…'; }
   if (textarea) textarea.disabled = true;
   if (status) { status.textContent = ''; status.style.color = ''; }
 
   try {
+    // forms.space (как и большинство простых form-backend сервисов) ждёт
+    // данные в формате form-urlencoded, а не application/json — поэтому
+    // используем URLSearchParams вместо JSON.stringify(). Поля называются
+    // так, чтобы совпадать с обычной HTML-формой: message, а не произвольный
+    // JSON-объект.
+    const body = new URLSearchParams();
+    body.append('message', message);
+    body.append('userAgent', navigator.userAgent);
+    body.append('timestamp', new Date().toString());
+    body.append('app', 'Qazaq Tili');
+
     const res = await fetch(FORM_ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        message,
-        userAgent: navigator.userAgent,
-        timestamp: new Date().toString(),
-        app: 'Qazaq Tili'
-      })
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+      body: body.toString()
     });
     if (res.ok) {
       try { localStorage.setItem(FEEDBACK_LAST_SENT_KEY, Date.now().toString()); } catch (e) {}
