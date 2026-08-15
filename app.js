@@ -358,7 +358,7 @@ const WORDS=[
 {id:369,kz:"Шығу",ru:"Выйти",topic:"shop",example_kz:"Дүкенден шықтым.",example_ru:"Я вышел из магазина."},
 {id:370,kz:"Кіру",ru:"Войти",topic:"shop",example_kz:"Дүкенге кірдім.",example_ru:"Я вошёл в магазин."},
 {id:371,kz:"Әкелу",ru:"Принести",topic:"shop",example_kz:"Басқа өлшемді әкеліңіз.",example_ru:"Принесите другой размер."},
-{id:372,kz:"Таңдау",ru:"Выбирать",topic:"shop",example_kz:"Таңдауды қиындаттым.",example_ru:"Мне было трудно выбрать."},
+{id:372,kz:"Таңдау",ru:"Выбирать",topic:"shop",example_kz:"Таңдау қиын болды.",example_ru:"Мне было трудно выбрать."}, // исправлено
 {id:373,kz:"Салыстыру",ru:"Сравнивать",topic:"shop",example_kz:"Екі тауарды салыстырдым.",example_ru:"Я сравнил два товара."},
 {id:374,kz:"Көру",ru:"Посмотреть",topic:"shop",example_kz:"Тауарды көріңіз.",example_ru:"Посмотрите товар."},
 {id:375,kz:"Ұнату",ru:"Понравиться",topic:"shop",example_kz:"Киім ұнады.",example_ru:"Одежда понравилась."},
@@ -552,8 +552,8 @@ const WORDS=[
 {id:634,kz:"Көңіл-күй",ru:"Настроение",topic:"emotion",example_kz:"Көңіл-күйім жақсы.",example_ru:"У меня хорошее настроение."},
 {id:635,kz:"Әсер",ru:"Впечатление",topic:"emotion",example_kz:"Жақсы әсер алдым.",example_ru:"Я получил хорошее впечатление."},
 {id:636,kz:"Қуаныш",ru:"Радость",topic:"emotion",example_kz:"Қуаныштан көзіме жас алдым.",example_ru:"Я расплакался от радости."},
-{id:637,kz:"Өкініш",ru:"Сожаление",topic:"emotion",example_kz:"Өкінішпін.",example_ru:"Я сожалею."},
-{id:638,kz:"Өшу",ru:"Разгневаться",topic:"emotion",example_kz:"Оған өшіп қалдым.",example_ru:"Я разозлился на него."},
+{id:637,kz:"Өкініш",ru:"Сожаление",topic:"emotion",example_kz:"Мен өкінемін.",example_ru:"Я сожалею."}, // исправлено
+{id:638,kz:"Ашулану",ru:"Разгневаться",topic:"emotion",example_kz:"Оған ашуландым.",example_ru:"Я разозлился на него."}, // исправлено
 {id:639,kz:"Реніш",ru:"Обида",topic:"emotion",example_kz:"Ренішім көп.",example_ru:"У меня много обид."},
 {id:640,kz:"Мақтаныш",ru:"Гордость",topic:"emotion",example_kz:"Баламмен мақтанамын.",example_ru:"Я горжусь своим ребёнком."},
 {id:641,kz:"Қорқыныш",ru:"Страх",topic:"emotion",example_kz:"Қорқыныш басып тұр.",example_ru:"Меня охватывает страх."},
