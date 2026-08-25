@@ -520,7 +520,9 @@ nav#mainNav{
 .week-grid{
   display:grid;grid-template-columns:repeat(7,1fr);gap:.35rem;
   text-align:center;margin-bottom:.85rem;
+  cursor:pointer;border-radius:12px;transition:opacity .15s ease;
 }
+.week-grid:active{opacity:.8}
 /* УЛУЧШЕНИЕ (визуал, логика не менялась): чисто декоративная доработка —
    плавные переходы между состояниями, лёгкая "приподнятость" карточки дня
    через тень, градиентная заливка + мягкое свечение для выполненной цели
@@ -568,6 +570,57 @@ nav#mainNav{
   0%,100%{box-shadow:0 3px 10px var(--accent-glow)}
   50%{box-shadow:0 3px 14px var(--accent-glow)}
 }
+
+/* ── КАЛЕНДАРЬ АКТИВНОСТИ (модалка) ──────────────────────────
+   Открывается кликом по .week-grid (см. openActivityCalendar() в JS).
+   Переиспользует тот же визуальный язык, что и .week-day выше: зелёный —
+   цель дня выполнена, синий — день сохранён заморозкой стрика, акцентная
+   заливка — сегодняшний день. */
+.calendar-month-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:.7rem;
+}
+.cal-month-label{font-size:.95rem;font-weight:800;color:var(--text)}
+.cal-nav-btn{
+  width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);
+  background:var(--card2);color:var(--text);font-size:1.1rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease,opacity .15s ease;
+}
+.cal-nav-btn:active{transform:scale(.92)}
+.cal-nav-btn:disabled{opacity:.35;cursor:not-allowed}
+.calendar-weekday-row{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;
+  text-align:center;margin-bottom:.35rem;
+}
+.calendar-weekday-row span{
+  font-size:.62rem;font-weight:700;letter-spacing:.3px;
+  text-transform:uppercase;color:var(--text3);
+}
+.calendar-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem;
+}
+.cal-day{
+  aspect-ratio:1;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;font-weight:700;color:var(--text2);
+  background:transparent;border:1.5px solid transparent;
+  transition:background .2s ease,border-color .2s ease,color .2s ease;
+}
+.cal-day.cal-empty{visibility:hidden}
+.cal-day.cal-met{background:var(--green-bg);border-color:var(--green);color:var(--green-dark)}
+.cal-day.cal-frozen{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.cal-day.cal-today{background:var(--accent);border-color:var(--accent);color:#fff}
+.cal-day.cal-today.cal-met{background:var(--accent);border-color:var(--accent);color:#fff}
+.calendar-legend{
+  display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.85rem;
+  font-size:.66rem;font-weight:600;color:var(--text2);
+}
+.calendar-legend span{display:flex;align-items:center;gap:.3rem}
+.cal-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.cal-dot-met{background:var(--green)}
+.cal-dot-frozen{background:var(--blue)}
+.cal-dot-today{background:var(--accent)}
 
 
 /* ── DAILY GOAL ────────────────────────────────────────────── */
@@ -753,10 +806,10 @@ nav#mainNav{
   padding:.15rem;flex-shrink:0;
 }
 .mode-tab-c{
-  padding:.4rem .6rem;
+  padding:.4rem .55rem;
   background:transparent;color:var(--text2);
   border:none;border-radius:16px;
-  font-size:.68rem;font-weight:700;cursor:pointer;
+  font-size:.64rem;font-weight:700;cursor:pointer;
   transition:all .18s;font-family:inherit;white-space:nowrap;
 }
 .mode-tab-c:active{transform:scale(.95)}
@@ -806,6 +859,17 @@ nav#mainNav{
   text-align:center;padding:1.35rem 1rem 1rem;
   position:relative;
 }
+/* НОВОЕ (режим "Новые слова"/"Повтор", по просьбе пользователя — как в
+   Reword): строка над словом теперь содержит два чипа рядом — тема слова
+   (было и раньше) и статус "Новое"/"Повторение" (см. renderWord() в JS,
+   которое переключает класс is-new/is-repeat и текст #wordStatusBadge).
+   flex-wrap на случай длинных названий тем на маленьких экранах — чипы
+   переносятся на вторую строку вместо того чтобы вылезать за карточку. */
+.word-card-top-row{
+  display:flex;align-items:center;justify-content:center;
+  gap:.4rem;flex-wrap:wrap;margin-bottom:.85rem;
+}
+.word-card-top-row .word-topic-chip{margin-bottom:0}
 .word-topic-chip{
   display:inline-block;
   background:var(--blue-bg);color:var(--blue);
@@ -814,6 +878,17 @@ nav#mainNav{
   margin-bottom:.85rem;letter-spacing:.3px;text-transform:uppercase
 }
 [data-theme="dark"] .word-topic-chip{color:var(--blue)}
+.word-status-badge{
+  display:inline-block;
+  font-size:.68rem;font-weight:800;
+  padding:.2rem .6rem;border-radius:20px;
+  letter-spacing:.3px;text-transform:uppercase;
+  white-space:nowrap;
+  transition:background .2s ease,color .2s ease;
+}
+.word-status-badge.is-new{background:var(--green-bg);color:var(--green-dark)}
+.word-status-badge.is-repeat{background:var(--orange-bg);color:var(--orange)}
+[data-theme="dark"] .word-status-badge.is-new{color:var(--green)}
 .main-word{
   font-size:2.2rem;font-weight:900;
   color:var(--text);line-height:1.2;

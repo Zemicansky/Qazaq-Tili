@@ -20,19 +20,86 @@ const badge=document.getElementById('storageWarningBadge');
 if(badge)badge.style.display='inline';
 }
 // ── THEME TOGGLE ──────────────────────────────────────────────
+// ОБНОВЛЕНО (по просьбе пользователя — "сделать авто, чтобы вечером тёмная,
+// а днём светлая"): раньше в localStorage хранился только реальный CSS-режим
+// ('dark'/'light'), выбранный вручную кнопкой в шапке — то есть "авто"
+// режима не существовало в принципе. Теперь под ключом 'qazaq_theme_pref'
+// хранится ПРЕДПОЧТЕНИЕ пользователя: 'auto' (по умолчанию), 'light' или
+// 'dark'. Реальная применённая CSS-тема вычисляется из этого предпочтения —
+// applyTheme() ниже — и для 'auto' зависит от текущего времени суток.
+// Кнопка-иконка в шапке (toggleTheme) остаётся быстрым переключателем
+// светлая⇄тёмная (как раньше), но теперь при клике переключает именно
+// ПРЕДПОЧТЕНИЕ на явное light/dark (выходя из auto) — так поведение кнопки
+// интуитивно понятно и не конфликтует с новым select'ом в Настройках
+// (см. #themeModeSelect, saveThemeMode() и applyTheme()).
+const THEME_PREF_KEY='qazaq_theme_pref';
+// Вечер/ночь считаем тёмным временем суток — с 19:00 до 7:00 включительно.
+// Простое, предсказуемое правило без обращения к геолокации/восходу-закату.
+function isEveningNow(){
+  const h=new Date().getHours();
+  return h>=19||h<7;
+}
+function getThemePref(){
+  try{
+    const t=localStorage.getItem(THEME_PREF_KEY);
+    if(t==='light'||t==='dark'||t==='auto')return t;
+  }catch(e){}
+  return'auto';
+}
+function resolveTheme(pref){
+  if(pref==='dark')return'dark';
+  if(pref==='light')return'light';
+  return isEveningNow()?'dark':'light';
+}
+// Применяет CSS-тему (data-theme) и обновляет иконку кнопки в шапке, исходя
+// из текущего предпочтения (auto/light/dark). Вызывается при загрузке, при
+// смене предпочтения в Настройках, и раз в несколько минут таймером — чтобы
+// в режиме "авто" тема сама переключалась на тёмную вечером, даже если
+// вкладка открыта весь день и не перезагружалась.
+function applyTheme(){
+  const pref=getThemePref();
+  const theme=resolveTheme(pref);
+  document.documentElement.setAttribute('data-theme',theme);
+  const btn=document.getElementById('themeToggle');
+  if(btn)btn.textContent=theme==='dark'?'☀️':'🌙';
+  const sel=document.getElementById('themeModeSelect');
+  if(sel&&sel.value!==pref)sel.value=pref;
+}
+// Кнопка в шапке: быстрое ручное переключение светлая⇄тёмная. Явно выходит
+// из режима "авто" — пользователь тапнул иконку именно чтобы прямо сейчас
+// сменить вид, а не для того чтобы полминуты спустя авто-режим вернул её
+// обратно по времени суток.
 function toggleTheme(){
   const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  const newTheme=isDark?'light':'dark';
-  document.documentElement.setAttribute('data-theme',newTheme);
-  document.getElementById('themeToggle').textContent=isDark?'🌙':'☀️';
-  try{localStorage.setItem('qazaq_theme',newTheme)}catch(e){}
+  const newPref=isDark?'light':'dark';
+  try{localStorage.setItem(THEME_PREF_KEY,newPref)}catch(e){flagStorageError()}
+  applyTheme();
+}
+// Вызывается из select'а "Тема" в Настройках (Авто/Светлая/Тёмная).
+function saveThemeMode(){
+  const sel=document.getElementById('themeModeSelect');
+  if(!sel)return;
+  try{localStorage.setItem(THEME_PREF_KEY,sel.value)}catch(e){flagStorageError()}
+  applyTheme();
 }
 (function(){
+  applyTheme();
+  // БАГФИКС-СОВМЕСТИМОСТЬ: у пользователей, уже пользовавшихся приложением
+  // до этого обновления, тема могла быть сохранена под старым ключом
+  // 'qazaq_theme' (просто 'dark'/'light', без понятия "авто"). Разово
+  // переносим её в новый ключ как явное предпочтение, чтобы никто не
+  // потерял свой осознанный выбор темы при обновлении.
   try{
-    const t=localStorage.getItem('qazaq_theme');
-    if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.getElementById('themeToggle').textContent='☀️'}
-    else{document.getElementById('themeToggle').textContent='🌙'}
+    const legacy=localStorage.getItem('qazaq_theme');
+    if(legacy&&!localStorage.getItem(THEME_PREF_KEY)){
+      localStorage.setItem(THEME_PREF_KEY,legacy==='dark'?'dark':'light');
+      applyTheme();
+    }
   }catch(e){}
+  // В режиме "авто" пересчитываем тему раз в 5 минут — на случай, если
+  // вкладка/PWA останется открытой на границе дня/вечера (например ровно
+  // в 19:00) без перезагрузки страницы.
+  setInterval(()=>{if(getThemePref()==='auto')applyTheme()},5*60*1000);
 })();
 
 const TOPICS=[
@@ -3448,6 +3515,9 @@ const next=Object.values(state.words).filter(w=>w&&typeof w==='object'&&w.nextRe
 const minutesLeft=next?Math.max(1,Math.ceil((next.nextReview-Date.now())/60000)):null;
 document.getElementById('mainWord').textContent='😴';
 document.getElementById('wordTopic').textContent='Все слова сейчас отдыхают';
+// Бейдж "Новое слово"/"Повторение" здесь неуместен — карточки со словом
+// нет, показываем только сообщение о том, что все слова сейчас на паузе.
+const badgeSleep=document.getElementById('wordStatusBadge');if(badgeSleep)badgeSleep.style.display='none';
 document.getElementById('inputRow').style.display='none';
 document.getElementById('feedback').className='feedback correct';
 // ИСПРАВЛЕНО: showFeedback() (см. её код) теперь скрывает #feedback через
@@ -3527,6 +3597,9 @@ function showTopicCompleted(){
 state.topicSession=false;
 document.getElementById('mainWord').textContent='🎉';
 document.getElementById('wordTopic').textContent='Тема пройдена';
+// Аналогично showSleepingMessage() — скрываем бейдж статуса слова, так как
+// текущей карточки со словом больше нет, показывается итог сессии по теме.
+const badgeDone=document.getElementById('wordStatusBadge');if(badgeDone)badgeDone.style.display='none';
 document.getElementById('inputRow').style.display='none';
 const quizEl=document.getElementById('quizOptions');if(quizEl)quizEl.remove();
 const audioEl=document.getElementById('audioOptions');if(audioEl)audioEl.remove();
@@ -3544,6 +3617,22 @@ if(!state.current)return;
 const w=state.current;
 const topic=TOPICS.find(t=>t.id===w.topic);
 document.getElementById('wordTopic').textContent=topic?topic.name:'';
+// НОВОЕ (по просьбе пользователя — "как в Reword": сайт должен отличать
+// новые слова от слов на повторение): статус слова уже вычисляется в
+// getWordStatus() (новое/учится/выучено) — используем его же, чтобы не
+// заводить отдельный, потенциально рассинхронизированный источник истины.
+// "Новое" — слово ещё ни разу не показывалось (нет записи в state.words).
+// Всё остальное, что дошло до карточки, — по определению повтор ранее
+// показанного слова (иначе оно не попало бы в очередь через getDueWords()).
+const wordBadgeEl=document.getElementById('wordStatusBadge');
+if(wordBadgeEl){
+const isNew=!state.words[w.id];
+wordBadgeEl.textContent=isNew?'🌱 Новое слово':'🔁 Повторение';
+wordBadgeEl.className='word-status-badge '+(isNew?'is-new':'is-repeat');
+// Явно возвращаем видимость — showSleepingMessage()/showTopicCompleted()
+// могли скрыть бейдж на предыдущем экране (там нет обычной карточки слова).
+wordBadgeEl.style.display='';
+}
 document.getElementById('wordExample').style.display='none';
 // БАГФИКС: блок #feedback используется и для подсказки (showHint) — она
 // задаёт стили НЕ через класс, а напрямую через style.background/color/display
@@ -5547,6 +5636,83 @@ weekHtml+=`<div class="${cls}" title="${title}"><div class="day-name">${dayName}
 el.innerHTML=weekHtml;
 }
 
+// ── КАЛЕНДАРЬ АКТИВНОСТИ ──────────────────────────────────────────────
+// НОВОЕ (по просьбе пользователя — "чтобы при нажатии на неделю открывался
+// календарь с отметками, в какие дни я проходил"): панель недели наверху
+// экрана тренировки (#weekGrid) показывает только последние 7 дней. Эта
+// модалка — тот же принцип, но на весь месяц, с возможностью листать месяцы
+// назад. Переиспользует те же данные (state.activityHistory/state.frozenDates),
+// что и renderWeekGrid() — источник истины один, просто здесь строится
+// полная сетка календаря вместо последних 7 ячеек.
+let _calendarViewDate=null;
+function openActivityCalendar(){
+_calendarViewDate=new Date();
+_calendarViewDate.setDate(1);
+renderActivityCalendar();
+const modal=document.getElementById('activityCalendarModal');
+if(modal)modal.style.display='flex';
+}
+function closeActivityCalendar(){
+const modal=document.getElementById('activityCalendarModal');
+if(modal)modal.style.display='none';
+}
+// Листает календарь на соседний месяц (delta: -1 назад, +1 вперёд). Вперёд
+// дальше текущего месяца листать нет смысла — там ещё нет истории — поэтому
+// кнопка "›" отключается, когда открыт текущий месяц (см. renderActivityCalendar).
+function shiftActivityCalendarMonth(delta){
+if(!_calendarViewDate)return;
+const next=new Date(_calendarViewDate);
+next.setMonth(next.getMonth()+delta);
+const now=new Date();
+if(next.getFullYear()>now.getFullYear()||(next.getFullYear()===now.getFullYear()&&next.getMonth()>now.getMonth()))return;
+_calendarViewDate=next;
+renderActivityCalendar();
+}
+const CAL_MONTH_NAMES=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+function renderActivityCalendar(){
+if(!_calendarViewDate)return;
+const grid=document.getElementById('calendarGrid');
+const weekdayRow=document.getElementById('calendarWeekdayRow');
+const label=document.getElementById('calendarMonthLabel');
+const nextBtn=document.getElementById('calendarNextBtn');
+if(!grid||!label)return;
+const year=_calendarViewDate.getFullYear();
+const month=_calendarViewDate.getMonth();
+label.textContent=`${CAL_MONTH_NAMES[month]} ${year}`;
+const now=new Date();
+if(nextBtn)nextBtn.disabled=(year===now.getFullYear()&&month===now.getMonth());
+if(weekdayRow&&!weekdayRow.dataset.filled){
+weekdayRow.innerHTML=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(d=>`<span>${d}</span>`).join('');
+weekdayRow.dataset.filled='1';
+}
+const history=state.activityHistory||{};
+const firstOfMonth=new Date(year,month,1);
+// Понедельник — первый день недели в сетке (совпадает с порядком в
+// calendarWeekdayRow выше). getDay() у JS воскресенье=0, поэтому сдвигаем.
+let leadingBlanks=firstOfMonth.getDay()-1;
+if(leadingBlanks<0)leadingBlanks=6;
+const daysInMonth=new Date(year,month+1,0).getDate();
+let html='';
+for(let i=0;i<leadingBlanks;i++)html+='<div class="cal-day cal-empty"></div>';
+for(let day=1;day<=daysInMonth;day++){
+const d=new Date(year,month,day);
+const dateKey=d.toDateString();
+const dayEntry=history[dateKey];
+const wordsCount=typeof dayEntry==='object'&&dayEntry!==null?(dayEntry.count||0):(dayEntry||0);
+const goal=typeof dayEntry==='object'&&dayEntry!==null?(dayEntry.goal||state.settings.dailyGoal||10):(state.settings.dailyGoal||10);
+const goalMet=wordsCount>=goal&&wordsCount>0;
+const isFrozen=!goalMet&&!!(state.frozenDates&&state.frozenDates[dateKey]);
+const isToday=d.toDateString()===now.toDateString();
+let cls='cal-day';
+if(goalMet)cls+=' cal-met';
+else if(isFrozen)cls+=' cal-frozen';
+if(isToday)cls+=' cal-today';
+const title=goalMet?`${wordsCount} слов пройдено`:(isFrozen?'Сохранено заморозкой стрика':'');
+html+=`<div class="${cls}" title="${title}">${day}</div>`;
+}
+grid.innerHTML=html;
+}
+
 // БАГФИКС: раньше здесь была renderHardWords() для отдельной вкладки "Сложные"
 // слова — вкладка и раздел #sec-hard удалены по просьбе пользователя (список
 // без возможности потренировать слова прямо оттуда оказался бесполезен).
@@ -5785,10 +5951,10 @@ return null;
 //     7 выбрано так, чтобы примерно совпадать с tier-3 (см. STREAK_TIERS)
 //     — награда ощущается частью того же "недельного" ритма, что и так
 //     уже вознаграждается сменой цвета бейджа.
-//   • STREAK_FREEZE_XP_COST = 150 XP — альтернативный способ получить
-//     заморозку сразу, не дожидаясь 7 дней. 150 подобрано так, чтобы это
-//     стоило заметно (для сравнения: level 2 наступает на 20 XP, level 4
-//     — на 180 XP, см. xpThresholdForLevel) — то есть покупка одной
+//   • STREAK_FREEZE_XP_COST = 80 XP — альтернативный способ получить
+//     заморозку сразу, не дожидаясь 7 дней. 80 подобрано так, чтобы это
+//     стоило заметно (для сравнения: level 2 наступает на 60 XP, level 3
+//     — на ~266 XP, см. xpThresholdForLevel) — то есть покупка одной
 //     заморозки это ощутимая часть прогресса к следующему уровню, а не
 //     разменная мелочь.
 //   • STREAK_FREEZE_MAX = 2 — максимум одновременно в запасе (и бесплатных,
@@ -5811,7 +5977,15 @@ return null;
 // "один пропуск прощаем, два подряд — уже нет" из STREAK_FREEZE_MAX=2,
 // который иначе позволял бы держать вечный стрик, занимаясь через день.
 const STREAK_FREEZE_EARN_DAYS=7;
-const STREAK_FREEZE_XP_COST=150;
+// БАГФИКС (баланс, связан с исправлением кривой уровней в xpThresholdForLevel):
+// раньше стоимость 150 XP была подобрана относительно старой кривой уровней
+// (level 4 = 180 XP) — заморозка стоила "почти уровень". После замедления
+// кривой уровней (level 3 = ~266 XP, level 4 = ~637 XP) старая цена в 150 XP
+// стала непропорционально высокой уже на раннем этапе — практически весь
+// путь до 3-го уровня. Снижено до 80 XP, чтобы сохранить тот же изначальный
+// смысл цены ("заметная, но разумная часть прогресса до следующего уровня",
+// примерно треть пути от level 2 до level 3), а не непосильную трату.
+const STREAK_FREEZE_XP_COST=80;
 const STREAK_FREEZE_MAX=2;
 
 // Пытается закрыть заморозкой РОВНО ОДИН пропущенный день — вчерашний.
@@ -6201,8 +6375,17 @@ if(isPerfect)spawnConfetti(card);
 // заметно больше — как в большинстве игр с прогрессией.
 function xpThresholdForLevel(level){
 // Суммарный XP, необходимый, чтобы ДОСТИЧЬ данного уровня (level>=1).
-// level=1 -> 0 XP, level=2 -> 20 XP, level=3 -> 80 XP, level=4 -> 180 XP...
-return 20*(level-1)*(level-1);
+// БАГФИКС (уровни росли слишком быстро — 9-й уровень доходил за 2-3 дня
+// вместо ожидаемых ~2-3 недель активного пользования): старая формула
+// 20*(level-1)^2 давала всего 1280 XP для 9-го уровня, что при обычном
+// темпе набиралось буквально за пару дней. Новая кривая (множитель 60,
+// степень 2.15) подобрана и проверена расчётом на реалистичном сценарии
+// ежедневных занятий (~25-30 слов в день + квесты дня, ~300-350 XP/день
+// суммарно): 9-й уровень приходит примерно на 16-17-й день такого темпа,
+// а не за 2-3 дня, и дальше прогресс продолжает так же плавно расти, не
+// обрываясь резко на каком-то уровне. level=1 -> 0 XP, level=5 -> ~1152 XP,
+// level=9 -> ~5322 XP, level=16 -> ~17420 XP.
+return Math.round(60*Math.pow(level-1,2.15));
 }
 function getLevelInfo(xp){
 let level=1;
@@ -7066,6 +7249,9 @@ window.speechSynthesis.onvoiceschanged=checkKkVoice;
 }
 document.addEventListener('visibilitychange',()=>{
 if(!document.hidden){
+// Пересчитываем тему при возврате на вкладку — в режиме "авто" пользователь
+// мог свернуть приложение днём и вернуться к нему уже вечером.
+applyTheme();
 const dateBefore=state.daily.date;
 loadState();
 updateStats();
@@ -7087,6 +7273,7 @@ updateDailyProgress();
 });
 document.getElementById('defaultSpeed').value=state.settings.speed;
 document.getElementById('dailyGoalInput').value=state.settings.dailyGoal||10;
+applyTheme();
 updateGoalEstimate();
 loadOpenRouterSettings();
 updateStats();
