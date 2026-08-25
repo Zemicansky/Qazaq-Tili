@@ -262,7 +262,29 @@ header{
    (см. .streak-popover ниже и renderXpPopover(), который теперь пишет свою
    секцию в тот же контейнер #streakPopover). */
 .combo-sep{width:1px;height:16px;background:rgba(255,255,255,.18);margin:0 .1rem;flex-shrink:0}
-.combo-badge .xp-star{font-size:.85rem;line-height:1;filter:drop-shadow(0 0 3px rgba(255,210,80,.6))}
+/* ЗАДАЧА 1 (индикатор уровня в шапке): звезда получила такой же круглый
+   медальон с кольцом прогресса, как .fire-ring у стрика (тот же приём —
+   conic-gradient через CSS-переменную, здесь --xp-ring, которую выставляет
+   updateXpDisplay() инлайн-стилем на #xpLevelHint). Отличие от fire-ring —
+   кольцо показывает % прогресса ДО СЛЕДУЮЩЕГО уровня (getLevelInfo(xp).pct),
+   а не % выполнения дневной цели. Акцентный цвет — фиолетовый (--xp-ring-a),
+   а не оранжевый тир-цвет стрика, чтобы два кольца визуально не путались
+   между собой при беглом взгляде на бейдж. */
+.xp-ring{
+  --xp-ring:0deg;
+  --xp-ring-a:#a78bff;
+  position:relative;
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  background:conic-gradient(var(--xp-ring-a) var(--xp-ring),rgba(255,255,255,.14) 0);
+  transition:background .5s ease;
+}
+.xp-ring::before{
+  content:'';position:absolute;inset:2.5px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.1),rgba(0,0,0,.18));
+}
+.combo-badge .xp-star{position:relative;z-index:1;font-size:.72rem;line-height:1;filter:drop-shadow(0 0 3px rgba(255,210,80,.6))}
 /* БАГФИКС (плохо видно уровень в светлой теме — см. скриншот пользователя):
    цифра уровня была окрашена в var(--text) — это ОСНОВНОЙ ТЕКСТОВЫЙ цвет
    темы (тёмный в светлой теме, светлый в тёмной), а не цвет, подобранный

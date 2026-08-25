@@ -242,7 +242,15 @@
         <span class="fire-ring"><span class="fire">🔥</span></span>
         <span class="days" id="streakDays">0</span>
         <span class="combo-sep"></span>
-        <span class="xp-star">⭐</span>
+        <!-- ЗАДАЧА 1 (индикатор уровня): звезда теперь в собственном круглом
+             медальоне с кольцом прогресса, по аналогии с .fire-ring слева —
+             см. .xp-ring в style.css и обновление --xp-ring в updateXpDisplay()
+             (app.js). В отличие от fire-ring (% выполнения дневной цели),
+             здесь кольцо показывает % прогресса ДО СЛЕДУЮЩЕГО уровня
+             (getLevelInfo(xp).pct). Текстовое число уровня осталось рядом —
+             просто теперь с визуальным контекстом, а не голой цифрой. title
+             на xp-часть добавлен ниже через id="xpLevelHint". -->
+        <span class="xp-ring" id="xpLevelHint"><span class="xp-star">⭐</span></span>
         <span class="xp-lvl" id="xpLevelLabel">1</span>
         <div id="streakPopover" class="streak-popover" onclick="event.stopPropagation()"></div>
       </div>
@@ -345,6 +353,19 @@
       <div class="mode-tabs-compact" id="modeTabsCompact">
         <button class="mode-tab-c active" id="modeA" onclick="setMode('A')">Рус→Каз</button>
         <button class="mode-tab-c" id="modeB" onclick="setMode('B')">Каз→Рус</button>
+        <!-- ВРЕМЕННО СКРЫТО: режим C ("На слух") убран из UI из-за отсутствия
+             качественного голоса озвучки — для будущих обновлений, когда
+             будет качественный TTS-голос, эту кнопку нужно просто раскомментировать
+             обратно. Сама функциональность режима (renderAudioOptions, checkAudio,
+             awardAudioQuestProgress и т.д. в app.js) не удалена и не тронута —
+             она просто становится недостижимой без этой кнопки, так же, как
+             это уже однажды было описано в старом БАГФИКС-комментарии ниже
+             (оставлен для истории). Соответствующая миграция state.mode==='C'->'A'
+             в loadState() возвращена по той же причине (см. app.js). Квест дня
+             "3 верных ответа «На слух»" временно исключён из QUEST_POOL
+             (см. app.js), чтобы не выпадал недостижимым, пока кнопка скрыта.
+        <button class="mode-tab-c" id="modeC" onclick="setMode('C')">На слух</button>
+        -->
         <!-- БАГФИКС (квест дня "На слух" был недостижим): кнопка режима C
              ("На слух") отсутствовала в разметке, хотя вся логика режима
              (renderAudioOptions, checkAudio, awardAudioQuestProgress и т.д.)
@@ -352,8 +373,7 @@
              пользователь не мог физически попасть в режим, и связанный
              квест дня "3 верных ответа «На слух»" застревал на 0/3 навсегда.
              См. также подробный комментарий в loadState() рядом с этим же
-             багом. -->
-        <button class="mode-tab-c" id="modeC" onclick="setMode('C')">На слух</button>
+             багом. (Кнопка временно скрыта заново — см. комментарий выше.) -->
       </div>
     </div>
 
