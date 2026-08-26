@@ -4,6 +4,67 @@
 // HTML / CSS / JS (см. README.md, раздел "Структура проекта").
 // ============================================================
 
+// ── ICON SYSTEM (редизайн, см. REDESIGN_PROMPT.md, Шаг 3) ──────────
+// Раньше UI-хром (иконки достижений, кнопок, бейджей статуса, индикатора
+// стрика) собирался из emoji: они по-разному рендерятся в разных ОС и
+// браузерах, разного стиля друг с другом (одни плоские, другие цветные),
+// не масштабируются и не поддерживают состояние hover/active/disabled.
+// Ниже — единый набор inline SVG-иконок одного стиля (outline, толщина
+// линии 1.75, сетка 24×24, цвет через currentColor — иконка сама
+// подхватывает тему). ICONS — карта "имя" → SVG-разметка;
+// icon(name, cls) возвращает готовую строку для innerHTML/шаблонов.
+// Emoji внутри учебного контента (примеры фраз в карточках объяснений,
+// чат) НЕ входят в эту систему и оставлены как есть — это часть контента,
+// а не интерфейса.
+const ICONS={
+  fire:'<path d="M12 2c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1-.5-2-1-2 .5 2-.5 3-2 3-2 0-2.5-1.5-1.5-3.5C14.5 4.5 13 2.5 12 2z"/><path d="M8.5 11.5C7 13 6 15 6 17a6 6 0 0 0 12 0c0-1.5-.5-3-1.5-4"/>',
+  star:'<path d="M12 3l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.1 6.1-.6z"/>',
+  sprout:'<path d="M12 21V11"/><path d="M12 11C12 7 9 5 5 5c0 4 3 7 7 7z"/><path d="M12 11c0-3.5 2.5-5.5 6-5.5-.3 3.7-2.7 6-6 6"/>',
+  check:'<path d="M4 12.5l5 5.5L20 6"/>',
+  close:'<path d="M5 5l14 14M19 5L5 19"/>',
+  volume:'<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 19H6.5A2.5 2.5 0 0 0 4 21.5"/>',
+  puzzle:'<path d="M9 3h4v3.2a2 2 0 0 0 3.6 1.2L18 6h3v4h-3.2a2 2 0 0 0-1.2 3.6L18 15v3h-4v-3.2a2 2 0 0 0-3.6-1.2L9 15H6v-4h3.2a2 2 0 0 0 1.2-3.6L9 6z"/>',
+  hand:'<path d="M8 13V6a1.5 1.5 0 0 1 3 0v5"/><path d="M11 11V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M14 11.5V6a1.5 1.5 0 0 1 3 0v7"/><path d="M17 12v-.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.4L4 15c-.6-1 .2-2.3 1.4-2.1.5.1 1 .4 1.3.9l1.3 2"/>',
+  undo:'<path d="M9 14l-4-4 4-4"/><path d="M5 10h9a6 6 0 0 1 0 12h-1"/>',
+  arrowRight:'<path d="M5 12h14"/><path d="M13 6l6 6-6 6"/>',
+  arrowUp:'<path d="M12 19V5"/><path d="M6 11l6-6 6 6"/>',
+  bolt:'<path d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
+  download:'<path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/>',
+  upload:'<path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M5 3h14"/>',
+  edit:'<path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M13.5 6.5l3 3"/>',
+  keyboard:'<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h12"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6" fill="currentColor" stroke="none"/>',
+  celebrate:'<path d="M4 20l5-1 9.5-9.5a2.1 2.1 0 0 0-3-3L6 16l-1 5z"/><path d="M15 5l1 1M18 3l1 1M13 3l1 1"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/>',
+  warning:'<path d="M12 4L2.5 20h19z"/><path d="M12 10v4"/><path d="M12 17h.01"/>',
+  snowflake:'<path d="M12 2v20M4.5 7l15 10M19.5 7l-15 10"/>',
+  home:'<path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-6h4v6"/>',
+  leaf:'<path d="M5 12C5 6 9 3 19 3c0 10-3 14-9 14-2 0-3-1-3-1"/><path d="M5 21c0-4 2-7 5-9"/>',
+  heart:'<path d="M12 20s-7-4.5-9.5-9C1 7.5 2.5 4 6 4c2 0 3.5 1.2 4.2 2.3.2.3.6.3.8 0C11.7 5.2 13.2 4 15.2 4c3.5 0 5 3.5 3.5 7-2.5 4.5-9.5 9-9.5 9z"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a13 13 0 0 1 0 18M12 3a13 13 0 0 0 0 18"/>',
+  chat:'<path d="M4 4h16v11H8l-4 4V4z"/>',
+  cap:'<path d="M2 9l10-4 10 4-10 4-10-4z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>',
+  moon:'<path d="M20 14a8 8 0 1 1-8.5-9.5A6.5 6.5 0 0 0 20 14z"/>',
+  refresh:'<path d="M3 10a9 9 0 0 1 15.5-6.2L21 6"/><path d="M21 3v5h-5"/><path d="M21 14a9 9 0 0 1-15.5 6.2L3 18"/><path d="M3 21v-5h5"/>',
+  trophy:'<path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 21h6M10 17h4v4h-4z"/>',
+  crown:'<path d="M3 8l4 3 5-6 5 6 4-3-2 10H5z"/><path d="M5 18h14"/>',
+  medal:'<circle cx="12" cy="15" r="6"/><path d="M9 4h6l-2 8h-2z"/><path d="M12 12v3"/>',
+  run:'<circle cx="15.5" cy="4.5" r="1.6"/><path d="M11 21l2-5-3-2 1-5 4 1 2 4 3 1"/><path d="M9 10L5 12l1 4"/>',
+  rocket:'<path d="M12 2c3 1 6 4 6 9 0 3-1.5 5.5-2.5 7l-3.5-1-3.5 1c-1-1.5-2.5-4-2.5-7 0-5 3-8 6-9z"/><circle cx="12" cy="10" r="1.8"/><path d="M9 17l-2 4 4-1M15 17l2 4-4-1"/>',
+  muscle:'<path d="M4 14c0-3 2-5 4-5h2l6-3 3 3-2 2v3a4 4 0 0 1-4 4H8l-4-4z"/>',
+  hundred:'<circle cx="12" cy="12" r="9"/><path d="M8 9v6M8 9c1.5 0 2 1 2 3s-.5 3-2 3M15 9v6M15 9c1.5 0 2 1 2 3s-.5 3-2 3"/>',
+  calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/>',
+  robot:'<rect x="4" y="8" width="16" height="11" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><circle cx="9" cy="13" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.2" fill="currentColor" stroke="none"/><path d="M9 17h6"/>',
+};
+function icon(name,cls){
+  const body=ICONS[name];
+  if(!body)return'';
+  return`<svg class="icon${cls?' '+cls:''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+}
+
 // Счётчик запросов внешнего словаря — используется fetchExternalDict() для
 // защиты от гонки при быстром вводе в поиске (см. подробный комментарий там).
 let dictRequestCounter=0;
@@ -88,6 +149,14 @@ function saveThemeMode(){
   // вкладка/PWA останется открытой на границе дня/вечера (например ровно
   // в 19:00) без перезагрузки страницы.
   setInterval(()=>{if(getThemePref()==='auto')applyTheme()},5*60*1000);
+  // БАГФИКС: фоновые вкладки браузер может "замораживать" (таймеры почти не
+  // тикают), поэтому таймер выше иногда не успевает пересчитать тему за то
+  // время, что вкладка была свернута — например, открыли днём, свернули,
+  // а вернулись уже поздно вечером. Пересчитываем тему сразу при возврате
+  // фокуса/видимости на вкладку, не дожидаясь очередного тика таймера.
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'&&getThemePref()==='auto')applyTheme();
+  });
 })();
 
 const TOPICS=[
@@ -2703,7 +2772,9 @@ const DIALOGUES=[
 ];
 
 // ── УПРАЖНЕНИЕ "СОБЕРИ ПРЕДЛОЖЕНИЕ" ──────────────────────────────────────
-// 25 предложений (id 1-20 — исходный набор, id 21-25 добавлены позже),
+// 110 предложений (id 1-105 — исходный набор, id 106-110 добавлены позже
+// в том же стиле: A2-B1, повседневная бытовая тематика — парк, подарок,
+// уборка дома, работа с клиентом, переписка),
 // составленных и вручную выверенных отдельно от базы
 // WORDS — намеренно НЕ берём example_kz у слов автоматически: часть
 // example_kz в базе на самом деле короткие словосочетания без сказуемого
@@ -2820,7 +2891,12 @@ const SENTENCE_BUILDER=[
 {id:102,kz:"Біз ертең базарға барамыз.",ru:"Мы завтра пойдём на рынок."},
 {id:103,kz:"Кешкі ас әлі дайын емес.",ru:"Ужин ещё не готов."},
 {id:104,kz:"Шай ішесің бе, әлде кофе ме?",ru:"Ты выпьешь чай, или кофе?"},
-{id:105,kz:"Терезені жабыңызшы, суық өтіп тұр.",ru:"Закройте, пожалуйста, окно, дует холодом."}
+{id:105,kz:"Терезені жабыңызшы, суық өтіп тұр.",ru:"Закройте, пожалуйста, окно, дует холодом."},
+{id:106,kz:"Мен жаңа қала паркінде серуендедім.",ru:"Я гулял в новом городском парке."},
+{id:107,kz:"Ол досына туған күнге сыйлық таңдады.",ru:"Он выбрал другу подарок на день рождения."},
+{id:108,kz:"Біз демалыс күні үйде тазалық жасаймыз.",ru:"Мы делаем уборку дома в выходной день."},
+{id:109,kz:"Қызметкер клиентке бағаны нақты айтты.",ru:"Сотрудник точно назвал клиенту цену."},
+{id:110,kz:"Ол кешке дейін жауап жазады.",ru:"Он напишет ответ до вечера."}
 ];
 
 // ──────────────────────────────────────────────────────────────────────
@@ -3202,70 +3278,70 @@ const ACHIEVEMENTS=[
 // каждый ответ на слово), пока не разблокируется последняя из них. Теперь
 // checkAchievements() считает learnedCount ОДИН раз и кладёт в context —
 // все 8 проверок здесь просто читают готовое число вместо пересчёта.
-{id:'words_1',icon:'🌱',title:'Первые шаги',description:'Выучите первое слово',check:(state,context)=>context.learnedCount>=1},
-{id:'words_25',icon:'🚀',title:'Разгон',description:'Выучите 25 слов',check:(state,context)=>context.learnedCount>=25},
-{id:'words_50',icon:'💪',title:'Уверенный старт',description:'Выучите 50 слов',check:(state,context)=>context.learnedCount>=50},
-{id:'words_100',icon:'💯',title:'Полтишок',description:'Выучите 100 слов',check:(state,context)=>context.learnedCount>=100},
-{id:'words_250',icon:'🎯',title:'Четверть пути',description:'Выучите 250 слов',check:(state,context)=>context.learnedCount>=250},
-{id:'words_500',icon:'🏅',title:'Полтысячи',description:'Выучите 500 слов',check:(state,context)=>context.learnedCount>=500},
-{id:'words_1000',icon:'🏆',title:'Тысяча',description:'Выучите 1000 слов',check:(state,context)=>context.learnedCount>=1000},
-{id:'words_2000',icon:'👑',title:'Полиглот',description:'Выучите 2000 слов',check:(state,context)=>context.learnedCount>=2000},
+{id:'words_1',icon:'sprout',title:'Первые шаги',description:'Выучите первое слово',check:(state,context)=>context.learnedCount>=1},
+{id:'words_25',icon:'rocket',title:'Разгон',description:'Выучите 25 слов',check:(state,context)=>context.learnedCount>=25},
+{id:'words_50',icon:'muscle',title:'Уверенный старт',description:'Выучите 50 слов',check:(state,context)=>context.learnedCount>=50},
+{id:'words_100',icon:'hundred',title:'Полтишок',description:'Выучите 100 слов',check:(state,context)=>context.learnedCount>=100},
+{id:'words_250',icon:'target',title:'Четверть пути',description:'Выучите 250 слов',check:(state,context)=>context.learnedCount>=250},
+{id:'words_500',icon:'medal',title:'Полтысячи',description:'Выучите 500 слов',check:(state,context)=>context.learnedCount>=500},
+{id:'words_1000',icon:'trophy',title:'Тысяча',description:'Выучите 1000 слов',check:(state,context)=>context.learnedCount>=1000},
+{id:'words_2000',icon:'crown',title:'Полиглот',description:'Выучите 2000 слов',check:(state,context)=>context.learnedCount>=2000},
 // БАГФИКС-ПРЕДОТВРАЩЕНИЕ: используем WORDS.length, а не хардкод 2533 — база
 // слов может измениться (добавятся/удалятся слова), и достижение "выучено всё"
 // должна следовать за реальным размером базы, а не за числом на момент
 // написания этого кода.
-{id:'words_all',icon:'📖',title:'Словарь наизусть',description:'Выучите все слова из базы',check:(state,context)=>context.learnedCount>=WORDS.length},
+{id:'words_all',icon:'book',title:'Словарь наизусть',description:'Выучите все слова из базы',check:(state,context)=>context.learnedCount>=WORDS.length},
 // ── Группа 2: стрик дней ──────────────────────────────────────────────
 // Намеренно читаем state.streak (текущий), а НЕ state.bestStreak — достижение
 // должна засчитываться в момент реального достижения этого стрика, а не
 // задним числом при простом падении стрика после уже случившегося рекорда.
-{id:'streak_3',icon:'🔥',title:'Разогрелся',description:'Стрик 3 дня подряд',check:(state)=>(state.streak||0)>=3},
-{id:'streak_7',icon:'🔥',title:'Неделя силы',description:'Стрик 7 дней подряд',check:(state)=>(state.streak||0)>=7},
-{id:'streak_30',icon:'🔥',title:'Месяц дисциплины',description:'Стрик 30 дней подряд',check:(state)=>(state.streak||0)>=30},
-{id:'streak_100',icon:'🔥',title:'Несгибаемый',description:'Стрик 100 дней подряд',check:(state)=>(state.streak||0)>=100},
-{id:'streak_365',icon:'🔥',title:'Год языка',description:'Стрик 365 дней подряд',check:(state)=>(state.streak||0)>=365},
+{id:'streak_3',icon:'fire',title:'Разогрелся',description:'Стрик 3 дня подряд',check:(state)=>(state.streak||0)>=3},
+{id:'streak_7',icon:'fire',title:'Неделя силы',description:'Стрик 7 дней подряд',check:(state)=>(state.streak||0)>=7},
+{id:'streak_30',icon:'fire',title:'Месяц дисциплины',description:'Стрик 30 дней подряд',check:(state)=>(state.streak||0)>=30},
+{id:'streak_100',icon:'fire',title:'Несгибаемый',description:'Стрик 100 дней подряд',check:(state)=>(state.streak||0)>=100},
+{id:'streak_365',icon:'fire',title:'Год языка',description:'Стрик 365 дней подряд',check:(state)=>(state.streak||0)>=365},
 // ── Группа 3: тематические блоки ───────────────────────────────────────
 // Каждое достижение проверяет, что ВСЕ слова из перечисленных тем выучены —
 // achievementTopicsLearned() ниже делает эту проверку по списку topic-id.
-{id:'topics_byt',icon:'🏠',title:'Быт и город',description:'Выучите все слова тем «Город и транспорт», «Покупки и услуги», «Быт и дом», «Интернет и техника»',check:(state)=>achievementTopicsLearned(['city','shop','home','tech'])},
-{id:'topics_body',icon:'🌿',title:'Тело и природа',description:'Выучите все слова тем «Здоровье и тело», «Движение и состояние», «Природа и погода»',check:(state)=>achievementTopicsLearned(['health','movement','nature'])},
-{id:'topics_people',icon:'❤️',title:'Люди и чувства',description:'Выучите все слова тем «Эмоции и отношения», «Семья и люди»',check:(state)=>achievementTopicsLearned(['emotion','family'])},
-{id:'topics_work',icon:'💼',title:'Работа и учёба',description:'Выучите все слова тем «Работа и бизнес», «Учёба и знания»',check:(state)=>achievementTopicsLearned(['work','education'])},
-{id:'topics_world',icon:'🌍',title:'Мир вокруг',description:'Выучите все слова тем «Путешествия», «Спорт и отдых», «Время и числа»',check:(state)=>achievementTopicsLearned(['travel','sport','time'])},
-{id:'topics_speech',icon:'💬',title:'Живая речь',description:'Выучите все слова тем «Еда и кафе», «Повседневная разговорная речь»',check:(state)=>achievementTopicsLearned(['food','daily'])},
+{id:'topics_byt',icon:'home',title:'Быт и город',description:'Выучите все слова тем «Город и транспорт», «Покупки и услуги», «Быт и дом», «Интернет и техника»',check:(state)=>achievementTopicsLearned(['city','shop','home','tech'])},
+{id:'topics_body',icon:'leaf',title:'Тело и природа',description:'Выучите все слова тем «Здоровье и тело», «Движение и состояние», «Природа и погода»',check:(state)=>achievementTopicsLearned(['health','movement','nature'])},
+{id:'topics_people',icon:'heart',title:'Люди и чувства',description:'Выучите все слова тем «Эмоции и отношения», «Семья и люди»',check:(state)=>achievementTopicsLearned(['emotion','family'])},
+{id:'topics_work',icon:'briefcase',title:'Работа и учёба',description:'Выучите все слова тем «Работа и бизнес», «Учёба и знания»',check:(state)=>achievementTopicsLearned(['work','education'])},
+{id:'topics_world',icon:'globe',title:'Мир вокруг',description:'Выучите все слова тем «Путешествия», «Спорт и отдых», «Время и числа»',check:(state)=>achievementTopicsLearned(['travel','sport','time'])},
+{id:'topics_speech',icon:'chat',title:'Живая речь',description:'Выучите все слова тем «Еда и кафе», «Повседневная разговорная речь»',check:(state)=>achievementTopicsLearned(['food','daily'])},
 // Формально почти равносильна words_all, но оставлена отдельным достижением по
 // просьбе из ТЗ — психологически это разные вехи (одна про "закрыл все
 // темы по списку", другая про "выучил вообще все слова").
-{id:'topics_all',icon:'🎓',title:'Всё выучено',description:'Выучите все слова из всех тем',check:(state)=>achievementTopicsLearned(TOPICS.map(t=>t.id))},
+{id:'topics_all',icon:'cap',title:'Всё выучено',description:'Выучите все слова из всех тем',check:(state)=>achievementTopicsLearned(TOPICS.map(t=>t.id))},
 // ── Группа 4: диалоги ───────────────────────────────────────────────
-{id:'dialogues_1',icon:'🗨️',title:'Первый диалог',description:'Пройдите первый диалог',check:(state)=>Object.keys(state.dialogueState).filter(k=>state.dialogueState[k]).length>=1},
-{id:'dialogues_25',icon:'🗨️',title:'Полдиалога',description:'Пройдите 25 диалогов',check:(state)=>Object.keys(state.dialogueState).filter(k=>state.dialogueState[k]).length>=25},
-{id:'dialogues_all',icon:'🗨️',title:'Мастер диалогов',description:'Пройдите все диалоги',check:(state)=>Object.keys(state.dialogueState).filter(k=>state.dialogueState[k]).length>=DIALOGUES.length},
+{id:'dialogues_1',icon:'chat',title:'Первый диалог',description:'Пройдите первый диалог',check:(state)=>Object.keys(state.dialogueState).filter(k=>state.dialogueState[k]).length>=1},
+{id:'dialogues_25',icon:'chat',title:'Полдиалога',description:'Пройдите 25 диалогов',check:(state)=>Object.keys(state.dialogueState).filter(k=>state.dialogueState[k]).length>=25},
+{id:'dialogues_all',icon:'chat',title:'Мастер диалогов',description:'Пройдите все диалоги',check:(state)=>Object.keys(state.dialogueState).filter(k=>state.dialogueState[k]).length>=DIALOGUES.length},
 // ── Группа 5: поведенческие ──────────────────────────────────────────
 // night_owl и marathon проверяются ТОЛЬКО в момент ответа на слово
 // (context.justAnsweredWord) — иначе, например, простое открытие вкладки
 // "Статистика" ночью могло бы засчитать "ночную сову", хотя пользователь
 // в этот момент не отвечал ни на одно слово.
-{id:'night_owl',icon:'🌙',title:'Ночная сова',description:'Ответьте на слово между 00:00 и 04:59',check:(state,context)=>!!(context&&context.justAnsweredWord)&&new Date().getHours()>=0&&new Date().getHours()<=4},
+{id:'night_owl',icon:'moon',title:'Ночная сова',description:'Ответьте на слово между 00:00 и 04:59',check:(state,context)=>!!(context&&context.justAnsweredWord)&&new Date().getHours()>=0&&new Date().getHours()<=4},
 // Упрощение по ТЗ: строгая проверка разрыва именно в 3+ календарных дня
 // через activityHistory сознательно не делается — state.streak физически
 // не может стать 1 без разрыва серии, поэтому streak===1 && bestStreak>=7
 // уже достаточно точно совпадает с намерением достижения на практике.
-{id:'comeback',icon:'🔄',title:'С возвращением',description:'Начните стрик заново после серьёзного перерыва (был стрик 7+ дней)',check:(state)=>state.streak===1&&(state.bestStreak||0)>=7},
+{id:'comeback',icon:'refresh',title:'С возвращением',description:'Начните стрик заново после серьёзного перерыва (был стрик 7+ дней)',check:(state)=>state.streak===1&&(state.bestStreak||0)>=7},
 // НЕ проверяется через общий checkAchievements() — разблокируется отдельным
 // явным вызовом прямо в consumeStreakFreezeIfNeeded() в момент реальной
 // траты заморозки (см. комментарий там). check() здесь оставлен как
 // смысловое описание условия — на случай, если кто-то в будущем всё же
 // вызовет checkAchievements() и естественно "доловит" это достижение, если оно
 // почему-то ещё не разблокирована к этому моменту.
-{id:'freeze_saved',icon:'❄️',title:'Спасён заморозкой',description:'Заморозка впервые спасла ваш стрик',check:(state)=>Object.keys(state.frozenDates||{}).length>=1},
+{id:'freeze_saved',icon:'snowflake',title:'Спасён заморозкой',description:'Заморозка впервые спасла ваш стрик',check:(state)=>Object.keys(state.frozenDates||{}).length>=1},
 // STREAK_FREEZE_MAX объявлена ниже по файлу (константой, рядом с остальной
 // логикой заморозок) — на момент реального ВЫЗОВА check() (после полной
 // загрузки скрипта, из обработчика события) она уже точно проинициализирована,
 // поэтому читать её здесь безопасно, несмотря на то что textually она
 // объявлена позже этого места.
-{id:'freeze_full',icon:'❄️❄️',title:'Коллекционер заморозок',description:'Накопите максимум заморозок одновременно',check:(state)=>(state.streakFreezes||0)>=STREAK_FREEZE_MAX},
-{id:'marathon',icon:'🏃',title:'Марафонец',description:'Дайте 30 верных ответов за один день',check:(state,context)=>!!(context&&context.justAnsweredWord)&&(state.daily.progressCount||0)>=30},
+{id:'freeze_full',icon:'snowflake',title:'Коллекционер заморозок',description:'Накопите максимум заморозок одновременно',check:(state)=>(state.streakFreezes||0)>=STREAK_FREEZE_MAX},
+{id:'marathon',icon:'run',title:'Марафонец',description:'Дайте 30 верных ответов за один день',check:(state,context)=>!!(context&&context.justAnsweredWord)&&(state.daily.progressCount||0)>=30},
 ];
 
 // Вспомогательная функция для группы 3 (тематические блоки): проверяет, что
@@ -3348,7 +3424,7 @@ achievementPopupQueue.push(ach);
 return;
 }
 achievementPopupOpen=true;
-iconEl.textContent=ach.icon;
+iconEl.innerHTML=icon(ach.icon,'icon-xl');
 titleEl.textContent=ach.title;
 descEl.textContent=ach.description;
 modal.style.display='flex';
@@ -3381,7 +3457,7 @@ html+=ACHIEVEMENTS.map(ach=>{
 const unlocked=!!state.unlockedAchievements[ach.id];
 const dateStr=unlocked?new Date(state.unlockedAchievements[ach.id]).toLocaleDateString('ru-RU'):'';
 return`<div class="ach-card ${unlocked?'ach-unlocked':'ach-locked'}">
-<div class="ach-icon">${unlocked?ach.icon:'🔒'}</div>
+<div class="ach-icon">${unlocked?icon(ach.icon,'icon-lg'):icon('lock','icon-lg')}</div>
 <div class="ach-info">
 <div class="ach-title">${escHtml(ach.title)}</div>
 <div class="ach-desc">${escHtml(ach.description)}</div>
@@ -3516,7 +3592,7 @@ showNextWord();
 function showSleepingMessage(){
 const next=Object.values(state.words).filter(w=>w&&typeof w==='object'&&w.nextReview>Date.now()).sort((a,b)=>a.nextReview-b.nextReview)[0];
 const minutesLeft=next?Math.max(1,Math.ceil((next.nextReview-Date.now())/60000)):null;
-document.getElementById('mainWord').textContent='😴';
+document.getElementById('mainWord').innerHTML=icon('moon','icon-xl');
 document.getElementById('wordTopic').textContent='Все слова сейчас отдыхают';
 // Бейдж "Новое слово"/"Повторение" здесь неуместен — карточки со словом
 // нет, показываем только сообщение о том, что все слова сейчас на паузе.
@@ -3598,7 +3674,7 @@ updateStats();
 
 function showTopicCompleted(){
 state.topicSession=false;
-document.getElementById('mainWord').textContent='🎉';
+document.getElementById('mainWord').innerHTML=icon('celebrate','icon-xl');
 document.getElementById('wordTopic').textContent='Тема пройдена';
 // Аналогично showSleepingMessage() — скрываем бейдж статуса слова, так как
 // текущей карточки со словом больше нет, показывается итог сессии по теме.
@@ -3630,7 +3706,7 @@ document.getElementById('wordTopic').textContent=topic?topic.name:'';
 const wordBadgeEl=document.getElementById('wordStatusBadge');
 if(wordBadgeEl){
 const isNew=!state.words[w.id];
-wordBadgeEl.textContent=isNew?'🌱 Новое слово':'🔁 Повторение';
+wordBadgeEl.innerHTML=isNew?icon('sprout')+' Новое слово':icon('refresh')+' Повторение';
 wordBadgeEl.className='word-status-badge '+(isNew?'is-new':'is-repeat');
 // Явно возвращаем видимость — showSleepingMessage()/showTopicCompleted()
 // могли скрыть бейдж на предыдущем экране (там нет обычной карточки слова).
@@ -3700,7 +3776,7 @@ renderChoiceOptions(w,'ru');
 }
 renderInputModeToggle();
 }else if(state.mode==='C'){
-document.getElementById('mainWord').textContent='🔊';
+document.getElementById('mainWord').innerHTML=icon('volume','icon-xl');
 document.getElementById('inputRow').style.display='none';
 if(replayRow){document.getElementById('replayAudioBtn').style.display='inline-block';replayRow.style.display='flex';}
 renderAudioOptions(w);
@@ -3735,7 +3811,7 @@ updateDailyProgress();
 function renderInputModeToggle(){
 const old=document.getElementById('inputModeToggle');
 if(old)old.remove();
-const label=state.cardInputMode==='typing'?'🔤 Выбрать из вариантов':'✏️ Ввести слово вручную';
+const label=state.cardInputMode==='typing'?icon('keyboard')+' Выбрать из вариантов':icon('edit')+' Ввести слово вручную';
 const row=document.getElementById('replayAudioRow');
 if(!row)return;
 row.style.display='flex';
@@ -3795,23 +3871,6 @@ result.push(s.w);
 if(result.length>=count)break;
 }
 return result;
-}
-
-function renderQuizOptions(w){
-const correct=w.ru;
-const others=pickSmartDistractors(w,3,'ru');
-const options=shuffleArray([correct,...others.map(o=>o.ru)].slice(0,4));
-// БАГФИКС: правильный ответ раньше передавался в onclick как HTML/JS-экранированная
-// строка (escHtml) и сравнивался с el.textContent (реальным, НЕэкранированным текстом
-// кнопки в DOM) — для слов с апострофом/кавычкой сравнение расходилось бы и правильный
-// ответ не засчитывался. Теперь правильное значение кладём как есть в data-атрибут
-// (escHtml нужен здесь только для безопасной вставки в HTML-атрибут) и сравниваем
-// el.dataset.value с el.dataset.correct — оба варианта строки, без ручного экранирования.
-const html=options.map(o=>`<button class="quiz-opt" data-value="${escHtml(o)}" data-correct="${escHtml(correct)}" onclick="checkQuiz(this)">${escHtml(o)}</button>`).join('');
-// Remove old quiz options if any before inserting new
-let elQ=document.getElementById('quizOptions');
-if(elQ)elQ.remove();
-document.getElementById('inputRow').insertAdjacentHTML('afterend',`<div id="quizOptions" class="quiz-grid" style="margin-top:.65rem">${html}</div>`);
 }
 
 // Режим "выбор из 4 слов" для режимов тренировки A ("Рус → Каз", field='kz')
@@ -3949,35 +4008,6 @@ const toggleEl=document.getElementById('inputModeToggle');
 if(toggleEl)toggleEl.remove();
 }
 
-function checkQuiz(el){
-if(state.answered)return;
-state.answered=true;
-const correct=el.dataset.correct;
-const isCorrect=el.dataset.value===correct;
-document.querySelectorAll('#quizOptions .quiz-opt').forEach(b=>{
-if(b.dataset.value===correct)b.classList.add('correct-opt');
-else if(b===el&&!isCorrect)b.classList.add('wrong-opt');
-// Кнопки блокируются физически (не только визуально), чтобы после ответа
-// нельзя было кликнуть по другому варианту и запутать себя или состояние.
-b.disabled=true;
-b.style.pointerEvents='none';
-});
-updateWordProgress(state.current.id,isCorrect);
-showFeedback(isCorrect);
-document.getElementById('nextBtn').style.display='inline-block';
-// БАГФИКС: в отличие от checkAnswer()/checkAudio(), здесь забыли скрыть кнопку
-// "Не знаю / Пропустить" после ответа — она оставалась кликабельной поверх уже
-// отвеченного слова (режим "выбор из вариантов" — cardInputMode по умолчанию
-// 'choice', то есть основной сценарий использования тренажёра). Клик по ней
-// молча возвращал уже пройденное слово в конец очереди и убирал его из
-// daily.answeredIds (см. skipWord()) — слово могло появиться в тренировке ещё
-// раз без причины, а прогресс мог задвоиться/сброситься неожиданно для
-// пользователя, который просто промахнулся пальцем.
-const skipBtnQuiz=document.getElementById('skipBtn');
-if(skipBtnQuiz)skipBtnQuiz.style.display='none';
-showStickyNext();
-}
-
 function checkAudio(el){
 if(state.answered)return;
 state.answered=true;
@@ -4033,13 +4063,13 @@ fb.innerHTML=`〜 Почти! Небольшая опечатка. Правил�
 }else if(correct){
 fb.className='feedback correct';
 if(streak>=STREAK_TO_LEARN){
-fb.innerHTML=`✓ Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) 🎉`;
+fb.innerHTML=`${icon('check')} Правильно! Слово выучено (${streak}/${STREAK_TO_LEARN}) ${icon('celebrate')}`;
 }else{
-fb.innerHTML=`✓ Правильно! Прогресс: ${streak}/${STREAK_TO_LEARN}. Слово вернётся позже для проверки.`;
+fb.innerHTML=`${icon('check')} Правильно! Прогресс: ${streak}/${STREAK_TO_LEARN}. Слово вернётся позже для проверки.`;
 }
 }else{
 fb.className='feedback wrong';
-fb.innerHTML=`✗ Неправильно. Правильно: <strong>${w.kz}</strong> — ${w.ru}. Счётчик сброшен.`;
+fb.innerHTML=`${icon('close')} Неправильно. Правильно: <strong>${w.kz}</strong> — ${w.ru}. Счётчик сброшен.`;
 }
 // УБРАНО (по просьбе пользователя): зелёный/красный блок "✓ Правильно!.../
 // ✗ Неправильно..." с текстом прогресса — пользователь посчитал его лишним
@@ -4056,7 +4086,7 @@ document.getElementById('wordExample').innerHTML=`<strong>Казахский:</s
 const tr=document.getElementById('wordTranslation');
 if(tr){
 tr.className='word-translation '+(correct?'correct':'wrong');
-tr.innerHTML=`📖 <strong>${w.kz}</strong> — ${w.ru}`;
+tr.innerHTML=`${icon('book')} <strong>${w.kz}</strong> — ${w.ru}`;
 tr.style.display='block';
 }
 }
@@ -4396,7 +4426,8 @@ window.speechSynthesis.speak(u);
 function showAudioWarning(msg){
 const aw=document.getElementById('audioWarning');
 if(!aw)return;
-aw.textContent=msg.startsWith('⚠')?msg:`⚠ ${msg}`;
+const cleanMsg=msg.replace(/^⚠️?\s*/,'');
+aw.innerHTML=`${icon('warning')} ${escHtml(cleanMsg)}`;
 aw.style.display='block';
 }
 function hideAudioWarning(){
@@ -4406,7 +4437,7 @@ if(aw){aw.style.display='none';aw.textContent='';}
 
 function nextWord(){
 // Защита от неверного зачёта слова: кнопка "Следующее слово" по разметке видна
-// только после ответа (см. checkAnswer/checkQuiz/checkAudio), но добавляем ещё
+// только после ответа (см. checkAnswer/checkChoice/checkAudio), но добавляем ещё
 // и проверку здесь на уровне логики — если по какой-то причине (гонка кликов,
 // рассинхронизация DOM) nextWord() вызвана до того, как ответ на текущее слово
 // был на самом деле засчитан, просто ничего не делаем вместо того чтобы молча
@@ -4690,13 +4721,13 @@ return;
 
 function badgeFor(id){
 const status=getWordStatus(id);
-if(status==='learned')return'<span class="aw-badge learned">✓</span>';
+if(status==='learned')return`<span class="aw-badge learned">${icon('check')}</span>`;
 if(status==='learning')return'<span class="aw-badge learning">…</span>';
 return'';
 }
 
 function itemHtml(w){
-return`<div class="aw-item"><span class="kz">${escHtml(w.kz)}</span>${badgeFor(w.id)}<span class="ru">${escHtml(w.ru)}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">🔊</button></div>`;
+return`<div class="aw-item"><span class="kz">${escHtml(w.kz)}</span>${badgeFor(w.id)}<span class="ru">${escHtml(w.ru)}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">${icon('volume')}</button></div>`;
 }
 
 // При просмотре конкретной темы список плоский (группировать нечем).
@@ -4823,6 +4854,11 @@ sbState.answered=false;
 document.getElementById('sbTranslation').textContent=item.ru;
 document.getElementById('sbFeedback').innerHTML='';
 document.getElementById('sbFeedback').className='sb-feedback';
+// ЗАЩИТА ОТ ГОНКИ: если пользователь кликнул "Следующее предложение" очень
+// быстро после неверного ответа, CSS-анимация sbShake могла ещё не
+// доиграть — снимаем её здесь принудительно, чтобы новая карточка не
+// унаследовала красную подсветку built-зоны от предыдущей попытки.
+document.getElementById('sbBuilt').classList.remove('sb-shake','sb-correct-glow');
 // БАГФИКС: .btn-next (тот же класс, что у основной кнопки "Следующее
 // слово →" в тренажёре) скрыт правилом .btn-next:not([style*="inline"])
 // в CSS — то есть для показа кнопки в её style ОБЯЗАТЕЛЬНО должна быть
@@ -4863,7 +4899,7 @@ function updateSentenceBuilderStreakBadge(){
 const badge=document.getElementById('sbStreakBadge');
 if(sbState.streak>=2){
 badge.style.display='';
-badge.textContent=`🔥 ${sbState.streak}`;
+badge.innerHTML=`${icon('fire')} ${sbState.streak}`;
 }else{
 badge.style.display='none';
 }
@@ -4875,7 +4911,7 @@ const total=sbState.correctCount+sbState.wrongCount;
 if(sessionBadge){
 if(total>0){
 sessionBadge.style.display='';
-sessionBadge.textContent=`✓ ${sbState.correctCount} · ✗ ${sbState.wrongCount}`;
+sessionBadge.innerHTML=`${icon('check')} ${sbState.correctCount} · ${icon('close')} ${sbState.wrongCount}`;
 }else{
 sessionBadge.style.display='none';
 }
@@ -5058,7 +5094,7 @@ const fb=document.getElementById('sbFeedback');
 const builtEl=document.getElementById('sbBuilt');
 if(isCorrect){
 fb.className='sb-feedback sb-feedback-correct';
-fb.textContent='✓ Верно! '+item.kz;
+fb.innerHTML=`${icon('check')} Верно! `+escHtml(item.kz);
 // Короткая награда за вспомогательное упражнение — меньше базовой награды
 // за слово в основном тренажёре (10 XP), т.к. это не основной SM-2-цикл.
 addXp(6);
@@ -5085,7 +5121,7 @@ requestAnimationFrame(()=>badge.classList.add('sb-streak-pop'));
 }
 }else{
 fb.className='sb-feedback sb-feedback-wrong';
-fb.textContent='✗ Правильный порядок: '+item.kz;
+fb.innerHTML=`${icon('close')} Правильный порядок: `+escHtml(item.kz);
 sbState.wrongCount++;
 sbState.streak=0;
 // Лёгкая встряска собранной (неверной) последовательности — тот же приём
@@ -5093,6 +5129,16 @@ sbState.streak=0;
 // локально на built-зоне, чтобы не привязываться к глобальному #feedback.
 builtEl.classList.remove('sb-shake');
 requestAnimationFrame(()=>builtEl.classList.add('sb-shake'));
+// БАГФИКС/ДИЗАЙН: .sb-shake теперь помимо анимации сдвига дополнительно
+// подсвечивает built-зону красным (см. CSS), поэтому класс обязательно
+// нужно снять по окончании анимации — иначе красный фон/рамка остались бы
+// навсегда после первой же ошибки, до следующего sentenceBuilderCheck()
+// (который снял бы его лишь на кадр перед повторным добавлением). Слушатель
+// once:true — снимаем сами себя после первого срабатывания, без утечки.
+builtEl.addEventListener('animationend',function onShakeEnd(e){
+if(e.animationName!=='sbShake')return;
+builtEl.classList.remove('sb-shake');
+},{once:true});
 }
 updateSentenceBuilderStreakBadge();
 // БАГФИКС (см. подробный комментарий в renderSentenceBuilder()): кнопка
@@ -5141,11 +5187,11 @@ if(!query){results.innerHTML='<p style="color:var(--text3);font-size:.85rem;font
 const found=WORDS.filter(w=>w.kz.toLowerCase().includes(query)||w.ru.toLowerCase().includes(query)).slice(0,50);
 let localHtml='';
 if(found.length>0){
-localHtml=`<div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">📚 Ваша база (${found.length})</div>`+
+localHtml=`<div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">${icon('book')} Ваша база (${found.length})</div>`+
 found.map(w=>{
 const status=getWordStatus(w.id);
-const badge=status==='learned'?'<span style="font-size:.65rem;background:var(--green-bg);color:var(--green-dark);padding:.1rem .4rem;border-radius:8px;font-weight:800">✓ выучено</span>':status==='learning'?'<span style="font-size:.65rem;background:var(--blue-bg);color:var(--blue);padding:.1rem .4rem;border-radius:8px;font-weight:800">в процессе</span>':'';
-return`<div class="search-item"><span class="kz">${escHtml(w.kz)} — ${escHtml(w.ru)} ${badge}</span><span class="ru">${escHtml(TOPICS.find(t=>t.id===w.topic)?.name||'')}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">🔊</button></div>`;
+const badge=status==='learned'?`<span style="font-size:.65rem;background:var(--green-bg);color:var(--green-dark);padding:.1rem .4rem;border-radius:8px;font-weight:800">${icon('check')} выучено</span>`:status==='learning'?'<span style="font-size:.65rem;background:var(--blue-bg);color:var(--blue);padding:.1rem .4rem;border-radius:8px;font-weight:800">в процессе</span>':'';
+return`<div class="search-item"><span class="kz">${escHtml(w.kz)} — ${escHtml(w.ru)} ${badge}</span><span class="ru">${escHtml(TOPICS.find(t=>t.id===w.topic)?.name||'')}</span><button onclick="playWordAudio('${w.kz.replace(/'/g,"\\'")}')">${icon('volume')}</button></div>`;
 }).join('');
 }else{
 localHtml='<p style="color:var(--text3);font-size:.85rem">Не найдено в вашей базе</p>';
@@ -5158,10 +5204,10 @@ localHtml='<p style="color:var(--text3);font-size:.85rem">Не найдено в
 // сетевых запросов на каждое нажатие клавиши.
 if(skipExternal){
 const prevExt=document.getElementById('extDictResult');
-results.innerHTML=localHtml+(prevExt?prevExt.outerHTML:'<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" style="color:var(--text3);font-size:.83rem">Печатайте, поиск начнётся, когда вы остановитесь...</div></div>');
+results.innerHTML=localHtml+(prevExt?prevExt.outerHTML:`<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">${icon('globe')} Внешний словарь</div><div id="extDictLoading" style="color:var(--text3);font-size:.83rem">Печатайте, поиск начнётся, когда вы остановитесь...</div></div>`);
 return;
 }
-results.innerHTML=localHtml+`<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">🌐 Внешний словарь</div><div id="extDictLoading" class="dict-loading"><span class="dict-spinner"></span>Идёт поиск, обычно занимает пару секунд...</div></div>`;
+results.innerHTML=localHtml+`<div id="extDictResult" style="margin-top:.75rem"><div style="font-size:.72rem;color:var(--text2);font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem">${icon('globe')} Внешний словарь</div><div id="extDictLoading" class="dict-loading"><span class="dict-spinner"></span>Идёт поиск, обычно занимает пару секунд...</div></div>`;
 fetchExternalDict(query);
 }
 
@@ -5618,7 +5664,7 @@ else if(isFrozen)cls+=' frozen';
 const title=goalMet?`${wordsCount} слов`:(isFrozen?'День сохранён заморозкой стрика':'');
 // Снежинка вместо числа дня — явный маркер поверх цвета фона (важно для
 // доступности: не полагаемся только на синий цвет .frozen, см. CSS).
-const dayVal=isFrozen?'❄️':d.getDate();
+const dayVal=isFrozen?icon('snowflake'):d.getDate();
 weekHtml+=`<div class="${cls}" title="${title}"><div class="day-name">${dayName}</div><div class="day-val">${dayVal}</div></div>`;
 }
 el.innerHTML=weekHtml;
@@ -5788,14 +5834,14 @@ const QUEST_POOL=[
 // было до появления кнопки (см. старый БАГФИКС-комментарий там же). Для
 // будущих обновлений, когда будет качественный TTS-голос и кнопка вернётся —
 // раскомментировать обратно вместе с кнопкой.
-// {type:'audioCorrect',icon:'🎧',title:'3 верных ответа «На слух»',target:3,xp:15},
-{type:'anyCorrect',icon:'⚡',title:'8 верных ответов в тренировке',target:8,xp:15},
-{type:'noHintStreak',icon:'🎯',title:'5 ответов подряд без подсказки',target:5,xp:20},
-{type:'sentenceBuilder',icon:'🧩',title:'Собери 3 предложения верно',target:3,xp:15},
-{type:'dialogue',icon:'💬',title:'Пройди 2 диалога',target:2,xp:10},
-{type:'newWords',icon:'🌱',title:'Выучи 5 новых слов',target:5,xp:20},
-{type:'perfectMode',icon:'🏆',title:'5 верных ответов в режиме «Рус → Каз»',target:5,xp:15},
-{type:'reverseMode',icon:'🔁',title:'5 верных ответов в режиме «Каз → Рус»',target:5,xp:15},
+// {type:'audioCorrect',icon:'volume',title:'3 верных ответа «На слух»',target:3,xp:15},
+{type:'anyCorrect',icon:'bolt',title:'8 верных ответов в тренировке',target:8,xp:15},
+{type:'noHintStreak',icon:'target',title:'5 ответов подряд без подсказки',target:5,xp:20},
+{type:'sentenceBuilder',icon:'puzzle',title:'Собери 3 предложения верно',target:3,xp:15},
+{type:'dialogue',icon:'chat',title:'Пройди 2 диалога',target:2,xp:10},
+{type:'newWords',icon:'sprout',title:'Выучи 5 новых слов',target:5,xp:20},
+{type:'perfectMode',icon:'trophy',title:'5 верных ответов в режиме «Рус → Каз»',target:5,xp:15},
+{type:'reverseMode',icon:'refresh',title:'5 верных ответов в режиме «Каз → Рус»',target:5,xp:15},
 ];
 // БЕТА: сколько квестов показываем в день. Было 3, уменьшено до 2 — по
 // обратной связи выглядело перегруженным для экспериментальной механики.
@@ -5859,15 +5905,15 @@ if(!card)return;
 const quests=(state.daily&&state.daily.questSet)||[];
 if(!quests.length){card.innerHTML='';return}
 const doneCount=quests.filter(q=>q.claimed).length;
-card.innerHTML=`<div class="dq-set-header"><span class="dq-set-title">🎯 Квесты дня <span class="dq-beta-tag">БЕТА</span></span><span class="dq-set-count">${doneCount}/${quests.length}</span></div>`+
+card.innerHTML=`<div class="dq-set-header"><span class="dq-set-title">${icon('target')} Квесты дня <span class="dq-beta-tag">БЕТА</span></span><span class="dq-set-count">${doneCount}/${quests.length}</span></div>`+
 quests.map(q=>{
 const count=Math.min(q.target,q.progress||0);
 const done=!!q.claimed;
 const dots=Array.from({length:q.target},(_,i)=>`<span class="quest-dot${i<count?' filled':''}"></span>`).join('');
 return `<div class="daily-quest-row${done?' quest-complete':''}">
 <div class="dq-row">
-<span class="dq-title">${q.icon} ${escHtml(q.title)}</span>
-<span class="dq-badge${done?' quest-done':''}">${done?'✓ +'+q.xp+' XP':'+'+q.xp+' XP'}</span>
+<span class="dq-title">${icon(q.icon)} ${escHtml(q.title)}</span>
+<span class="dq-badge${done?' quest-done':''}">${done?icon('check')+' +'+q.xp+' XP':'+'+q.xp+' XP'}</span>
 </div>
 <div class="dq-row dq-row-progress">
 <div class="dq-dots">${dots}</div>
@@ -6148,7 +6194,7 @@ el.insertBefore(span,el.querySelector('.streak-popover'));
 }
 if(!fireEl){
 const ring=ringEl||(()=>{const r=document.createElement('span');r.className='fire-ring';el.insertBefore(r,el.firstChild);return r;})();
-const f=document.createElement('span');f.className='fire';f.textContent='🔥';
+const f=document.createElement('span');f.className='fire';f.innerHTML=icon('fire');
 ring.appendChild(f);
 }
 }
@@ -6188,7 +6234,7 @@ el.classList.toggle('at-risk',atRisk);
 // В подсказке (title) при этом заморозку упоминаем — это просто честная
 // информация под курсором/тапом, а не поощрение пропускать день, в отличие
 // от самого визуального состояния бейджа выше.
-const freezeHint=(state.streakFreezes||0)>0?` (в запасе ${state.streakFreezes} ❄️ на этот случай)`:'';
+const freezeHint=(state.streakFreezes||0)>0?` (в запасе ${state.streakFreezes} ${icon('snowflake')} на этот случай)`:'';
 el.title=streakHalfVisible
 ?(atRisk?`${displayStreak} дн. подряд — позанимайтесь сегодня, чтобы не потерять стрик!${freezeHint}`:`${displayStreak} дн. подряд`)
 :'Нажмите, чтобы увидеть прогресс';
@@ -6218,14 +6264,14 @@ const goal=state.settings.dailyGoal||10;
 const done=state.daily.progressCount||0;
 const goalMetToday=done>=goal;
 const noteHtml=goalMetToday
-?`<div class="sp-note ok">✓ Цель на сегодня выполнена — стрик в безопасности!</div>`
-:`<div class="sp-note">🔥 Осталось ${Math.max(0,goal-done)} слов, чтобы сохранить стрик сегодня</div>`;
+?`<div class="sp-note ok">${icon('check')} Цель на сегодня выполнена — стрик в безопасности!</div>`
+:`<div class="sp-note">${icon('fire')} Осталось ${Math.max(0,goal-done)} слов, чтобы сохранить стрик сегодня</div>`;
 // Подсказка про следующий уровень серии (тир) — небольшая мотивация,
 // показывает сколько дней осталось до следующего "оформления" бейджа
 // (см. STREAK_TIERS/getStreakTierClass в updateStreakDisplay).
 const nextTier=[...STREAK_TIERS].reverse().find(t=>displayStreak<t.days);
 const tierHtml=nextTier
-?`<div class="sp-row"><span>До след. оформления 🔥</span><b>${nextTier.days-displayStreak} дн.</b></div>`
+?`<div class="sp-row"><span>До след. оформления ${icon('fire')}</span><b>${nextTier.days-displayStreak} дн.</b></div>`
 :'';
 // НОВОЕ (заморозка стрика): показываем текущий запас заморозок и кнопку
 // докупить за XP. Кнопка отключается (disabled), если запас уже на
@@ -6239,7 +6285,7 @@ const freezes=state.streakFreezes||0;
 const freezeMaxed=freezes>=STREAK_FREEZE_MAX;
 const freezeHtml=`
 <div class="sp-freeze-row">
-<span>❄️ Заморозки: <b>${freezes}/${STREAK_FREEZE_MAX}</b></span>
+<span>${icon('snowflake')} Заморозки: <b>${freezes}/${STREAK_FREEZE_MAX}</b></span>
 <button class="sp-freeze-buy" onclick="buyStreakFreeze()" ${freezeMaxed?'disabled':''}>
 ${freezeMaxed?'Максимум':`За ${STREAK_FREEZE_XP_COST} XP`}
 </button>
@@ -6248,7 +6294,7 @@ ${freezeMaxed?'Максимум':`За ${STREAK_FREEZE_XP_COST} XP`}
 // (см. renderXpPopoverSection() рядом с XP-функциями) — единое место для
 // всей мотивационной статистики вместо двух отдельных всплывающих окон.
 pop.innerHTML=`
-<div class="sp-title">🔥 Серия дней</div>
+<div class="sp-title">${icon('fire')} Серия дней</div>
 <div class="sp-row"><span>Текущий стрик</span><b>${displayStreak} дн.</b></div>
 <div class="sp-row"><span>Рекорд</span><b>${best} дн.</b></div>
 <div class="sp-row"><span>Сегодня пройдено</span><b>${done} / ${goal}</b></div>
@@ -6449,7 +6495,7 @@ setTimeout(()=>el.remove(),1150);
 function spawnComboBadge(multiplier,x,y){
 const el=document.createElement('div');
 el.className='answer-combo';
-el.textContent='🔥 x'+multiplier;
+el.innerHTML=icon('fire')+' x'+multiplier;
 el.style.left=x+'px';
 // Небольшое смещение по вертикали относительно "+N XP", чтобы бейджи не
 // перекрывали друг друга, а читались как единая пара "награда + причина".
@@ -6513,7 +6559,7 @@ const xp=state.xp||0;
 const info=getLevelInfo(xp);
 const toNext=info.nextCeil-xp;
 return`
-<div class="sp-title" style="margin-top:.6rem">⭐ Опыт</div>
+<div class="sp-title" style="margin-top:.6rem">${icon('star')} Опыт</div>
 <div class="sp-row"><span>Уровень</span><b>${info.level}</b></div>
 <div class="sp-row"><span>Всего XP</span><b>${xp}</b></div>
 <div class="sp-row"><span>До след. уровня</span><b>${toNext} XP</b></div>
@@ -6590,7 +6636,7 @@ function showDailyGoalMinWarning(){
 const el=document.getElementById('goalEstimateText');
 if(!el)return;
 if(dailyGoalWarningTimer)clearTimeout(dailyGoalWarningTimer);
-el.innerHTML='<div class="ge-line" style="color:var(--red)">⚠ Минимум — 5 слов в день. Возвращено к сохранённому значению.</div>';
+el.innerHTML=`<div class="ge-line" style="color:var(--red)">${icon('warning')} Минимум — 5 слов в день. Возвращено к сохранённому значению.</div>`;
 dailyGoalWarningTimer=setTimeout(()=>{
 dailyGoalWarningTimer=null;
 updateGoalEstimate();
@@ -6812,11 +6858,11 @@ if(!isNaN(d))exportedLabel=d.toLocaleDateString('ru-RU',{day:'numeric',month:'lo
 const currentWordCount=Object.keys((state&&state.words)||{}).length;
 const body=document.getElementById('importPreviewBody');
 body.innerHTML=`
-📅 Дата резервной копии: <b>${exportedLabel}</b><br>
-📚 Слов в прогрессе: <b>${wordCount}</b> (выучено: ${learnedCount})<br>
-🔥 Серия дней подряд: <b>${streak}</b> (рекорд: ${bestStreak})<br>
-🎯 Дневная цель: <b>${dailyGoal} слов</b><br>
-<span style="color:var(--orange)">⚠️ Текущий прогресс в этом браузере (${currentWordCount} слов) будет полностью заменён этими данными.</span>`;
+${icon('info')} Дата резервной копии: <b>${exportedLabel}</b><br>
+${icon('book')} Слов в прогрессе: <b>${wordCount}</b> (выучено: ${learnedCount})<br>
+${icon('fire')} Серия дней подряд: <b>${streak}</b> (рекорд: ${bestStreak})<br>
+${icon('target')} Дневная цель: <b>${dailyGoal} слов</b><br>
+<span style="color:var(--orange)">${icon('warning')} Текущий прогресс в этом браузере (${currentWordCount} слов) будет полностью заменён этими данными.</span>`;
 document.getElementById('importPreview').style.display='block';
 }
 
@@ -6966,7 +7012,7 @@ if(chatHistory.length===0){
 // короткую версию предупреждения прямо в первом системном сообщении — она
 // видна без прочтения текста сверху. Показывается только если ключ ещё не
 // подключён (то же условие !getOpenRouterKey(), что и в renderChatSection()).
-const keyWarning=!getOpenRouterKey()?'<br><span style="opacity:.75">⚡ Без ключа OpenRouter — это простой переводчик. Подключите ключ в Настройках для полноценного ИИ.</span>':'';
+const keyWarning=!getOpenRouterKey()?`<br><span style="opacity:.75">${icon('bolt')} Без ключа OpenRouter — это простой переводчик. Подключите ключ в Настройках для полноценного ИИ.</span>`:'';
 win.innerHTML=`<div class="chat-msg system-note">Напишите фразу на русском или казахском — бот переведёт и, если нужно, исправит ошибки.${keyWarning}</div>`;
 return;
 }
@@ -7430,7 +7476,7 @@ function openInstallGuide() {
   if (platform === 'ios') {
     html = `
       <div class="install-step"><b>1.</b> Откройте сайт в браузере <b>Safari</b> (важно — не в Chrome, на iOS так не сработает).</div>
-      <div class="install-step"><b>2.</b> Нажмите на иконку «Поделиться» <span class="install-icon">⬆️</span> внизу экрана (квадрат со стрелкой вверх).</div>
+      <div class="install-step"><b>2.</b> Нажмите на иконку «Поделиться» <span class="install-icon">${icon('arrowUp')}</span> внизу экрана (квадрат со стрелкой вверх).</div>
       <div class="install-step"><b>3.</b> В списке выберите пункт <b>«На экран «Домой»»</b> (может понадобиться прокрутить список вниз).</div>
       <div class="install-step"><b>4.</b> Нажмите <b>«Добавить»</b> в правом верхнем углу.</div>
       <div class="install-step install-note">Готово — иконка появится на главном экране, как у обычного приложения.</div>`;
@@ -7440,7 +7486,7 @@ function openInstallGuide() {
       <div class="install-step"><b>2.</b> Выберите <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.</div>
       <div class="install-step"><b>3.</b> Подтвердите установку.</div>
       <div class="install-step install-note">Готово — иконка появится на главном экране и в списке приложений.</div>
-      <button class="btn btn-check" id="androidInstallBtn" style="margin-top:10px;width:100%" onclick="triggerAndroidInstall()">📲 Установить сейчас</button>`;
+      <button class="btn btn-check" id="androidInstallBtn" style="margin-top:10px;width:100%" onclick="triggerAndroidInstall()">${icon('download')} Установить сейчас</button>`;
   } else {
     html = `
       <div class="install-step">На компьютере откройте сайт в <b>Chrome</b> или <b>Edge</b>.</div>

@@ -56,6 +56,34 @@ input,textarea,select{font-size:16px!important}
   --radius-xs:8px;
   --shadow:0 2px 12px rgba(0,0,0,.08);
   --shadow-md:0 4px 20px rgba(0,0,0,.12);
+
+  /* ── АВТОРСКИЕ ТОКЕНЫ (редизайн, см. REDESIGN_PROMPT.md) ──────
+     Три приёма, проведённые последовательно по всему приложению
+     вместо типового "зелёный градиент + мягкая тень везде":
+
+     1. --brand — фирменный цвет продукта: приглушённый глубокий
+        индиго. Не входит в стандартную duolingo-палитру (зелёный/
+        оранжевый/голубой), используется точечно как акцент бренда
+        (активная навигация, ключевые CTA, обводки), а не заливкой.
+     2. --hard-shadow-* — однонаправленная жёсткая тень без блюра
+        вместо linear-gradient(135deg,...). Даёт ощущение
+        "спроектированного", а не сгенерированного элемента.
+     3. --radius-sharp / --radius-pill — контрастная иерархия
+        скруглений: крупные поверхности (карточки, попапы) почти
+        острые, мелкие интерактивные элементы (кнопки, чипы, бейджи)
+        полностью круглые. Никаких промежуточных "12px на всё". */
+  --brand:#4b3f8f;
+  --brand-dark:#382f6b;
+  --brand-bg:#eceafc;
+  --brand-glow:rgba(75,63,143,.16);
+
+  --rust:#b5502f;
+  --rust-bg:#fbe9e1;
+
+  --radius-sharp:4px;
+  --radius-pill:999px;
+  --hard-shadow-sm:3px 3px 0 var(--brand);
+  --hard-shadow-rust:3px 3px 0 var(--rust);
 }
 
 [data-theme="dark"]{
@@ -97,12 +125,35 @@ input,textarea,select{font-size:16px!important}
 
   --shadow:0 2px 16px rgba(0,0,0,.4);
   --shadow-md:0 6px 24px rgba(0,0,0,.5);
+
+  /* Тёмная тема: чёрная жёсткая тень почти не видна на тёмном фоне,
+     поэтому смещённая тень здесь светлее и мягче по цвету, чем в
+     светлой теме — не копия, а отдельное решение (см. Шаг 6). */
+  --brand:#8b7cf0;
+  --brand-dark:#a596ff;
+  --brand-bg:rgba(139,124,240,.16);
+  --brand-glow:rgba(139,124,240,.22);
+
+  --rust:#e08157;
+  --rust-bg:rgba(224,129,87,.16);
+
+  --hard-shadow-sm:3px 3px 0 rgba(139,124,240,.55);
+  --hard-shadow-rust:3px 3px 0 rgba(224,129,87,.5);
 }
+
+/* ── ICONS (редизайн: замена emoji на единый SVG-набор, Шаг 3) ── */
+.icon{
+  width:1.15em;height:1.15em;
+  display:inline-block;vertical-align:-.2em;
+  flex-shrink:0;
+}
+.icon-lg{width:1.6em;height:1.6em}
+.icon-xl{width:2.4em;height:2.4em}
 
 /* ── BASE ──────────────────────────────────────────────────── */
 html{touch-action:pan-x pan-y}
 body{
-  font-family:'Nunito',system-ui,-apple-system,sans-serif;
+  font-family:'Golos Text',system-ui,-apple-system,sans-serif;
   background:var(--bg);color:var(--text);
   line-height:1.5;min-height:100vh;min-height:100dvh;
   -webkit-tap-highlight-color:transparent;
@@ -1234,44 +1285,83 @@ nav#mainNav{
 /* ── УПРАЖНЕНИЕ "СОБЕРИ ПРЕДЛОЖЕНИЕ" ────────────────────────────────
    Отдельная секция (#sec-sentencebuilder), стилистически близкая к
    диалогам (.dopt выше) — но со своими классами sb-*, чтобы UI собранного
-   предложения/банка слов не путался с версткой диалогов. */
+   предложения/банка слов не путался с версткой диалогов.
+   ДИЗАЙН-ОБНОВЛЕНИЕ: карточка получила лёгкий градиентный "кант" сверху и
+   собственную иконку в заголовке (по аналогии с другими фичевыми блоками
+   приложения — комбо, стрик), чтобы упражнение визуально не терялось среди
+   более "плоских" карточек тренажёра. Built-зона и банк слов сделаны более
+   "тактильными" (мягкие тени на чипах, приподнимание при наведении/фокусе)
+   — ближе к ощущению настоящих карточек-плиток, а не плоских кнопок. */
+.sb-card{
+  position:relative;overflow:hidden;
+  border-top:3px solid transparent;
+  background-image:
+    linear-gradient(var(--card),var(--card)),
+    linear-gradient(90deg,var(--blue),var(--accent));
+  background-origin:border-box;background-clip:padding-box,border-box;
+}
+.sb-header-title{display:flex;align-items:center;gap:.45rem;min-width:0}
+.sb-header-icon{
+  display:flex;align-items:center;flex-shrink:0;color:var(--blue);
+}
+.sb-header-icon .icon{width:1.15rem;height:1.15rem}
+.sb-subtitle{
+  font-size:.82rem;color:var(--text2);margin-bottom:.7rem;font-weight:600;
+}
 .sb-translation{
   font-size:.95rem;font-weight:700;color:var(--text);
-  background:var(--card2);border:1px solid var(--border);
+  background:linear-gradient(135deg,var(--blue-bg),var(--card2));
+  border:1px solid var(--border);border-left:3px solid var(--blue);
   border-radius:var(--radius-sm);padding:.7rem .85rem;
-  margin-bottom:.7rem;line-height:1.4;
+  margin-bottom:.8rem;line-height:1.4;
+  position:relative;
+}
+.sb-translation::before{
+  content:'RU';position:absolute;top:.4rem;right:.55rem;
+  font-size:.6rem;font-weight:800;letter-spacing:.06em;
+  color:var(--blue);opacity:.55;
 }
 .sb-built-wrap{
   position:relative;
 }
 .sb-built{
   position:relative;
-  min-height:2.6rem;
-  display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;
+  min-height:2.9rem;
+  display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;
   border:2px dashed var(--border);border-radius:var(--radius-sm);
-  padding:.55rem 3rem .55rem .65rem;margin-bottom:.7rem;
-  transition:border-color .2s,background .2s;
+  background:var(--card2);
+  padding:.6rem 3rem .6rem .7rem;margin-bottom:.55rem;
+  transition:border-color .2s,background .2s,box-shadow .2s;
 }
 /* Пока в зоне уже есть хотя бы одно слово, рамка становится чуть заметнее
    (сплошного цвета акцента вместо приглушённого серого) — небольшой сигнал
    "тут уже что-то есть, это не пустая заглушка", особенно полезно на
-   маленьких экранах, где .sb-built-placeholder не всегда бросается в глаза. */
-.sb-built.sb-has-words{border-color:var(--border2)}
+   маленьких экранах, где .sb-built-placeholder не всегда бросается в глаза.
+   Дополнительно фон светлеет обратно к var(--card), чтобы собранные слова
+   не сливались с одноцветной подложкой пустой зоны. */
+.sb-built.sb-has-words{
+  border-color:var(--blue);border-style:solid;
+  background:var(--card);
+  box-shadow:inset 0 0 0 1px var(--blue-bg);
+}
 .sb-listen-btn{
   position:absolute;right:.5rem;top:.5rem;
-  width:2rem;height:2rem;border-radius:50%;
-  border:1px solid var(--border);background:var(--card2);
+  width:2.1rem;height:2.1rem;border-radius:50%;
+  border:1px solid var(--border);background:var(--card);
   color:var(--text2);font-size:1rem;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:transform .15s,background .15s;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+  transition:transform .15s,background .15s,color .15s,box-shadow .15s;
 }
 .sb-listen-btn:active{transform:scale(.9)}
-.sb-listen-btn:hover{background:var(--blue-bg);color:var(--blue)}
+.sb-listen-btn:hover{background:var(--blue-bg);color:var(--blue);box-shadow:0 3px 10px rgba(0,0,0,.12)}
 .sb-built-placeholder{color:var(--text3);font-size:.8rem;font-weight:600}
 .sb-built-word{
-  background:var(--blue-bg);color:var(--blue);
+  background:linear-gradient(135deg,var(--blue),var(--blue) 60%,var(--accent));
+  color:#fff;
   border-radius:var(--radius-xs);
-  padding:.3rem .55rem;font-weight:800;font-size:.85rem;
+  padding:.35rem .6rem;font-weight:800;font-size:.85rem;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
   /* по умолчанию элемент статичен; интерактивность/курсор появляются
      только у .sb-draggable (см. ниже) — после ответа (sbState.answered)
      слова рендерятся уже БЕЗ этого класса, чтобы порядок нельзя было
@@ -1283,12 +1373,13 @@ nav#mainNav{
    в JS) — единый механизм для мыши и тача. touch-action:none обязателен,
    иначе на мобильных браузер перехватывает жест под нативный скролл
    страницы вместо перетаскивания слова. */
-.sb-draggable{cursor:grab;transition:transform .12s ease}
+.sb-draggable{cursor:grab;transition:transform .12s ease,box-shadow .12s ease}
+.sb-draggable:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.2)}
 .sb-draggable.sb-dragging{
   cursor:grabbing;position:relative;z-index:10;
-  box-shadow:0 6px 18px rgba(0,0,0,.3);
+  box-shadow:0 8px 20px rgba(0,0,0,.32);
   opacity:.92;transition:none;
-  scale:1.05;
+  scale:1.08;
 }
 /* Drop-зона: раньше был едва заметный outline вокруг соседнего слова —
    теперь дополнительно подсвечивается фон и слово-цель слегка "подталкивается"
@@ -1302,21 +1393,31 @@ nav#mainNav{
 }
 .sb-hint{
   font-size:.72rem;color:var(--text3);font-weight:600;
-  margin:-.3rem 0 .6rem;
+  margin:0 0 .7rem;display:flex;align-items:center;gap:.3rem;
 }
+.sb-hint-icon{display:inline-flex;align-items:center;vertical-align:-.15em}
+.sb-hint-icon .icon{width:.9rem;height:.9rem}
 .sb-bank{
-  display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem;
+  display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:.6rem;
+  padding:.6rem;border-radius:var(--radius-sm);
+  background:var(--card2);border:1px solid var(--border);
 }
 .sb-chip{
-  padding:.5rem .75rem;border:2px solid var(--border);
-  border-radius:var(--radius-xs);background:var(--card2);
+  padding:.5rem .8rem;border:2px solid var(--border);
+  border-radius:var(--radius-xs);background:var(--card);
   cursor:pointer;font-size:.85rem;font-weight:700;
   color:var(--text);font-family:inherit;
+  box-shadow:0 2px 0 var(--border2);
   transition:all .15s;
 }
-.sb-chip:active{transform:scale(.96)}
-.sb-chip:disabled{opacity:.25;cursor:default;pointer-events:none}
+.sb-chip:hover:not(:disabled){
+  border-color:var(--blue);color:var(--blue);
+  transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.12);
+}
+.sb-chip:active:not(:disabled){transform:translateY(1px) scale(.97);box-shadow:0 1px 0 var(--border2)}
+.sb-chip:disabled{opacity:.22;cursor:default;pointer-events:none;box-shadow:none}
 .sb-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;gap:.5rem}
+.sb-undo-btn{font-size:.78rem}
 .sb-feedback{
   font-size:.85rem;font-weight:700;padding:0;min-height:1.4rem;
   margin-top:.4rem;line-height:1.4;
@@ -1330,6 +1431,7 @@ nav#mainNav{
    а не выглядело изолированным набором из 25 карточек без обратной связи. */
 .sb-header-row{
   display:flex;align-items:center;justify-content:space-between;gap:.5rem;
+  margin-bottom:.35rem;
 }
 .sb-header-badges{display:flex;align-items:center;gap:.4rem}
 .sb-session-badge{
@@ -1354,15 +1456,29 @@ nav#mainNav{
    нужно собрать всего (по числу слов в текущем предложении) — так сразу
    видно, сколько ещё осталось выбрать, а не только пустую рамку без ориентира. */
 .sb-slot{
-  min-width:2.4rem;height:1.9rem;border:2px dashed var(--border2);
+  min-width:2.6rem;height:2.1rem;border:2px dashed var(--border2);
   border-radius:var(--radius-xs);flex-shrink:0;
+  background:repeating-linear-gradient(
+    135deg,transparent,transparent 4px,var(--border2) 4px,var(--border2) 5px
+  );
+  opacity:.5;
 }
 .sb-built-word{animation:sbWordIn .22s cubic-bezier(.34,1.56,.64,1)}
 @keyframes sbWordIn{
   from{transform:scale(.8);opacity:0}
   to{transform:scale(1);opacity:1}
 }
-.sb-built.sb-shake{animation:sbShake .35s ease}
+/* Неверный ответ: та же built-зона на время анимации подсвечивается
+   красным в тон тряске, чтобы обратная связь считывалась и по цвету, а не
+   только по движению — полезно, если пользователь не заметил сам сдвиг
+   рамки. Класс sb-shake снимается сразу по окончании анимации в JS
+   (см. sentenceBuilderCheck() → animationend), поэтому !important здесь не
+   нужен — .sb-shake гарантированно временный, а не залипающее состояние. */
+.sb-built.sb-shake{
+  animation:sbShake .35s ease;
+  border-color:var(--red);
+  background:var(--red-bg);
+}
 @keyframes sbShake{
   0%,100%{transform:translateX(0)}
   25%{transform:translateX(-6px)}
@@ -1373,9 +1489,9 @@ nav#mainNav{
    хардкод-цветов. */
 .sb-built.sb-correct-glow{animation:sbCorrectGlow .6s ease}
 @keyframes sbCorrectGlow{
-  0%{border-color:var(--border);background:transparent;transform:scale(1)}
+  0%{border-color:var(--blue);background:var(--card);transform:scale(1)}
   30%{border-color:var(--green);background:var(--green-bg);transform:scale(1.015)}
-  100%{border-color:var(--border);background:transparent;transform:scale(1)}
+  100%{border-color:var(--blue);background:var(--card);transform:scale(1)}
 }
 /* Плавная смена карточки предложения (перевод + built-зона + банк слов) при
    переходе к следующему предложению — вместо мгновенной подмены контента. */

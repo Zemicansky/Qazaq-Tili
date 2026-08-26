@@ -58,10 +58,12 @@
      "Опаздывать/Адрес/Очередь" угадывался с первого взгляда). Теперь режим B
      тоже требует свободного ввода перевода на русском, как и режим "Рус → Каз".
      Проверка направления вынесена в checkAnswer() (переменная isModeB).
-     Старые renderQuizOptions()/checkQuiz() оставлены в коде неиспользуемыми —
-     на случай, если понадобится вернуть режим с вариантами.
+     Старые renderQuizOptions()/checkQuiz() (мёртвый код, оставленный на
+     случай возврата режима с вариантами) впоследствии удалены — актуальный
+     аналог для варианта с выбором из 4 слов теперь renderChoiceOptions()/
+     checkChoice().
   10. Тренировка (режимы B и C — quiz с вариантами): обманки в
-     renderAudioOptions() (и в оставленной renderQuizOptions()) теперь
+     renderAudioOptions() (и в renderChoiceOptions()) теперь
      подбираются не случайно из всей базы/темы, а по похожести на правильный
      ответ — совпадение первой буквы и близкая длина слова получают более
      высокий приоритет. Из-за этого вариант нельзя больше угадать "на глаз"
@@ -125,7 +127,7 @@
      w.ru в режиме B, w.kz в остальных режимах.
   16. Тренировка (режимы с выбором варианта — A/B "выбор из 4" и C "Аудио"):
      исправлена хрупкость сравнения ответа. Правильный вариант передавался в
-     checkChoice/checkQuiz/checkAudio как HTML/JS-экранированная строка
+     checkChoice/checkAudio как HTML/JS-экранированная строка
      (через escHtml, которая заменяла ' на \' — экранирование под старую
      вставку прямо в onclick="...('...')") и сравнивался с el.textContent —
      реальным, НЕэкранированным текстом кнопки в DOM. Для любого слова с
@@ -208,7 +210,7 @@
 <link rel="icon" id="faviconLink">
 <link rel="manifest" id="pwaManifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -239,7 +241,7 @@
            секциями. См. updateStreakDisplay()/updateXpDisplay() ниже — они
            обновляют каждый свою половину одного и того же элемента. -->
       <div id="streakDisplay" class="combo-badge" style="display:none" onclick="toggleStreakPopover(event)">
-        <span class="fire-ring"><span class="fire">🔥</span></span>
+        <span class="fire-ring"><span class="fire"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1-.5-2-1-2 .5 2-.5 3-2 3-2 0-2.5-1.5-1.5-3.5C14.5 4.5 13 2.5 12 2z"/><path d="M8.5 11.5C7 13 6 15 6 17a6 6 0 0 0 12 0c0-1.5-.5-3-1.5-4"/></svg></span></span>
         <span class="days" id="streakDays">0</span>
         <span class="combo-sep"></span>
         <!-- ЗАДАЧА 1 (индикатор уровня): звезда теперь в собственном круглом
@@ -250,7 +252,7 @@
              (getLevelInfo(xp).pct). Текстовое число уровня осталось рядом —
              просто теперь с визуальным контекстом, а не голой цифрой. title
              на xp-часть добавлен ниже через id="xpLevelHint". -->
-        <span class="xp-ring" id="xpLevelHint"><span class="xp-star">⭐</span></span>
+        <span class="xp-ring" id="xpLevelHint"><span class="xp-star"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.1-5.4 3.1 1.3-6-4.6-4.1 6.1-.6z"/></svg></span></span>
         <span class="xp-lvl" id="xpLevelLabel">1</span>
         <div id="streakPopover" class="streak-popover" onclick="event.stopPropagation()"></div>
       </div>
@@ -265,7 +267,7 @@
            здесь просто больше нет дублирующей иконки рядом с уровнем/
            страйком. applyTheme() по-прежнему безопасно работает без этой
            кнопки (проверяет её наличие перед обращением). -->
-      <span id="storageWarningBadge" style="display:none;cursor:pointer;font-size:1.1rem;margin-left:.3rem" title="Не удалось сохранить данные в этом браузере — прогресс может не сохраниться. Нажмите, чтобы узнать больше." onclick="alert('Браузер не даёт сохранить данные (возможно, закончилось место в хранилище или включён приватный режим). Прогресс/чат могут не сохраниться при закрытии вкладки. Рекомендуем экспортировать прогресс файлом в Настройках → Резервная копия.')">⚠️</span>
+      <span id="storageWarningBadge" style="display:none;cursor:pointer;font-size:1.1rem;margin-left:.3rem" title="Не удалось сохранить данные в этом браузере — прогресс может не сохраниться. Нажмите, чтобы узнать больше." onclick="alert('Браузер не даёт сохранить данные (возможно, закончилось место в хранилище или включён приватный режим). Прогресс/чат могут не сохраниться при закрытии вкладки. Рекомендуем экспортировать прогресс файлом в Настройках → Резервная копия.')"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L2.5 20h19z"/><path d="M12 10v4"/><path d="M12 17h.01"/></svg></span>
     </div>
   </div>
 </header>
@@ -385,7 +387,7 @@
     <div class="word-card" id="wordDisplay">
       <div class="word-card-top-row">
         <div class="word-topic-chip" id="wordTopic">Загрузка...</div>
-        <div class="word-status-badge is-new" id="wordStatusBadge">🌱 Новое слово</div>
+        <div class="word-status-badge is-new" id="wordStatusBadge"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V11"/><path d="M12 11C12 7 9 5 5 5c0 4 3 7 7 7z"/><path d="M12 11c0-3.5 2.5-5.5 6-5.5-.3 3.7-2.7 6-6 6"/></svg> Новое слово</div>
       </div>
       <div class="main-word" id="mainWord">...</div>
       <div class="word-example" id="wordExample"></div>
@@ -401,8 +403,8 @@
         <input type="text" class="answer-input" id="answerInput" maxlength="100"
           placeholder="Введите перевод..." autocomplete="off"
           onkeydown="if(event.key==='Enter')checkAnswer()">
-        <button class="btn btn-check" onclick="checkAnswer()">✓</button>
-        <button class="audio-btn" onclick="playAudio()" title="Прослушать">🔊</button>
+        <button class="btn btn-check" onclick="checkAnswer()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5.5L20 6"/></svg></button>
+        <button class="audio-btn" onclick="playAudio()" title="Прослушать"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/></svg></button>
       </div>
 
       <div class="speed-row">
@@ -424,7 +426,7 @@
          видимым, пока в нём есть хоть одна кнопка — см. renderWord() и
          renderInputModeToggle() в JS). -->
     <div id="replayAudioRow" class="utility-row" style="display:none">
-      <button class="btn-sm" id="replayAudioBtn" onclick="playAudio()" style="display:none">🔊 Повторить аудио</button>
+      <button class="btn-sm" id="replayAudioBtn" onclick="playAudio()" style="display:none"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/></svg> Повторить аудио</button>
     </div>
     <!-- Отдельный блок для предупреждений об озвучке (см. showAudioWarning()) —
          не путать с #feedback, который показывает только результат ответа. -->
@@ -459,7 +461,7 @@
          кнопка внизу карточки уезжала за пределы видимой области экрана,
          пока пользователь не долистает до конца. Теперь видна сразу. -->
     <div style="margin-bottom:.75rem">
-      <button class="btn-sm" style="width:100%" onclick="openAllWordsSheet()">📖 Все слова</button>
+      <button class="btn-sm" style="width:100%" onclick="openAllWordsSheet()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 19H6.5A2.5 2.5 0 0 0 4 21.5"/></svg> Все слова</button>
     </div>
     <p class="card-title">Выберите тему</p>
     <div class="topics-grid" id="topicsGrid"></div>
@@ -476,7 +478,7 @@
   <div class="sheet-handle"></div>
   <div class="aw-header">
     <div class="aw-title" id="awTitle">Все слова</div>
-    <button class="aw-close" onclick="closeAllWordsSheet()">✕</button>
+    <button class="aw-close" onclick="closeAllWordsSheet()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
   </div>
   <div class="aw-filter-row">
     <select id="awTopicFilter" onchange="renderAllWordsList()">
@@ -509,29 +511,32 @@
      в JS) — чтобы не рисковать сломать уже отлаженную систему интервальных
      повторений. Доступно из меню "Ещё". -->
 <div id="sec-sentencebuilder" class="section">
-  <div class="card">
+  <div class="card sb-card">
     <div class="sb-header-row">
-      <p class="card-title" style="margin-bottom:0">Собери предложение</p>
+      <div class="sb-header-title">
+        <span class="sb-header-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h4v3.2a2 2 0 0 0 3.6 1.2L18 6h3v4h-3.2a2 2 0 0 0-1.2 3.6L18 15v3h-4v-3.2a2 2 0 0 0-3.6-1.2L9 15H6v-4h3.2a2 2 0 0 0 1.2-3.6L9 6z"/></svg></span>
+        <p class="card-title" style="margin-bottom:0">Собери предложение</p>
+      </div>
       <div class="sb-header-badges">
         <span class="sb-session-badge" id="sbSessionBadge" style="display:none"></span>
-        <span class="sb-streak-badge" id="sbStreakBadge" style="display:none">🔥 0</span>
+        <span class="sb-streak-badge" id="sbStreakBadge" style="display:none"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2c1 3-2 4-2 7a4 4 0 0 0 8 0c0-1-.5-2-1-2 .5 2-.5 3-2 3-2 0-2.5-1.5-1.5-3.5C14.5 4.5 13 2.5 12 2z"/><path d="M8.5 11.5C7 13 6 15 6 17a6 6 0 0 0 12 0c0-1.5-.5-3-1.5-4"/></svg> 0</span>
       </div>
     </div>
-    <p style="font-size:.82rem;color:var(--text2);margin-bottom:.6rem;font-weight:600">Соберите казахское предложение из слов по русскому переводу</p>
+    <p class="sb-subtitle">Соберите казахское предложение из слов по русскому переводу</p>
     <div class="sb-translation" id="sbTranslation"></div>
     <div class="sb-built-wrap">
       <div class="sb-built" id="sbBuilt"></div>
-      <button class="sb-listen-btn" id="sbListenBtn" onclick="sentenceBuilderListen()" title="Прослушать собранное предложение" style="display:none">🔊</button>
+      <button class="sb-listen-btn" id="sbListenBtn" onclick="sentenceBuilderListen()" title="Прослушать собранное предложение" style="display:none"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/></svg></button>
     </div>
-    <p class="sb-hint">💡 Слова можно перетаскивать местами — зажмите и потяните</p>
+    <p class="sb-hint"><span class="sb-hint-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V6a1.5 1.5 0 0 1 3 0v5"/><path d="M11 11V4.5a1.5 1.5 0 0 1 3 0V11"/><path d="M14 11.5V6a1.5 1.5 0 0 1 3 0v7"/><path d="M17 12v-.5a1.5 1.5 0 0 1 3 0V15a7 7 0 0 1-7 7h-1a7 7 0 0 1-6-3.4L4 15c-.6-1 .2-2.3 1.4-2.1.5.1 1 .4 1.3.9l1.3 2"/></svg></span> Слова можно перетаскивать местами — зажмите и потяните</p>
     <div class="sb-bank" id="sbBank"></div>
     <div class="sb-actions">
       <span></span>
-      <button class="btn btn-skip" id="sbUndoBtn" onclick="sentenceBuilderUndo()">↩ Отменить последнее слово</button>
+      <button class="btn btn-skip sb-undo-btn" id="sbUndoBtn" onclick="sentenceBuilderUndo()">↩ Отменить последнее слово</button>
     </div>
     <div id="sbFeedback" class="sb-feedback"></div>
-    <button class="btn btn-check" id="sbCheckBtn" style="width:100%;margin-top:.6rem" onclick="sentenceBuilderCheck()">Проверить</button>
-    <button class="btn btn-next" id="sbNextBtn" style="display:none" onclick="sentenceBuilderNext()">Следующее предложение →</button>
+    <button class="btn btn-check sb-check-btn" id="sbCheckBtn" style="width:100%;margin-top:.6rem" onclick="sentenceBuilderCheck()">Проверить</button>
+    <button class="btn btn-next sb-next-btn" id="sbNextBtn" style="display:none" onclick="sentenceBuilderNext()">Следующее предложение →</button>
   </div>
 </div>
 
@@ -579,9 +584,9 @@
       <button class="btn-sm" onclick="clearChatHistory()" style="font-size:.72rem">Очистить</button>
     </div>
     <div id="chatKeyNotice" class="chat-notice">
-      ⚡ Сейчас чат просто переводит фразы. Подключите бесплатный ключ OpenRouter — и получите живого ИИ-собеседника: с объяснением грамматики, живым диалогом и пониманием контекста. Это бесплатно и займёт 30 секунд.
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg> Сейчас чат просто переводит фразы. Подключите бесплатный ключ OpenRouter — и получите живого ИИ-собеседника: с объяснением грамматики, живым диалогом и пониманием контекста. Это бесплатно и займёт 30 секунд.
       <a href="#" class="settings-link" onclick="openOpenRouterGuide();return false;" style="margin-top:.4rem">
-        📖 Как получить ключ (инструкция)
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 19H6.5A2.5 2.5 0 0 0 4 21.5"/></svg> Как получить ключ (инструкция)
       </a>
     </div>
     <div class="chat-window" id="chatWindow"></div>
@@ -604,7 +609,7 @@
     <div class="settings-item">
       <div class="settings-row">
         <div class="settings-label">Установить на телефон</div>
-        <button class="btn-sm" onclick="openInstallGuide()">📲 Как установить</button>
+        <button class="btn-sm" onclick="openInstallGuide()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-6h4v6"/></svg> Как установить</button>
       </div>
       <div class="settings-sub">Добавьте на главный экран — работает как обычное приложение, даже офлайн.</div>
     </div>
@@ -613,7 +618,7 @@
     <div class="settings-item">
       <div class="settings-row">
         <div class="settings-label">Обратная связь</div>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSe1YB91FT2GtzIFjKjq1jGv0XV_4sNIj7wy_YhbAlNqNqm_rg/viewform" target="_blank" rel="noopener noreferrer" class="btn-sm" style="text-decoration:none; display:inline-block; line-height:inherit">✉️ Сообщить о проблеме</a>
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSe1YB91FT2GtzIFjKjq1jGv0XV_4sNIj7wy_YhbAlNqNqm_rg/viewform" target="_blank" rel="noopener noreferrer" class="btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:.35rem; line-height:inherit"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v11H8l-4 4V4z"/></svg> Сообщить о проблеме</a>
       </div>
       <div class="settings-sub">Нашли баг или что-то не работает? Заполните короткую форму, и мы всё исправим.</div>
     </div>
@@ -680,14 +685,14 @@
     <div class="settings-item">
       <div class="settings-row">
         <div class="settings-label">Резервная копия</div>
-        <button class="btn-sm" onclick="exportProgress()">📥 Скачать</button>
+        <button class="btn-sm" onclick="exportProgress()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg> Скачать</button>
       </div>
       <div id="backupReminder" class="settings-sub no-top-pad"></div>
     </div>
     <div class="settings-item">
       <div class="settings-row">
         <div class="settings-label">Восстановить</div>
-        <button class="btn-sm" onclick="document.getElementById('importFileInput').click()">📤 Выбрать файл</button>
+        <button class="btn-sm" onclick="document.getElementById('importFileInput').click()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M5 3h14"/></svg> Выбрать файл</button>
         <input type="file" id="importFileInput" accept="application/json,.json"
           style="display:none" onchange="handleImportFileSelected(event.target.files&&event.target.files[0])">
       </div>
@@ -695,7 +700,7 @@
         <div class="import-box-title">Что в этом файле:</div>
         <div id="importPreviewBody" class="import-box-body"></div>
         <div class="import-box-actions">
-          <button class="btn-sm" onclick="confirmImport()">✅ Восстановить</button>
+          <button class="btn-sm" onclick="confirmImport()"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5.5L20 6"/></svg> Восстановить</button>
           <button class="btn-sm" onclick="cancelImportPreview()">Отмена</button>
         </div>
       </div>
@@ -1051,7 +1056,7 @@
 <div id="openrouterGuideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeOpenRouterGuide()">
   <div style="background:var(--card);border-radius:16px;max-width:440px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <div style="font-size:18px;font-weight:800;">🤖 Как подключить полноценный ИИ-чат</div>
+      <div style="font-size:18px;font-weight:800;display:flex;align-items:center;gap:.4rem;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="16" height="11" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><circle cx="9" cy="13" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="13" r="1.2" fill="currentColor" stroke="none"/><path d="M9 17h6"/></svg> Как подключить полноценный ИИ-чат</div>
       <button onclick="closeOpenRouterGuide()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
     </div>
     <div style="font-size:15px;line-height:1.5;color:var(--text);">
@@ -1072,7 +1077,7 @@
 <div id="installGuideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeInstallGuide()">
   <div style="background:var(--card);border-radius:16px;max-width:420px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <div style="font-size:18px;font-weight:800;">📲 Установка на главный экран</div>
+      <div style="font-size:18px;font-weight:800;display:flex;align-items:center;gap:.4rem;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-6h4v6"/></svg> Установка на главный экран</div>
       <button onclick="closeInstallGuide()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
     </div>
     <div id="installGuideBody" style="font-size:15px;line-height:1.5;color:var(--text);"></div>
@@ -1088,7 +1093,7 @@
 <div id="activityCalendarModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeActivityCalendar()">
   <div style="background:var(--card);border-radius:16px;max-width:420px;width:100%;padding:20px;max-height:85vh;overflow-y:auto;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <div style="font-size:18px;font-weight:800;">📅 Календарь активности</div>
+      <div style="font-size:18px;font-weight:800;display:flex;align-items:center;gap:.4rem;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 3v4M16 3v4"/></svg> Календарь активности</div>
       <button onclick="closeActivityCalendar()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
     </div>
     <div class="calendar-month-nav">
