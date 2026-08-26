@@ -34,6 +34,14 @@ input,textarea,select{font-size:16px!important}
   --purple:#9c64f7;
   --orange:#ff9600;
   --orange-bg:#fff0d6;
+  /* Ледяной акцент — используется только для раздела заморозки стрика
+     (.sp-freeze-row/.sp-freeze-buy), чтобы у неё был свой узнаваемый, но
+     приглушённый цвет (в тон эмодзи ❄️), согласованный по яркости с
+     остальными tinted-плашками попапа (.sp-note и т.п.), а не выбивающийся
+     ярко-синий, как раньше. */
+  --ice-accent:#29b6f6;
+  --ice-bg:rgba(41,182,246,.1);
+  --ice-border:rgba(41,182,246,.28);
 
   --accent:#58cc02;
   --accent2:#46a302;
@@ -75,6 +83,9 @@ input,textarea,select{font-size:16px!important}
   --purple:#b47aff;
   --orange:#ff9600;
   --orange-bg:rgba(255,150,0,.14);
+  --ice-accent:#5fd0ff;
+  --ice-bg:rgba(95,208,255,.14);
+  --ice-border:rgba(95,208,255,.32);
 
   --accent:#3fc800;
   --accent2:#2ea600;
@@ -437,30 +448,40 @@ header{
      подстраховаться заранее, а не полагаться только на бесплатные.
    sp-freeze-row — карточка "N/2 заморозки" с кнопкой покупки;
    sp-freeze-icon — снежинка-индикатор количества (используется и здесь,
-   и в .week-day.frozen ниже, чтобы визуальный язык совпадал). */
+   и в .week-day.frozen ниже, чтобы визуальный язык совпадал).
+   РЕДИЗАЙН (по фидбэку пользователя — "дизайн заморозки плохой, у уровня
+   и стрика лучше, сделай всё в одном стиле"): раньше это был плоский
+   синий блок (var(--blue-bg)/var(--blue)), визуально не связанный ни с
+   огненно-оранжевой темой стрика (.fire-ring/.combo-badge выше), ни с
+   фиолетовой темой уровня (.xp-ring), ни даже с остальным попапом —
+   единственное яркое синее пятно на фоне нейтральных .sp-row/.sp-note.
+   Теперь раздел заморозки visually следует тому же языку, что и .sp-note
+   выше (та же мягкая tinted-плашка на var(--radius-xs), тот же паттерн
+   "иконка + подпись слева, значение/действие справа"), но со своим
+   ледяным акцентом — приглушённый голубой, как у самой снежинки ❄️, а не
+   ярко-синий "кнопочный" цвет, который выбивался на фоне остальных
+   приглушённых элементов попапа. Кнопка покупки оформлена как обычная
+   пилюля-аутлайн (граница + прозрачный фон), в духе кнопок ниже
+   (.sp-freeze-buy), а не заливная — чтобы не конкурировать по яркости с
+   самим бейджем уровня/стрика в шапке. */
 .streak-popover .sp-freeze-row{
   margin-top:.6rem;display:flex;align-items:center;justify-content:space-between;
-  gap:.5rem;font-size:.75rem;color:var(--text2);
-  background:var(--blue-bg);border-radius:var(--radius-xs);padding:.5rem .6rem;
+  gap:.5rem;font-size:.75rem;font-weight:600;color:var(--text2);
+  background:var(--ice-bg,rgba(41,182,246,.1));border:1px solid var(--ice-border,rgba(41,182,246,.25));
+  border-radius:var(--radius-xs);padding:.5rem .6rem;
 }
+.streak-popover .sp-freeze-row span{display:flex;align-items:center;gap:.35rem}
 .streak-popover .sp-freeze-row b{color:var(--text);font-weight:800}
 .streak-popover .sp-freeze-buy{
-  border:none;border-radius:999px;padding:.32rem .62rem;font-size:.68rem;
-  font-weight:800;cursor:pointer;background:var(--blue);color:#fff;
-  white-space:nowrap;transition:opacity .15s ease,transform .15s ease;
+  border:1.5px solid var(--ice-accent,#29b6f6);border-radius:999px;padding:.3rem .6rem;font-size:.68rem;
+  font-weight:800;cursor:pointer;background:transparent;color:var(--ice-accent,#29b6f6);
+  white-space:nowrap;transition:opacity .15s ease,transform .15s ease,background .15s ease;
 }
 .streak-popover .sp-freeze-buy:active{transform:scale(.94)}
+.streak-popover .sp-freeze-buy:not(:disabled):hover{background:var(--ice-bg,rgba(41,182,246,.1))}
 .streak-popover .sp-freeze-buy:disabled{
-  background:var(--border2);color:var(--text3);cursor:not-allowed;
+  border-color:var(--border2);background:var(--border2);color:var(--text3);cursor:not-allowed;
 }
-
-.theme-toggle{
-  width:34px;height:34px;border-radius:50%;border:2px solid var(--border);
-  background:var(--card2);cursor:pointer;font-size:.95rem;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;flex-shrink:0;
-}
-.theme-toggle:active{transform:scale(.9)}
 
 
 /* ── NAV ───────────────────────────────────────────────────── */
@@ -1195,16 +1216,6 @@ nav#mainNav{
 .search-item button:hover{background:var(--bg3)}
 
 /* ── DIALOGUES ─────────────────────────────────────────────── */
-.dialogue-card{
-  border:2px solid var(--border);border-radius:var(--radius-sm);
-  padding:.85rem;margin-bottom:.6rem;background:var(--card);
-  box-shadow:var(--shadow);
-}
-.dialogue-card h3{
-  font-size:.88rem;font-weight:800;color:var(--text);
-  margin-bottom:.5rem;padding-bottom:.4rem;
-  border-bottom:1.5px solid var(--border)
-}
 .dialogue-line{padding:.2rem 0;font-size:.82rem;color:var(--text);line-height:1.5}
 .speaker{font-weight:800;color:var(--blue);margin-right:.35rem}
 .dialogue-quiz{margin-top:.6rem;padding-top:.6rem;border-top:1.5px solid var(--border)}
@@ -1544,10 +1555,6 @@ input.s-pass:focus{border-color:var(--blue)}
 #sec-grammar .card{margin-bottom:.65rem}
 #sec-grammar h2{font-size:.95rem;font-weight:800;margin-bottom:.4rem;color:var(--text)}
 #sec-grammar p{margin-bottom:.35rem;font-size:.84rem;line-height:1.55;color:var(--text)}
-.grammar-table{width:100%;border-collapse:collapse;font-size:.8rem;border-radius:var(--radius-xs);overflow:hidden}
-.grammar-table th{background:var(--accent);color:white;padding:.4rem .5rem;text-align:left;font-size:.78rem;font-weight:800}
-.grammar-table td{padding:.35rem .5rem;border-bottom:1px solid var(--border);color:var(--text)}
-.grammar-table tr:nth-child(even) td{background:var(--bg3)}
 
 /* ── MORE SHEET ────────────────────────────────────────────── */
 #moreSheetOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;backdrop-filter:blur(2px)}
@@ -1612,15 +1619,6 @@ input.s-pass:focus{border-color:var(--blue)}
 .aw-badge.learned{background:var(--green-bg);color:var(--green-dark)}
 .aw-badge.learning{background:var(--blue-bg);color:var(--blue)}
 
-/* ── SESSION REVIEW ────────────────────────────────────────── */
-.session-review{
-  background:linear-gradient(135deg,var(--accent),var(--blue));
-  color:white;border-radius:var(--radius);
-  padding:1rem;text-align:center;margin-bottom:.65rem;
-  box-shadow:0 4px 16px var(--accent-glow);
-}
-.session-review h3{font-size:1rem;font-weight:900;margin-bottom:.4rem}
-
 /* ── SCROLLBAR ─────────────────────────────────────────────── */
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:transparent}
@@ -1659,7 +1657,7 @@ input.s-pass:focus{border-color:var(--blue)}
 .ach-card .ach-date{font-size:.7rem;color:var(--text3);font-weight:700;margin-top:.25rem}
 
 /* ── ДОСТИЖЕНИЯ (попап разблокировки) ──────────────────────────── */
-/* Тот же визуальный язык, что у #feedbackModal/#installGuideModal
+/* Тот же визуальный язык, что у #installGuideModal
    (fixed inset overlay + card box), но с более праздничным акцентом —
    это момент вознаграждения, должен выделяться. Анимация появления
    использует тот же bounce-easing, что и @keyframes xpStarBump выше
@@ -1687,17 +1685,3 @@ input.s-pass:focus{border-color:var(--blue)}
 .install-icon{font-size:16px;}
 #androidInstallBtn{display:none;}
 
-/* ── Honeypot-поле для формы обратной связи (защита от спам-ботов) ──────
-   Намеренно НЕ display:none и НЕ visibility:hidden — некоторые боты
-   умеют это распознавать и пропускать такие поля. Вместо этого сдвигаем
-   поле далеко за пределы экрана и делаем прозрачным — визуально это то
-   же самое "невидимо", но для автозаполнителя форм поле выглядит как
-   обычное видимое текстовое поле. */
-.feedback-honeypot{
-  position:absolute;
-  left:-9999px;
-  width:1px;
-  height:1px;
-  opacity:0;
-  overflow:hidden;
-}

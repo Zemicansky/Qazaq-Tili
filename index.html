@@ -33,8 +33,8 @@
   6. Тренировка: кнопки скорости озвучки (медленно/нормально/быстро) убраны с
      экрана тренировки — они дублировали настройку, которая уже есть в
      "Ещё → Настройки → Скорость озвучки" (select #defaultSpeed). Теперь
-     скорость настраивается один раз в Настройках. Функция setSpeed() оставлена
-     в коде на случай, если понадобится вернуть переключатель на экран тренировки.
+     скорость настраивается один раз в Настройках. Функция setSpeed(), больше
+     нигде не вызывавшаяся, удалена из кода как мёртвый код.
   7. Тренировка: перевод слова после ответа теперь показывается в отдельном
      заметном блоке #wordTranslation сразу под примерами на казахском и русском
      (внутри карточки слова), а не мелкой строкой в самом низу блока #feedback,
@@ -259,7 +259,12 @@
            по всему файлу (addXp/updateStats и т.д.). Реальная звезда/уровень
            теперь внутри combo-badge выше, попап общий с streak. -->
       <div id="xpDisplay" style="display:none"></div>
-      <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle" title="Сменить тему">🌙</button>
+      <!-- УБРАНО (по просьбе пользователя): кнопка быстрого переключения
+           темы в шапке. Переключение темы (Авто/Светлая/Тёмная) осталось
+           доступно в Настройках через #themeModeSelect/saveThemeMode() —
+           здесь просто больше нет дублирующей иконки рядом с уровнем/
+           страйком. applyTheme() по-прежнему безопасно работает без этой
+           кнопки (проверяет её наличие перед обращением). -->
       <span id="storageWarningBadge" style="display:none;cursor:pointer;font-size:1.1rem;margin-left:.3rem" title="Не удалось сохранить данные в этом браузере — прогресс может не сохраниться. Нажмите, чтобы узнать больше." onclick="alert('Браузер не даёт сохранить данные (возможно, закончилось место в хранилище или включён приватный режим). Прогресс/чат могут не сохраниться при закрытии вкладки. Рекомендуем экспортировать прогресс файлом в Настройках → Резервная копия.')">⚠️</span>
     </div>
   </div>
@@ -1071,35 +1076,6 @@
       <button onclick="closeInstallGuide()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
     </div>
     <div id="installGuideBody" style="font-size:15px;line-height:1.5;color:var(--text);"></div>
-  </div>
-</div>
-<!-- Модалка "Сообщить о проблеме" -->
-<div id="feedbackModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeFeedbackModal()">
-  <div style="background:var(--card);border-radius:16px;max-width:420px;width:100%;padding:24px;max-height:85vh;overflow-y:auto;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <div style="font-size:18px;font-weight:800;">✉️ Сообщить о проблеме</div>
-      <button onclick="closeFeedbackModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text3);line-height:1;">×</button>
-    </div>
-    <div style="font-size:14px;line-height:1.5;color:var(--text2);margin-bottom:.6rem;">
-      Опишите, что пошло не так. Отправится нам напрямую — регистрация и почта не нужны.
-    </div>
-    <textarea id="feedbackText" class="chat-textarea" style="width:100%;min-height:110px;resize:vertical;box-sizing:border-box" placeholder="Например: при озвучке слова приложение зависает…" maxlength="500" oninput="updateFeedbackCounter()"></textarea>
-    <!-- Счётчик слов/символов отзыва — ограничивает объём текста, чтобы
-         пользователь не мог прислать слишком длинное сообщение (см.
-         maxlength выше и updateFeedbackCounter() в app.js). -->
-    <div id="feedbackCounter" class="settings-sub tight" style="text-align:right;margin-top:.25rem"></div>
-    <!-- Honeypot: поле-ловушка для ботов. Скрыто от людей через CSS
-         (см. .feedback-honeypot в style.css) — обычный пользователь его не
-         видит и не может заполнить, боты же заполняют все поля подряд.
-         Если поле заполнено на отправке — submitFeedback() тихо игнорирует
-         отправку. Это не текстовое поле-приманка "email" не просто спроста —
-         именно на такие имена чаще всего слепо реагируют спам-боты. -->
-    <input type="text" id="feedbackHoneypot" name="website" class="feedback-honeypot" tabindex="-1" autocomplete="off">
-    <div id="feedbackStatus" class="settings-sub tight" style="min-height:1.2em"></div>
-    <div style="display:flex;gap:.5rem;margin-top:.75rem;justify-content:flex-end">
-      <button class="btn-sm" onclick="closeFeedbackModal()">Отмена</button>
-      <button id="feedbackSubmitBtn" class="btn-sm" style="border-color:var(--blue);color:var(--blue)" onclick="submitFeedback()">Отправить</button>
-    </div>
   </div>
 </div>
 
